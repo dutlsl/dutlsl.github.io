@@ -1,0 +1,16 @@
+baseURL = "https://dutlsl.github.io/"
+title = "My Portfolio"
+theme = "PaperMod"
+defaultContentLanguage = "en"
+
+[languages]
+  [languages.en]
+    languageName = "English"
+    weight = 1
+  [languages.ko]
+    languageName = "한국어"
+    weight = 2
+
+[params]
+  env = "production"
+  ShowTranslate = true # 언어 전환 토글 버튼 활성화
