@@ -14,3 +14,15 @@ defaultContentLanguage = "en"
 [params]
   env = "production"
   ShowTranslate = true # 언어 전환 토글 버튼 활성화
+
+[params.math]
+  enable = true
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['\[', '\]'], ['$$', '$$']]
+          inline = [['\(', '\)']]
