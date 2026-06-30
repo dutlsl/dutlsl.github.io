@@ -121,7 +121,6 @@ Given a source frame **x_s** and a target frame **x_t**, the roles of the two en
 Expressed mathematically:
 
 $$A_s = f_{\text{app}}(x_s), \quad g_t = f_{\text{gaze}}(x_t) \tag{1}$$
-
 **Why is this asymmetric design important?** The key is that **only the gaze encoder is used during inference**. The appearance encoder and decoder function merely as "scaffolding" during training to improve the quality of the gaze representation, leaving only the lightweight 342K parameter gaze encoder for deployment.
 
 ---
@@ -133,9 +132,7 @@ This module corresponds to the Self-Attention → Cross-Attention block in the c
 #### Step 1: Refining Appearance Features via Self-Attention
 
 First, **multi-head self-attention** is applied to the appearance feature map A_s output by the appearance encoder:
-
 $$A_s' = \text{SelfAttn}(A_s) \tag{2}$$
-
 Here, self-attention models spatial interactions within the appearance feature map. For example, the relative positional relationship between the iris area and the eyelid boundary, or the spatial correlation between the pupil reflection (glint) and the iris.
 
 Importantly, the **attention weight map w ∈ ℝ^(H × W)** from this self-attention is not just used for feature refinement, but is recycled as a **soft mask** for gaze-relevant regions in the Gaze-Focused Loss described later.
@@ -146,9 +143,7 @@ Next, the target's gaze embedding g_t is injected into the appearance features. 
 
 1. The gaze embedding g_t ∈ ℝ^(C_g) is linearly projected and converted into a **single global query q_g ∈ ℝ^(C_a)**.
 2. Cross-attention is performed using this single query q_g as the Query, and the refined appearance features A_s' as the Key and Value:
-
 $$c = \text{CrossAttn}(q_g, A_s', A_s') \tag{3}$$
-
 The output **c ∈ ℝ^(C_a)** is a gaze-conditioned global context vector that encodes "how the source appearance features should be globally adjusted from the perspective of the target gaze direction."
 
 **Why a single query?** Since gaze is a global attribute defined as a single direction for the entire frame, a single global query is sufficient, rather than multiple spatial queries.
@@ -156,9 +151,7 @@ The output **c ∈ ℝ^(C_a)** is a gaze-conditioned global context vector that 
 #### Step 3: Feature Fusion via Residual Connection
 
 The global context vector c is broadcast to the spatial dimensions H × W to create C ∈ ℝ^(H × W × C_a), which is then added as a residual to the original refined appearance features A_s':
-
 $$F = A_s' + C \tag{4}$$
-
 This residual addition acts as a **feature-wise global modulation**: the gaze direction information (C) is uniformly added across the entire space of the appearance features, "steering" the latent representation toward the target gaze direction. Thanks to the residual connection, the spatial structure of the source is preserved.
 
 **Information Leakage Prevention Mechanism:** In this cross-attention structure, the output of the gaze encoder only participates as a query, and there is no direct path (e.g., skip connection) to the decoder. This architectural isolation acts as a buffer layer, fundamentally blocking the leakage of appearance information into the gaze embedding, which was a problem in Cross-Encoder.
@@ -183,7 +176,6 @@ Core idea: The attention weight map generated in the self-attention step of Sect
 *Figure 4: Source appearance images (top) and corresponding self-attention maps (bottom). The model naturally assigns high attention weights to gaze-relevant regions around the iris and pupil without external supervision.*
 
 After upsampling the attention weight map w to the same resolution as the target image, the **Gaze-Focused Reconstruction Loss** is defined by applying a sharpening parameter γ:
-
 $$\mathcal{L}_{\text{focus}} = \frac{1}{\sum_{i} w_i^{\gamma}} \sum_{i} w_i^{\gamma} \cdot (x_{t,i} - \hat{x}_{t,i})^2 \tag{5}$$
 
 Where:

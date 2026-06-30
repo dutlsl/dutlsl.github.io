@@ -59,30 +59,32 @@ In particular, TransPL relies on a wide range of pseudo-labels, including those 
 
 The training pipeline of Causal-OT consists of the following 5 steps:
 
-1. **Causal Graph Construction:** Extract Granger causal graphs G<sub>s</sub>, G<sub>t</sub> from raw time-series of the source and target domains. In the figure, black arrows represent causal relationships between variables, while red arrows indicate non-causal relationships.
+1. **Causal Graph Construction:** Extract Granger causal graphs $G_s$, $G_t$ from raw time-series of the source and target domains. In the figure, black arrows represent causal relationships between variables, while red arrows indicate non-causal relationships.
 
-2. **Feature Extraction:** A shared feature extractor f<sub>θ</sub> maps the source and target data to the latent feature spaces Z<sub>s</sub>, Z<sub>t</sub>.
+2. **Feature Extraction:** A shared feature extractor $f_\theta$ maps the source and target data to the latent feature spaces $Z_s$, $Z_t$.
 
-3. **Causal Alignment:** Calculate the Optimal Transport (OT) loss ℒ<sub>OT</sub> based on a cost matrix C that combines feature distance and causal graph distance D<sub>G</sub>.
+3. **Causal Alignment:** Calculate the Optimal Transport (OT) loss $\mathcal{L}_{\text{OT}}$ based on a cost matrix $C$ that combines feature distance and causal graph distance $D_G$.
 
-4. **Classification and Pseudo-Labeling:** The classifier h<sub>φ</sub> is trained on the source data (ℒ<sub>src</sub>), and generates high-confidence pseudo-labels on the target domain (ℒ<sub>PL</sub>).
+4. **Classification and Pseudo-Labeling:** The classifier $h_\phi$ is trained on the source data ($\mathcal{L}_{\text{src}}$), and generates high-confidence pseudo-labels on the target domain ($\mathcal{L}_{\text{PL}}$).
 
-5. **Optimization:** Update model parameters θ, φ using the weighted sum of the three losses.
+5. **Optimization:** Update model parameters $\theta$, $\phi$ using the weighted sum of the three losses.
 
 ### 3.2. Granger Causal Graph Extraction
 
-Directional causal relationships between variables are modeled from multivariate time-series X ∈ ℝ<sup>N × T × D</sup>. Specifically:
+Directional causal relationships between variables are modeled from multivariate time-series $X \in \mathbb{R}^{N \times T \times D}$. Specifically:
 
 - **Stationarity Test:** Check signal stationarity with Augmented Dickey-Fuller test.
-- **VAR Order Selection:** Determine optimal lag order p using Bayesian Information Criterion (BIC).
+- **VAR Order Selection:** Determine optimal lag order $p$ using Bayesian Information Criterion (BIC).
 - **Significance Filtering:** Retain only edges with p-value < 0.05.
-- **Row Normalization:** Normalize the adjacency matrix W such that row sums equal 1.
-- **Spectral Embedding:** Derive a k-dimensional embedding Φ(G) ∈ ℝ<sup>d × k</sup> from the Laplacian L = D - W.
+- **Row Normalization:** Normalize the adjacency matrix $W$ such that row sums equal 1.
+- **Spectral Embedding:** Derive a k-dimensional embedding $\Phi(G) \in \mathbb{R}^{d \times k}$ from the Laplacian $L = D - W$.
 
 > [!IMPORTANT]
-> **Hybrid Graph Update Strategy:** The initial causal graph is extracted from raw data X, but is periodically re-estimated and blended from the latent features Z during training.
+> **Hybrid Graph Update Strategy:** The initial causal graph is extracted from raw data $X$, but is periodically re-estimated and blended from the latent features $Z$ during training.
 >
-> <b>A<sup>(t)</sup> = α A<sub>X</sub> + (1 - α) A<sub>Z</sub><sup>(t)</sup></b>  (where α ∈ [0.6, 0.9])
+> $$
+> A^{(t)} = \alpha A_X + (1-\alpha) A_Z^{(t)}, \quad \alpha \in [0.6, 0.9]
+> $$
 >
 > This maintains a stable raw signal structure while reflecting causal structural changes as learning progresses.
 
@@ -90,42 +92,61 @@ Directional causal relationships between variables are modeled from multivariate
 
 The cost between source-target sample pairs is defined by combining feature similarity and causal descriptor consistency:
 
-<b>C<sub>ij</sub> = ‖ f<sub>s</sub>(x<sub>i</sub><sup>s</sup>) - f<sub>t</sub>(x<sub>j</sub><sup>t</sup>) ‖<sub>2</sub><sup>2</sup> + λ ‖ φ<sub>i</sub><sup>s</sup> - φ<sub>j</sub><sup>t</sup> ‖<sub>2</sub><sup>2</sup></b>
+$$
+C_{ij} = \Vert f_s(x_i^s) - f_t(x_j^t) \Vert_2^2 + \lambda \Vert \phi_i^s - \phi_j^t \Vert_2^2
+$$
 
-Here, φ<sub>i</sub><sup>s</sup> and φ<sub>j</sub><sup>t</sup> are the causal embeddings of the source and target samples, respectively. For this cost matrix, the entropy-regularized OT problem is solved via Sinkhorn iterations to obtain the optimal transport plan γ*:
+Here, $\phi_i^s$ and $\phi_j^t$ are the causal embeddings of the source and target samples, respectively. For this cost matrix, the entropy-regularized OT problem is solved via Sinkhorn iterations to obtain the optimal transport plan $\gamma^{\ast}$:
 
-<b>γ* = argmin<sub>γ ∈ Π(μ<sub>s</sub>, μ<sub>t</sub>)</sub> [ ⟨γ, C⟩ + ε H(γ) ]</b>
+$$
+\gamma^{\ast} = \arg\min_{\gamma \in \Pi(\mu_s, \mu_t)} \langle \gamma, C \rangle + \varepsilon H(\gamma)
+$$
 
 The core of this design is to **embed causal graph constraints directly into the cost matrix**, ensuring that the alignment is not only geometrically meaningful but also structurally consistent with temporal dependencies.
 
 ### 3.4. Uncertainty-aware Pseudo-Labeling
 
-Soft class predictions from the classifier h<sub>φ</sub> are obtained from the encoded target features Z<sub>t</sub><sup>j</sup>, and uncertainty is estimated using the **entropy** of the predicted distribution:
+Soft class predictions from the classifier $h_\phi$ are obtained from the encoded target features $Z_t^j$, and uncertainty is estimated using the **entropy** of the predicted distribution:
 
-<b>U<sub>t</sub><sup>j</sup> = - Σ<sub>k=1</sub><sup>K</sup> ŷ<sub>t,j</sub><sup>(k)</sup> log(ŷ<sub>t,j</sub><sup>(k)</sup>)</b>
+$$
+U_t^j = -\sum_{k=1}^K \hat{y}_{t,j}^{(k)} \log \hat{y}_{t,j}^{(k)}
+$$
 
-Only **low-entropy (high-confidence)** samples below an entropy threshold ρ are used as pseudo-labels to prevent noise propagation.
+Only **low-entropy (high-confidence)** samples below an entropy threshold $\rho$ are used as pseudo-labels to prevent noise propagation.
 
 ### 3.5. Total Loss Function
 
 The total loss function is a weighted sum of three terms:
 
-<b>ℒ<sub>total</sub> = ℒ<sub>src</sub> + α ℒ<sub>OT</sub> + β ℒ<sub>PL</sub></b>
+$$
+\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{src}} + \alpha \mathcal{L}_{\text{OT}} + \beta \mathcal{L}_{\text{PL}}
+$$
 
-- **Source Domain Classification Loss (ℒ<sub>src</sub>)**: Cross-Entropy
-  <b>ℒ<sub>src</sub> = (1 / N<sub>s</sub>) Σ<sub>i</sub> CE(h<sub>φ</sub>(Z<sub>s</sub><sup>i</sup>), y<sub>s</sub><sup>i</sup>)</b>
+- **Source Domain Classification Loss ($\mathcal{L}_{\text{src}}$)**: Cross-Entropy
 
-- **Causal Structure Preserving OT Alignment Loss (ℒ<sub>OT</sub>)**:
-  <b>ℒ<sub>OT</sub> = ⟨γ*, C⟩</b>
+  $$
+  \mathcal{L}_{\text{src}} = \frac{1}{N_s}\sum_i \text{CE}(h_\phi(Z_s^i), y_s^i)
+  $$
 
-- **Uncertainty-filtered Pseudo-Label Loss (ℒ<sub>PL</sub>)**:
-  <b>ℒ<sub>PL</sub> = (1 / |I|) Σ<sub>j ∈ I</sub> CE(h<sub>φ</sub>(Z<sub>t</sub><sup>j</sup>), ŷ<sub>t</sub><sup>j</sup>)</b>
+- **Causal Structure Preserving OT Alignment Loss ($\mathcal{L}_{\text{OT}}$)**:
+
+  $$
+  \mathcal{L}_{\text{OT}} = \langle \gamma^{\ast}, C \rangle
+  $$
+
+- **Uncertainty-filtered Pseudo-Label Loss ($\mathcal{L}_{\text{PL}}$)**:
+
+  $$
+  \mathcal{L}_{\text{PL}} = \frac{1}{| I |}\sum_{j \in I} \text{CE}(h_\phi(Z_t^j), \hat{y}_t^j)
+  $$
 
 ### 3.6. Theoretical Analysis
 
-**Proposition 1 (Causal-OT Target Risk Bound):** For a Lipschitz continuous and bounded surrogate loss ℓ:
+**Proposition 1 (Causal-OT Target Risk Bound):** For a Lipschitz continuous and bounded surrogate loss $\ell$:
 
-<b>ℛ<sub>t</sub>(h) ≤ ℛ<sub>s</sub>(h) + L · 𝔼<sub>(x<sub>s</sub>, x<sub>t</sub>) ∼ γ*</sub>[ ‖ f<sub>s</sub>(x<sub>s</sub>) - f<sub>t</sub>(x<sub>t</sub>) ‖ ] + λ · 𝔼<sub>(i,j) ∼ γ*</sub>[ ‖ φ<sub>i</sub><sup>s</sup> - φ<sub>j</sub><sup>t</sup> ‖ ] + 𝒟<sub>ℋ</sub>(P<sub>s</sub>, P<sub>t</sub>)</b>
+$$
+\mathcal{R}_t(h) \leq \mathcal{R}_s(h) + L \, \mathbb{E}_{(x_s, x_t) \sim \gamma^{\ast}}[\Vert f_s(x_s) - f_t(x_t) \Vert] + \lambda \, \mathbb{E}_{(i,j) \sim \gamma^{\ast}}[\Vert \phi_i^s - \phi_j^t \Vert] + \mathcal{D}_{\mathcal{H}}(P_s, P_t)
+$$
 
 This inequality formalizes that minimizing the Causal-OT objective simultaneously reduces **feature-level distance, causal structure mismatch, and hypothesis mismatch**, enhancing transferability under domain shift.
 
@@ -133,9 +154,9 @@ This inequality formalizes that minimizing the Causal-OT objective simultaneousl
 
 Video data is integrated into the same pipeline by converting it to time-series during the preprocessing stage, without separate model modifications:
 
-1. Uniformly divide each video clip into T time segments.
+1. Uniformly divide each video clip into $T$ time segments.
 2. Extract segment-level embeddings using a ResNet-101 or 3D backbone at each segment.
-3. Obtain sequential representations of shape X ∈ ℝ<sup>d × T</sup> (default d=2048) by reducing dimensions with PCA.
+3. Obtain sequential representations of shape $X \in \mathbb{R}^{d \times T}$ (default $d=2048$) by reducing dimensions with PCA.
 4. Apply the same procedures afterward, including causal graph extraction, OT alignment, and pseudo-labeling.
 
 ---

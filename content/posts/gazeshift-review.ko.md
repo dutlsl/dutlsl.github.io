@@ -110,21 +110,23 @@ GazeShift의 핵심 통찰은 다음과 같습니다:
 
 GazeShift에서 가장 먼저 눈에 들어오는 설계 결정은 **시선(gaze)과 외양(appearance)을 위한 인코더를 완전히 분리**한 것입니다. 이전 SOTA인 Cross-Encoder(Sun et al., ICCV 2021)는 하나의 공유 인코더로 두 속성을 동시에 처리했는데, 이 구조는 디코더가 타깃의 외양 정보에 접근할 수 있어 gaze embedding에 외양 정보가 유출(leakage)되는 문제가 있었습니다.
 
-소스 프레임 **x_s**와 타깃 프레임 **x_t**가 주어졌을 때, 두 인코더의 역할은 다음과 같습니다:
+소스 프레임 **$x_s$**와 타깃 프레임 **$x_t$**가 주어졌을 때, 두 인코더의 역할은 다음과 같습니다:
 
 **Appearance Encoder** `f_app`:
-- 입력: 소스 프레임 x_s
-- 출력: 외양 특징 맵 **A_s ∈ ℝ^(H × W × C_a)**
+- 입력: 소스 프레임 $x_s$
+- 출력: 외양 특징 맵 **$A_s \in \mathbb{R}^{H \times W \times C_a}$**
 - 특징: **얕은(shallow) 구조**로 설계하여 입력 이미지의 2D 공간 구조를 최대한 보존합니다. 외양은 픽셀 수준의 공간적·구체적 속성(눈꺼풀 형태, 홍채 색상, 피부 텍스처 등)이므로, 과도한 추상화 없이 공간 해상도를 유지하는 것이 중요합니다.
 
 **Gaze Encoder** `f_gaze`:
-- 입력: 타깃 프레임 x_t
-- 출력: 시선 임베딩 벡터 **g_t ∈ ℝ^(C_g)**
+- 입력: 타깃 프레임 $x_t$
+- 출력: 시선 임베딩 벡터 **$g_t \in \mathbb{R}^{C_g}$**
 - 특징: MobileNetV2의 **Inverted Bottleneck Block** 기반 **경량 설계** (342K 파라미터, 55 MFLOPs). 시선은 전체 이미지에서 2~3개의 실수값 (yaw, pitch 등)으로 표현되는 추상적·비공간적 속성이므로, 공간 정보를 압축하여 글로벌 벡터로 변환하는 깊은 인코더가 적합합니다.
 
 수식으로 표현하면:
 
-$$A_s = f_{\text{app}}(x_s), \quad g_t = f_{\text{gaze}}(x_t) \tag{1}$$
+$$
+A_s = f_{\text{app}}(x_s), \quad g_t = f_{\text{gaze}}(x_t) \tag{1}
+$$
 
 **이 비대칭 설계가 왜 중요한가?** 핵심은 **추론 시에는 gaze encoder만 사용**된다는 점입니다. 즉, appearance encoder와 decoder는 학습 과정에서만 시선 표현의 품질을 높이기 위한 "scaffolding(비계)"으로 기능하며, 배포 시에는 342K 파라미터짜리 경량 gaze encoder만 남습니다. 이 설계 덕분에 무거운 appearance encoder를 마음껏 사용하면서도 런타임 패널티가 전혀 없는, 학습/추론 비대칭의 이점을 극대화합니다.
 
@@ -136,38 +138,48 @@ $$A_s = f_{\text{app}}(x_s), \quad g_t = f_{\text{gaze}}(x_t) \tag{1}$$
 
 #### Step 1: Self-Attention을 통한 외양 특징 정제
 
-먼저 appearance encoder에서 출력된 외양 특징 맵 **A_s**에 대해 **multi-head self-attention**을 적용합니다:
+먼저 appearance encoder에서 출력된 외양 특징 맵 **$A_s$**에 대해 **multi-head self-attention**을 적용합니다:
 
-$$A_s' = \text{SelfAttn}(A_s) \tag{2}$$
+$$
+A_s' = \text{SelfAttn}(A_s) \tag{2}
+$$
 
 여기서 self-attention은 외양 특징 맵 내부의 공간적 관계(spatial interactions)를 모델링합니다. 예를 들어, 홍채 영역과 눈꺼풀 경계 간의 상대적 위치 관계, 또는 동공 반사(glint)와 홍채의 공간적 연관성 등이 이 단계에서 캡처됩니다.
 
-중요한 점은 이 self-attention의 **attention weight map w ∈ ℝ^(H × W)**가 단순히 특징 정제에만 사용되는 것이 아니라, 후술할 Gaze-Focused Loss에서 **시선 관련 영역의 소프트 마스크**로 재활용된다는 것입니다. 이것이 이 논문의 가장 핵심적인 아이디어 중 하나입니다 (Figure 1 하단의 Attention Map → Loss 연결 화살표).
+중요한 점은 이 self-attention의 **attention weight map $w \in \mathbb{R}^{H \times W}$**가 단순히 특징 정제에만 사용되는 것이 아니라, 후술할 Gaze-Focused Loss에서 **시선 관련 영역의 소프트 마스크**로 재활용된다는 것입니다. 이것이 이 논문의 가장 핵심적인 아이디어 중 하나입니다 (Figure 1 하단의 Attention Map → Loss 연결 화살표).
 
 #### Step 2: Cross-Attention을 통한 시선 정보 주입
 
 다음으로, 타깃의 시선 임베딩 **g_t**를 외양 특징에 주입합니다. 이때 직접적인 concatenation이나 element-wise multiplication 대신 **cross-attention 메커니즘**을 사용하는데, 여기서 핵심적인 설계 결정이 있습니다:
 
-1. 시선 임베딩 **g_t ∈ ℝ^(C_g)** 를 선형 투영하여 외양 특징과 동일한 차원의 **단일 글로벌 쿼리 q_g ∈ ℝ^(C_a)** 로 변환합니다.
-2. 이 단일 쿼리 q_g를 Query로, 정제된 외양 특징 A_s'를 Key와 Value로 사용하여 cross-attention을 수행합니다:
+1. 시선 임베딩 **$g_t \in \mathbb{R}^{C_g}$** 를 선형 투영하여 외양 특징과 동일한 차원의 **단일 글로벌 쿼리 $q_g \in \mathbb{R}^{C_a}$** 로 변환합니다.
+2. 이 단일 쿼리 q_g를 Query로, 정제된 외양 특징 $A_s'$를 Key와 Value로 사용하여 cross-attention을 수행합니다:
 
-$$c = \text{CrossAttn}(q_g, \; A_s', \; A_s') \tag{3}$$
 
-이 연산의 출력 **c ∈ ℝ^(C_a)** 는 "타깃 시선 방향의 관점에서 소스 외양 특징을 어떻게 전역적으로 조절해야 하는가"를 인코딩한 **gaze-conditioned global context vector**입니다.
+$$
+c = \text{CrossAttn}(q_g, \; A_s', \; A_s') \tag{3}
+$$
+
+
+이 연산의 출력 **$c \in \mathbb{R}^{C_a}$** 는 "타깃 시선 방향의 관점에서 소스 외양 특징을 어떻게 전역적으로 조절해야 하는가"를 인코딩한 **gaze-conditioned global context vector**입니다.
 
 **왜 단일 쿼리(single query)인가?** 시선은 프레임 전체에 대해 하나의 방향으로 정의되는 글로벌 속성이므로, 공간적으로 다양한 다수의 쿼리가 아닌 단일 글로벌 쿼리로 충분합니다. 이렇게 하면 시선 정보가 공간 해상도와 무관하게 전역적(global)으로 외양 특징을 조절할 수 있습니다.
 
 #### Step 3: 잔차 연결을 통한 특징 융합
 
-마지막으로, 글로벌 컨텍스트 벡터 **c**를 공간 차원 H × W로 브로드캐스트하여 **C ∈ ℝ^(H × W × C_a)** 를 만들고, 이를 원래의 정제된 외양 특징 A_s'에 잔차(residual)로 더합니다:
+마지막으로, 글로벌 컨텍스트 벡터 **$c$**를 공간 차원 $H \times W$로 브로드캐스트하여 **$C \in \mathbb{R}^{H \times W \times C_a}$** 를 만들고, 이를 원래의 정제된 외양 특징 $A_s'$에 잔차(residual)로 더합니다:
 
-$$F = A_s' + C \tag{4}$$
+
+$$
+F = A_s' + C \tag{4}
+$$
+
 
 이 잔차 덧셈은 **feature-wise global modulation**으로 작용합니다: 시선 방향 정보(C)가 외양 특징의 전체 공간에 균일하게 더해지면서, 잠재 표현을 타깃 시선 방향으로 "밀어내는(steering)" 역할을 합니다. 동시에 잔차 연결 덕분에 소스의 공간적 구조(눈꺼풀 형태, 피부 텍스처 등)는 원래대로 보존됩니다.
 
 **정보 유출 차단 메커니즘:** 이 cross-attention 구조에서 gaze encoder의 출력은 오직 쿼리 위치에만 관여하고, decoder로의 직접적인 경로(skip connection 등)가 없습니다. 이 구조적 격리(architectural isolation)가 **버퍼 레이어** 역할을 하여, Cross-Encoder에서 문제가 되었던 외양 정보의 시선 임베딩 유출을 원천 차단합니다. 결과적으로 gaze encoder는 순수한 시선 정보만을 인코딩하도록 강제됩니다.
 
-융합된 특징 맵 **F**는 이후 Decoder에 입력되어, 소스의 외양을 유지하면서 타깃의 시선 방향으로 변환된 이미지 **x̂_t**를 생성합니다.
+융합된 특징 맵 **F**는 이후 Decoder에 입력되어, 소스의 외양을 유지하면서 타깃의 시선 방향으로 변환된 이미지 **$\hat{x}_t$**를 생성합니다.
 
 ---
 
@@ -177,9 +189,13 @@ $$F = A_s' + C \tag{4}$$
 
 #### 문제: 균일한 픽셀 손실의 한계
 
-일반적인 시선 리디렉션 모델은 재구성된 이미지 x̂_t와 실제 타깃 x_t 간의 **per-pixel MSE**를 손실 함수로 사용합니다:
+일반적인 시선 리디렉션 모델은 재구성된 이미지 $\hat{x}_t$와 실제 타깃 $x_t$ 간의 **per-pixel MSE**를 손실 함수로 사용합니다:
 
-$$\mathcal{L}_{\text{MSE}} = \frac{1}{N}\sum_{i} (x_{t,i} - \hat{x}_{t,i})^2$$
+
+$$
+\mathcal{L}_{\text{MSE}} = \frac{1}{N}\sum_{i} (x_{t,i} - \hat{x}_{t,i})^2
+$$
+
 
 이 손실은 모든 픽셀을 균등하게 취급합니다. 그런데 눈 이미지에서 시선 변화에 따라 실질적으로 외양이 변하는 영역은 **홍채와 동공 주변의 제한된 영역**뿐이고, 눈꺼풀 경계, 피부, 배경 등은 시선과 무관하게 거의 동일합니다. 따라서 균일한 MSE 손실을 사용하면:
 
@@ -190,7 +206,7 @@ $$\mathcal{L}_{\text{MSE}} = \frac{1}{N}\sum_{i} (x_{t,i} - \hat{x}_{t,i})^2$$
 
 #### 해법: Self-Attention 맵의 재활용
 
-핵심 아이디어: 4.4절의 self-attention 단계(Step 1)에서 생성된 **attention weight map w ∈ ℝ^(H × W)** 를 손실 함수의 공간적 가중치로 재활용합니다.
+핵심 아이디어: 4.4절의 self-attention 단계(Step 1)에서 생성된 **attention weight map $w \in \mathbb{R}^{H \times W}$** 를 손실 함수의 공간적 가중치로 재활용합니다.
 
 이것이 가능한 이유는, 소스-타깃 간 외양 차이의 대부분이 시선 변화에 기인한다는 가정 하에서, self-attention이 **자연스럽게 시선 관련 영역(홍채, 동공 주변)에 높은 가중치를 부여**하기 때문입니다. Figure 4의 attention map 시각화가 이를 명확히 보여줍니다.
 
@@ -199,25 +215,32 @@ $$\mathcal{L}_{\text{MSE}} = \frac{1}{N}\sum_{i} (x_{t,i} - \hat{x}_{t,i})^2$$
 
 attention weight map **w**를 타깃 이미지와 동일한 해상도로 업샘플링한 후, **sharpening parameter γ > 0**를 적용한 **Gaze-Focused Reconstruction Loss**는 다음과 같이 정의됩니다:
 
-$$\mathcal{L}_{\text{focus}} = \frac{1}{\sum_{i} w_i^{\gamma}} \sum_{i} w_i^{\gamma} \cdot (x_{t,i} - \hat{x}_{t,i})^2 \tag{5}$$
+
+$$
+\mathcal{L}_{\text{focus}} = \frac{1}{\sum_{i} w_i^{\gamma}} \sum_{i} w_i^{\gamma} \cdot (x_{t,i} - \hat{x}_{t,i})^2 \tag{5}
+$$
+
 
 여기서:
 - **i**: 픽셀 위치 인덱스
-- **w_i**: 업샘플된 attention 가중치 (홍채 주변에서 높은 값, 배경에서 낮은 값)
-- **γ**: attention 집중도를 제어하는 sharpening 파라미터
-- 정규화 항 1/Σw_i^γ 는 전체 가중치 합이 1이 되도록 보장
+- **$w_i$**: 업샘플된 attention 가중치 (홍채 주변에서 높은 값, 배경에서 낮은 값)
+- **$\gamma$**: attention 집중도를 제어하는 sharpening 파라미터
+- 정규화 항 $1/\sum w_i^{\gamma}$ 는 전체 가중치 합이 1이 되도록 보장
 
 #### γ의 역할과 그래디언트 관점의 해석
 
-γ 값에 따른 동작을 직관적으로 이해하기 위해, 정규화된 가중치 w̃_i = w_i^γ / Σ_j w_j^γ 에 대한 **픽셀별 그래디언트 크기**를 살펴보면:
+$\gamma$ 값에 따른 동작을 직관적으로 이해하기 위해, 정규화된 가중치 $\tilde{w}_i = w_i^{\gamma} / \sum_j w_j^{\gamma}$ 에 대한 **픽셀별 그래디언트 크기**를 살펴보면:
 
-$$\left\| \frac{\partial \mathcal{L}_{\text{focus}}}{\partial \hat{x}_i} \right\| \propto \tilde{w}_i = \frac{w_i^{\gamma}}{\sum_j w_j^{\gamma}}$$
 
-즉, **γ를 증가시키면** 높은 attention을 받는 영역(시선 관련)의 그래디언트가 증폭되고, 낮은 attention 영역(배경)의 그래디언트는 억제됩니다. 이를 통해:
+$$
+\left\| \frac{\partial \mathcal{L}_{\text{focus}}}{\partial \hat{x}_i} \right\| \propto \tilde{w}_i = \frac{w_i^{\gamma}}{\sum_j w_j^{\gamma}}
+$$
 
-- **γ = 1**: 모델의 raw attention을 그대로 가중치로 사용. 시선 영역에 적절히 집중하면서도 주변 맥락(눈꺼풀 경계, 글린트 등)을 놓치지 않는 균형점 → **최적 성능(1.84°)**
-- **γ > 1** (e.g., 2.0, 4.0): attention이 과도하게 좁은 영역(동공 중심)에 집중 → 주변 맥락 정보 상실 → 성능 저하 (2.19°, 2.41°)
-- **γ < 1** (e.g., 0.5): attention이 지나치게 분산 → 시선/외양 신호가 혼재 → 성능 저하 (2.03°)
+즉, **$\gamma$를 증가시키면** 높은 attention을 받는 영역(시선 관련)의 그래디언트가 증폭되고, 낮은 attention 영역(배경)의 그래디언트는 억제됩니다. 이를 통해:
+
+- **$\gamma = 1$**: 모델의 raw attention을 그대로 가중치로 사용. 시선 영역에 적절히 집중하면서도 주변 맥락(눈꺼풀 경계, 글린트 등)을 놓치지 않는 균형점 → **최적 성능(1.84°)**
+- **$\gamma > 1$** (e.g., 2.0, 4.0): attention이 과도하게 좁은 영역(동공 중심)에 집중 → 주변 맥락 정보 상실 → 성능 저하 (2.19°, 2.41°)
+- **$\gamma < 1$** (e.g., 0.5): attention이 지나치게 분산 → 시선/외양 신호가 혼재 → 성능 저하 (2.03°)
 
 #### 양성 피드백 루프 (Positive Feedback Loop)
 

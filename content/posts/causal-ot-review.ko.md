@@ -59,30 +59,32 @@ cover:
 
 Causal-OT의 학습 파이프라인은 다음 5단계로 구성된다:
 
-1. **인과 그래프 구성 (Causal Graph Construction):** 소스와 타겟 도메인의 원시 시계열로부터 Granger 인과 그래프 G<sub>s</sub>, G<sub>t</sub>를 추출한다. 그림에서 검은 화살표는 변수 간 인과 관계, 빨간 화살표는 비인과 관계를 나타낸다.
+1. **인과 그래프 구성 (Causal Graph Construction):** 소스와 타겟 도메인의 원시 시계열로부터 Granger 인과 그래프 $G_s$, $G_t$를 추출한다. 그림에서 검은 화살표는 변수 간 인과 관계, 빨간 화살표는 비인과 관계를 나타낸다.
 
-2. **특징 추출 (Feature Extraction):** 공유 특징 추출기 f<sub>θ</sub>가 소스·타겟 데이터를 잠재 특징 공간 Z<sub>s</sub>, Z<sub>t</sub>로 매핑한다.
+2. **특징 추출 (Feature Extraction):** 공유 특징 추출기 $f_\theta$가 소스·타겟 데이터를 잠재 특징 공간 $Z_s$, $Z_t$로 매핑한다.
 
-3. **인과 정렬 (Causal Alignment):** 특징 거리와 인과 그래프 거리 D<sub>G</sub>를 결합한 비용 행렬 C를 기반으로 최적 수송(OT) 손실 ℒ<sub>OT</sub>를 계산한다.
+3. **인과 정렬 (Causal Alignment):** 특징 거리와 인과 그래프 거리 $D_G$를 결합한 비용 행렬 $C$를 기반으로 최적 수송(OT) 손실 $\mathcal{L}_{\text{OT}}$를 계산한다.
 
-4. **분류 및 유사-레이블링:** 분류기 h<sub>φ</sub>가 소스 데이터로 학습되며 (ℒ<sub>src</sub>), 타겟 도메인에서 높은 신뢰도의 유사-레이블을 생성한다 (ℒ<sub>PL</sub>).
+4. **분류 및 유사-레이블링:** 분류기 $h_\phi$가 소스 데이터로 학습되며 ($\mathcal{L}_{\text{src}}$), 타겟 도메인에서 높은 신뢰도의 유사-레이블을 생성한다 ($\mathcal{L}_{\text{PL}}$).
 
-5. **최적화:** 세 손실의 가중합으로 모델 파라미터 θ, φ를 업데이트한다.
+5. **최적화:** 세 손실의 가중합으로 모델 파라미터 $\theta$, $\phi$를 업데이트한다.
 
 ### 3.2. Granger 인과 그래프 추출
 
-다변량 시계열 X ∈ ℝ<sup>N × T × D</sup>에서 변수 간 방향성 인과 관계를 모델링한다. 구체적으로:
+다변량 시계열 $X \in \mathbb{R}^{N \times T \times D}$에서 변수 간 방향성 인과 관계를 모델링한다. 구체적으로:
 
 - **정상성 검정:** Augmented Dickey-Fuller 테스트로 신호의 정상성을 확인
-- **VAR 차수 선택:** Bayesian Information Criterion (BIC)으로 최적 래그 차수 p 결정
+- **VAR 차수 선택:** Bayesian Information Criterion (BIC)으로 최적 래그 차수 $p$ 결정
 - **유의성 필터링:** p-value < 0.05인 엣지만 유지
-- **행 정규화:** 인접 행렬 W를 행 합이 1이 되도록 정규화
-- **스펙트럴 임베딩:** 라플라시안 L = D - W에서 k차원 임베딩 Φ(G) ∈ ℝ<sup>d × k</sup> 도출
+- **행 정규화:** 인접 행렬 $W$를 행 합이 1이 되도록 정규화
+- **스펙트럴 임베딩:** 라플라시안 $L = D - W$에서 $k$차원 임베딩 $\Phi(G) \in \mathbb{R}^{d \times k}$ 도출
 
 > [!IMPORTANT]
-> **하이브리드 그래프 업데이트 전략:** 초기 인과 그래프는 원시 데이터 X에서 추출하되, 학습 중 잠재 특징 Z에서 주기적으로 재추정하여 블렌딩한다.
+> **하이브리드 그래프 업데이트 전략:** 초기 인과 그래프는 원시 데이터 $X$에서 추출하되, 학습 중 잠재 특징 $Z$에서 주기적으로 재추정하여 블렌딩한다.
 >
-> <b>A<sup>(t)</sup> = α A<sub>X</sub> + (1 - α) A<sub>Z</sub><sup>(t)</sup></b>  (단, α ∈ [0.6, 0.9])
+> $$
+> A^{(t)} = \alpha A_X + (1-\alpha) A_Z^{(t)}, \quad \alpha \in [0.6, 0.9]
+> $$
 >
 > 이를 통해 안정적인 원시 신호 구조를 유지하면서 학습 진행에 따른 인과 구조 변화를 반영한다.
 
@@ -90,42 +92,61 @@ Causal-OT의 학습 파이프라인은 다음 5단계로 구성된다:
 
 소스-타겟 샘플 쌍 간의 비용을 특징 유사도와 인과 기술자 일관성을 결합하여 정의한다:
 
-<b>C<sub>ij</sub> = ‖ f<sub>s</sub>(x<sub>i</sub><sup>s</sup>) - f<sub>t</sub>(x<sub>j</sub><sup>t</sup>) ‖<sub>2</sub><sup>2</sup> + λ ‖ φ<sub>i</sub><sup>s</sup> - φ<sub>j</sub><sup>t</sup> ‖<sub>2</sub><sup>2</sup></b>
+$$
+C_{ij} = \Vert f_s(x_i^s) - f_t(x_j^t) \Vert_2^2 + \lambda \Vert \phi_i^s - \phi_j^t \Vert_2^2
+$$
 
-여기서 φ<sub>i</sub><sup>s</sup>, φ<sub>j</sub><sup>t</sup>는 각각 소스·타겟 샘플의 인과 임베딩이다. 이 비용 행렬에 대해 엔트로피 정규화된 OT 문제를 Sinkhorn 반복법으로 풀어 최적 수송 계획 γ*를 구한다:
+여기서 $\phi_i^s$, $\phi_j^t$는 각각 소스·타겟 샘플의 인과 임베딩이다. 이 비용 행렬에 대해 엔트로피 정규화된 OT 문제를 Sinkhorn 반복법으로 풀어 최적 수송 계획 $\gamma^{\ast}$를 구한다:
 
-<b>γ* = argmin<sub>γ ∈ Π(μ<sub>s</sub>, μ<sub>t</sub>)</sub> [ ⟨γ, C⟩ + ε H(γ) ]</b>
+$$
+\gamma^{\ast} = \arg\min_{\gamma \in \Pi(\mu_s, \mu_t)} \langle \gamma, C \rangle + \varepsilon H(\gamma)
+$$
 
 이 설계의 핵심은 **인과 그래프 제약을 비용 행렬에 내장**하여, 정렬이 기하학적으로 의미있을 뿐 아니라 시간적 의존성과도 구조적으로 일관되게 하는 것이다.
 
 ### 3.4. 불확실성 인식 유사-레이블링
 
-타겟 도메인의 인코딩된 특징 Z<sub>t</sub><sup>j</sup>로부터 분류기 h<sub>φ</sub>의 소프트 클래스 예측을 구하고, 예측 분포의 **엔트로피**로 불확실성을 추정한다:
+타겟 도메인의 인코딩된 특징 $Z_t^j$로부터 분류기 $h_\phi$의 소프트 클래스 예측을 구하고, 예측 분포의 **엔트로피**로 불확실성을 추정한다:
 
-<b>U<sub>t</sub><sup>j</sup> = - Σ<sub>k=1</sub><sup>K</sup> ŷ<sub>t,j</sub><sup>(k)</sup> log(ŷ<sub>t,j</sub><sup>(k)</sup>)</b>
+$$
+U_t^j = -\sum_{k=1}^K \hat{y}_{t,j}^{(k)} \log \hat{y}_{t,j}^{(k)}
+$$
 
-엔트로피 임계값 ρ 이하인 **저엔트로피(고신뢰도)** 샘플만 유사-레이블로 사용하여 노이즈 전파를 방지한다.
+엔트로피 임계값 $\rho$ 이하인 **저엔트로피(고신뢰도)** 샘플만 유사-레이블로 사용하여 노이즈 전파를 방지한다.
 
 ### 3.5. 전체 손실 함수
 
 전체 손실 함수는 세 가지 항목의 가중합으로 구성됩니다:
 
-<b>ℒ<sub>total</sub> = ℒ<sub>src</sub> + α ℒ<sub>OT</sub> + β ℒ<sub>PL</sub></b>
+$$
+\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{src}} + \alpha \mathcal{L}_{\text{OT}} + \beta \mathcal{L}_{\text{PL}}
+$$
 
-- **소스 도메인 분류 손실 (ℒ<sub>src</sub>)**: Cross-Entropy
-  <b>ℒ<sub>src</sub> = (1 / N<sub>s</sub>) Σ<sub>i</sub> CE(h<sub>φ</sub>(Z<sub>s</sub><sup>i</sup>), y<sub>s</sub><sup>i</sup>)</b>
+- **소스 도메인 분류 손실 ($\mathcal{L}_{\text{src}}$)**: Cross-Entropy
 
-- **인과 구조 보존 OT 정렬 손실 (ℒ<sub>OT</sub>)**:
-  <b>ℒ<sub>OT</sub> = ⟨γ*, C⟩</b>
+  $$
+  \mathcal{L}_{\text{src}} = \frac{1}{N_s}\sum_i \text{CE}(h_\phi(Z_s^i), y_s^i)
+  $$
 
-- **불확실성 필터링 유사-레이블 손실 (ℒ<sub>PL</sub>)**:
-  <b>ℒ<sub>PL</sub> = (1 / |I|) Σ<sub>j ∈ I</sub> CE(h<sub>φ</sub>(Z<sub>t</sub><sup>j</sup>), ŷ<sub>t</sub><sup>j</sup>)</b>
+- **인과 구조 보존 OT 정렬 손실 ($\mathcal{L}_{\text{OT}}$)**:
+
+  $$
+  \mathcal{L}_{\text{OT}} = \langle \gamma^{\ast}, C \rangle
+  $$
+
+- **불확실성 필터링 유사-레이블 손실 ($\mathcal{L}_{\text{PL}}$)**:
+
+  $$
+  \mathcal{L}_{\text{PL}} = \frac{1}{| I |}\sum_{j \in I} \text{CE}(h_\phi(Z_t^j), \hat{y}_t^j)
+  $$
 
 ### 3.6. 이론적 분석
 
-**Proposition 1 (Causal-OT 타겟 위험 상한):** Lipschitz 연속이고 유계인 대리 손실 ℓ에 대해:
+**Proposition 1 (Causal-OT 타겟 위험 상한):** Lipschitz 연속이고 유계인 대리 손실 $\ell$에 대해:
 
-<b>ℛ<sub>t</sub>(h) ≤ ℛ<sub>s</sub>(h) + L · 𝔼<sub>(x<sub>s</sub>, x<sub>t</sub>) ∼ γ*</sub>[ ‖ f<sub>s</sub>(x<sub>s</sub>) - f<sub>t</sub>(x<sub>t</sub>) ‖ ] + λ · 𝔼<sub>(i,j) ∼ γ*</sub>[ ‖ φ<sub>i</sub><sup>s</sup> - φ<sub>j</sub><sup>t</sup> ‖ ] + 𝒟<sub>ℋ</sub>(P<sub>s</sub>, P<sub>t</sub>)</b>
+$$
+\mathcal{R}_t(h) \leq \mathcal{R}_s(h) + L \, \mathbb{E}_{(x_s, x_t) \sim \gamma^{\ast}}[\Vert f_s(x_s) - f_t(x_t) \Vert] + \lambda \, \mathbb{E}_{(i,j) \sim \gamma^{\ast}}[\Vert \phi_i^s - \phi_j^t \Vert] + \mathcal{D}_{\mathcal{H}}(P_s, P_t)
+$$
 
 이 부등식은 Causal-OT 목적함수를 최소화하면 **특징 수준 거리, 인과 구조 불일치, 가설 불일치**를 동시에 줄여 도메인 시프트 하에서 전이 가능성을 향상시킴을 형식화한다.
 
@@ -133,9 +154,9 @@ Causal-OT의 학습 파이프라인은 다음 5단계로 구성된다:
 
 비디오 데이터는 별도의 모델 수정 없이, 전처리 단계에서 시계열로 변환하여 동일 파이프라인에 통합한다:
 
-1. 각 비디오 클립을 T개 시간 세그먼트로 균등 분할
+1. 각 비디오 클립을 $T$개 시간 세그먼트로 균등 분할
 2. 각 세그먼트에서 ResNet-101 또는 3D 백본으로 세그먼트-레벨 임베딩 추출
-3. PCA로 차원 축소하여 X ∈ ℝ<sup>d × T</sup> (기본 d=2048) 형태의 시퀀스 표현 획득
+3. PCA로 차원 축소하여 $X \in \mathbb{R}^{d \times T}$ (기본 $d=2048$) 형태의 시퀀스 표현 획득
 4. 이후 인과 그래프 추출, OT 정렬, 유사-레이블링 등 동일 절차 적용
 
 ---
@@ -219,5 +240,3 @@ ECE(Expected Calibration Error) 감소는 Causal-OT가 **예측 확률과 실제
 3. **불확실성 인식 유사-레이블링:** 엔트로피 + 인과 일관성 기반 이중 필터링으로 신뢰할 수 없는 타겟 샘플 제거
 4. **모달리티 일반성:** 동일 파이프라인이 1D 시계열(6개 벤치마크)과 비디오(4개 벤치마크) 모두에서 SOTA 달성
 5. **이론적 뒷받침:** Causal-OT 목적함수 최소화가 타겟 위험 상한을 줄임을 형식적으로 증명
-
----
