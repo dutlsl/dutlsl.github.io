@@ -260,6 +260,3 @@ Key observations from t-SNE analysis:
 4. **Paradigm Shift:** Realizes a UDA paradigm shift from pixel-level accuracy to **global anatomical plausibility**
 5. **SOTA Performance:** Achieves meaningful improvements across all 4 cross-modality benchmark scenarios on cardiac and abdominal datasets
 
----
-
-> **References** can be found in the original paper's References section.
