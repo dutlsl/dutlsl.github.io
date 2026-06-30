@@ -1,6 +1,6 @@
 ---
 title: "[CVPR 2026] SHAPE: 의료 영상 분할을 위한 구조 인식 계층적 비지도 도메인 적응 논문 리뷰"
-date: 2026-06-30T18:00:00+09:00
+date: 2026-06-30T17:50:00+09:00
 draft: false
 math: true
 tags: ["Paper Review", "Domain Adaptation", "Medical Image Segmentation", "CVPR 2026"]
