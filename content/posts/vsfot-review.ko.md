@@ -1,6 +1,6 @@
 ---
 title: "[CVPR 2026] VSFOT: Vision-Language 모델과 최적 수송을 활용한 소스-프리 도메인 적응 논문 리뷰"
-date: 2026-06-30T10:00:00+09:00
+date: 2026-07-03T18:52:00+09:00
 draft: false
 math: true
 tags: ["Paper Review", "Domain Adaptation", "Optimal Transport", "Vision-Language Model", "CVPR 2026"]
