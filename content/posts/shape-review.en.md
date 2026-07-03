@@ -65,11 +65,9 @@ From a frozen **DINOv3 ViT** encoder, we extract a dense feature map $\mathbf{F}
 
 **Global Level: AdaIN Style Alignment**
 
-Compute the stylized map $\mathbf{F}_{s \to t}$ aligning textural properties between source $\mathbf{F}_s$ and target $\mathbf{F}_t$:
+Compute the stylized map $\mathbf{F}\_{s \to t}$ aligning textural properties between source $\mathbf{F}\_s$ and target $\mathbf{F}\_t$:
 
-$$
-\mathbf{F}_{s \to t} = \sigma(\mathbf{F}_t) \left( \frac{\mathbf{F}_s - \mu(\mathbf{F}_s)}{\sigma(\mathbf{F}_s) + \epsilon} \right) + \mu(\mathbf{F}_t) \tag{1}
-$$
+$$\mathbf{F}_{s \to t} = \sigma(\mathbf{F}_t) \left( \frac{\mathbf{F}_s - \mu(\mathbf{F}_s)}{\sigma(\mathbf{F}_s) + \epsilon} \right) + \mu(\mathbf{F}_t) \tag{1}$$
 
 where $\mu(\cdot)$ and $\sigma(\cdot)$ denote channel-wise mean and standard deviation.
 
@@ -77,13 +75,11 @@ where $\mu(\cdot)$ and $\sigma(\cdot)$ denote channel-wise mean and standard dev
 
 After upsampling feature maps, each token's **purity score** is computed to classify it as a semantic core (pure) or structural boundary (impure):
 
-$$
-\mathcal{P}(\mathbf{m}^i) = \frac{\max_{k \in \{0..K-1\}} \sum_{v \in \mathbf{m}^i} \mathbb{I}(v=k)}{|\mathbf{m}^i|} \tag{2}
-$$
+$$\mathcal{P}(\mathbf{m}^i) = \frac{\max_{k \in \{0..K-1\}} \sum_{v \in \mathbf{m}^i} \mathbb{I}(v=k)}{|\mathbf{m}^i|} \tag{2}$$
 
 A differentiated modulation strategy is then applied:
 
-- **Pure tokens (semantic cores):** Direct linear interpolation with same-class target tokens: $(1-\lambda)\mathbf{f}_s^i + \lambda\mathbf{f}_t^j$
+- **Pure tokens (semantic cores):** Direct linear interpolation with same-class target tokens: $(1-\lambda)\mathbf{f}\_s^i + \lambda\mathbf{f}\_t^j$
 - **Impure tokens (structural boundaries):** Normalization with interpolated statistics from source and target boundary tokens
 
 > [!IMPORTANT]
@@ -95,71 +91,55 @@ Each predicted segmentation map $\mathbf{M} \in \{0,...,K-1\}^{H \times W}$ is m
 
 **Vertex Reliability Score:**
 
-$$
-S_{\text{vertex}}(\mathcal{G}) = \frac{1}{|\mathcal{V}|} \sum_{p \in \mathcal{V}} w_p \tag{4}
-$$
+$$S_{\text{vertex}}(\mathcal{G}) = \frac{1}{|\mathcal{V}|} \sum_{p \in \mathcal{V}} w_p \tag{4}$$
 
-where the weight $w_p = (1 - \frac{H(\bar{\mathbf{M}}_p)}{\log K}) \cdot (1 - \frac{\text{JSD}(\{\mathbf{M}_p^n\})}{\log K})$ combines certainty (mean entropy) and consistency (JSD).
+where the weight $w\_p = (1 - \frac{H(\bar{\mathbf{M}}\_p)}{\log K}) \cdot (1 - \frac{\text{JSD}(\{\mathbf{M}\_p^n\})}{\log K})$ combines certainty (mean entropy) and consistency (JSD).
 
 **Intra-class Shape Score:**
 
-Using the **isoperimetric ratio** $\phi(e_k) = 4\pi \cdot \text{Area}(\mathbf{M}_k) / (\text{Perimeter}(\mathbf{M}_k))^2$ as the shape descriptor and Z-score-based softmax-weighted aggregation:
+Using the **isoperimetric ratio** $\phi(e\_k) = 4\pi \cdot \text{Area}(\mathbf{M}\_k) / (\text{Perimeter}(\mathbf{M}\_k))^2$ as the shape descriptor and Z-score-based softmax-weighted aggregation:
 
-$$
-S_{\text{intra}}(\mathcal{G}) = \sum_{k=1}^{K-1} S_{\phi,k} \cdot \frac{\exp(-S_{\phi,k}/\tau)}{\sum_{j=1}^{K-1} \exp(-S_{\phi,j}/\tau)} \tag{5}
-$$
+$$S_{\text{intra}}(\mathcal{G}) = \sum_{k=1}^{K-1} S_{\phi,k} \cdot \frac{\exp(-S_{\phi,k}/\tau)}{\sum_{j=1}^{K-1} \exp(-S_{\phi,j}/\tau)} \tag{5}$$
 
 **Inter-class Layout Score:**
 
-The layout hyperedge $e_l$ evaluates spatial arrangement plausibility via relative direction cosines $\psi_{ij}$ between class centroids:
+The layout hyperedge $e\_l$ evaluates spatial arrangement plausibility via relative direction cosines $\psi\_{ij}$ between class centroids:
 
-$$
-S_{\text{inter}}(\mathcal{G}) = \sum_{i,j=1}^{K-1} S_{\psi,ij} \cdot \frac{\exp(-S_{\psi,ij}/\tau)}{\sum_{u,v=1}^{K-1} \exp(-S_{\psi,uv}/\tau)} \tag{6}
-$$
+$$S_{\text{inter}}(\mathcal{G}) = \sum_{i,j=1}^{K-1} S_{\psi,ij} \cdot \frac{\exp(-S_{\psi,ij}/\tau)}{\sum_{u,v=1}^{K-1} \exp(-S_{\psi,uv}/\tau)} \tag{6}$$
 
 **Final Plausibility Score:**
 
-$$
-S_{\text{final}} = S_{\text{vertex}}(\mathcal{G}) \cdot (\alpha \, S_{\text{intra}}(\mathcal{G}) + (1-\alpha) \, S_{\text{inter}}(\mathcal{G})) \tag{7}
-$$
+$$S_{\text{final}} = S_{\text{vertex}}(\mathcal{G}) \cdot (\alpha \, S_{\text{intra}}(\mathcal{G}) + (1-\alpha) \, S_{\text{inter}}(\mathcal{G})) \tag{7}$$
 
-Samples are selected for self-training only if $S_{\text{final}}$ exceeds a dynamic threshold determined by the top-$\rho$ percentile within the current epoch.
+Samples are selected for self-training only if $S\_{\text{final}}$ exceeds a dynamic threshold determined by the top-$\rho$ percentile within the current epoch.
 
 ### 3.4. Structural Anomaly Pruning (SAP)
 
-Predictions passing HPE may still contain class-level artifacts (hallucinations). SAP quantifies the **Structural Instability Score** of each class via the coefficient of variation across $N_{\text{ens}}$ teacher predictions:
+Predictions passing HPE may still contain class-level artifacts (hallucinations). SAP quantifies the **Structural Instability Score** of each class via the coefficient of variation across $N\_{\text{ens}}$ teacher predictions:
 
-$$
-\Upsilon(k) = \frac{\text{std}(\mathbf{c}_k)}{\bar{c}_k + \epsilon} \tag{8}
-$$
+$$\Upsilon(k) = \frac{\text{std}(\mathbf{c}_k)}{\bar{c}_k + \epsilon} \tag{8}$$
 
-where $\mathbf{c}_k = \langle C(\mathbf{M}^1, k), \dots, C(\mathbf{M}^{N_{\text{ens}}}, k) \rangle$ is the vector of class $k$ pixel counts across ensemble predictions. Stable anatomical structures show low variance; model hallucinations show high volatility.
+where $\mathbf{c}\_k = \langle C(\mathbf{M}^1, k), \dots, C(\mathbf{M}^{N\_{\text{ens}}}, k) \rangle$ is the vector of class $k$ pixel counts across ensemble predictions. Stable anatomical structures show low variance; model hallucinations show high volatility.
 
-Classes with instability scores exceeding a batch-dynamic threshold $\theta_A$ (the $q$-th percentile of foreground class instability scores) are deemed anomalous and pruned:
+Classes with instability scores exceeding a batch-dynamic threshold $\theta\_A$ (the $q$-th percentile of foreground class instability scores) are deemed anomalous and pruned:
 
-$$
-\mathcal{K}_{\text{anom}} = \{ k \in \{1, \dots, K-1\} \mid \Upsilon(k) > \theta_A \} \tag{9}
-$$
+$$\mathcal{K}_{\text{anom}} = \{ k \in \{1, \dots, K-1\} \mid \Upsilon(k) > \theta_A \} \tag{9}$$
 
 ### 3.5. Overall Learning Objective
 
 The total objective is a weighted sum of supervised and unsupervised losses:
 
-- **Source domain supervised loss** over original and HFM-modulated features $\mathcal{F}_s = \{\mathbf{F}_s, \mathbf{F}_{s \to t}, \mathbf{F}_{s,\text{cross}}\}$:
+- **Source domain supervised loss** over original and HFM-modulated features $\mathcal{F}\_s = \{\mathbf{F}\_s, \mathbf{F}\_{s \to t}, \mathbf{F}\_{s,\text{cross}}\}$:
 
-$$
-\mathcal{L}_{\text{sup}} = \frac{1}{|\mathcal{F}_s|} \sum_{\mathbf{F}' \in \mathcal{F}_s} \mathcal{L}_{\text{seg}}(\mathcal{D}(\mathbf{F}'), \mathbf{L}_s) \tag{11}
-$$
+$$\mathcal{L}_{\text{sup}} = \frac{1}{|\mathcal{F}_s|} \sum_{\mathbf{F}' \in \mathcal{F}_s} \mathcal{L}_{\text{seg}}(\mathcal{D}(\mathbf{F}'), \mathbf{L}_s) \tag{11}$$
 
 - **Target domain unsupervised loss** guided by high-fidelity pseudo-labels $\mathbf{M}'$ from HPE + SAP validation:
 
-$$
-\mathcal{L}_{\text{unsup}} = \frac{1}{|\mathcal{B}_{\text{sel}}|} \sum_{i \in \mathcal{B}_{\text{sel}}} \mathcal{L}_{\text{seg}}(\mathcal{D}(\mathbf{F}_t^i), (\mathbf{M}')^i, w_p^i) \tag{12}
-$$
+$$\mathcal{L}_{\text{unsup}} = \frac{1}{|\mathcal{B}_{\text{sel}}|} \sum_{i \in \mathcal{B}_{\text{sel}}} \mathcal{L}_{\text{seg}}(\mathcal{D}(\mathbf{F}_t^i), (\mathbf{M}')^i, w_p^i) \tag{12}$$
 
-- **Total loss:** $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{sup}} + \gamma_{\text{unsup}} \mathcal{L}_{\text{unsup}}$
+- **Total loss:** $\mathcal{L}\_{\text{total}} = \mathcal{L}\_{\text{sup}} + \gamma\_{\text{unsup}} \mathcal{L}\_{\text{unsup}}$
 
-The teacher model is an EMA (Exponential Moving Average) of the student decoder, and $\mathcal{L}_{\text{seg}}$ is a combination of Dice + Focal loss.
+The teacher model is an EMA (Exponential Moving Average) of the student decoder, and $\mathcal{L}\_{\text{seg}}$ is a combination of Dice + Focal loss.
 
 ---
 
@@ -246,8 +226,8 @@ Key observations from t-SNE analysis:
 
 ![Hyperparameter sensitivity analysis](/images/shape/hyperparameter_sensitivity.jpeg)
 
-- The plausibility fusion weight $\alpha$ and anomaly threshold $\theta_A$ exhibit clear optimal regions
-- Performance consistently improves with stricter purity threshold $\tau_p$ and larger batch sizes
+- The plausibility fusion weight $\alpha$ and anomaly threshold $\theta\_A$ exhibit clear optimal regions
+- Performance consistently improves with stricter purity threshold $\tau\_p$ and larger batch sizes
 - HPE benefits from larger batches for stable statistics, but SAP's batch-dynamic threshold ensures effectiveness at smaller sizes
 
 ---
