@@ -1,6 +1,6 @@
 ---
 title: "LaTeX 렌더링 무결성 테스트 (ko)"
-date: 2026-07-15T20:40:00+09:00
+date: 2026-07-15T20:30:00+09:00
 draft: false
 math: true
 tags: ["Test", "LaTeX"]
