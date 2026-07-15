@@ -1,33 +1,34 @@
 ---
-title: "LaTeX Rendering Integrity Test Post"
-date: 2026-07-15T20:00:00+09:00
+title: "LaTeX Rendering Integrity Test (en)"
+date: 2026-07-15T20:40:00+09:00
 draft: false
 math: true
 tags: ["Test", "LaTeX"]
 categories: ["Test"]
-summary: "An auto-generated test post to verify LaTeX formula rendering integrity in accordance with the new AGENTS.md guidelines."
+summary: "Testing if LaTeX math rendering works perfectly in the Hugo environment."
+cover:
+  image: ""
+  alt: ""
 ---
-
-This post was created to verify that mathematical formulas render perfectly without breaking in the blog (Hugo/KaTeX) environment.
 
 ## 1. Inline Math
 
-These are inline formulas naturally blended into the text. Thanks to Hugo's `passthrough` extension, underscores (`_`) should not be mistakenly parsed as italics but should correctly render as subscripts.
+Here are inline math equations. (Converted from Artifact Unicode/HTML to standard LaTeX)
 
-- Feature representation: $z_i^m$
-- Predictive probability distribution: $q_i^m$
-- Alignment loss: $\mathcal{L}_{\text{Align}}$
-- Target sample: $x_i^t$
-- Prototype: $w_j$
+Feature representation is denoted as $z_i^m$, and predictive probability distribution is denoted as $q_i^m$.
+The alignment loss in the loss function is $\mathcal{L}_{\text{Align}}$.
+The target sample is $x_i^t$ and the prototype is $w_j$.
 
 ## 2. Block Math
 
-These are block formulas displayed centrally in an independent paragraph.
+The joint distribution optimal transport cost is defined as:
 
 $$ C_{i,j}^m = \alpha \cdot d(z_i^m, w_j) + L(q_i^m, y_j) $$
 
-$$ \Gamma^* = \arg\min_{\Gamma} \int C^v d\Gamma $$
+The optimal transport plan $\Gamma^*$ is obtained as:
 
-## Conclusion
+$$ \Gamma^* = \arg\min_{\Gamma} \int C_v d\Gamma $$
 
-If the formulas above appear as clean mathematical symbols without backslashes (`\`), unnecessary asterisks (`*`), or HTML tags, it means the current authoring principle (using pure LaTeX syntax and prohibiting `\_` escaping) is working perfectly.
+## 3. Conclusion
+
+The formulas above are written strictly using pure LaTeX syntax. This test confirms that this method ensures flawless display within the Hugo build and KaTeX rendering pipeline.
