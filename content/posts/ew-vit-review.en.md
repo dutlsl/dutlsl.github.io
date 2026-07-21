@@ -11,18 +11,18 @@ cover:
   alt: "EW-ViT Architecture"
 ---
 
-> **Paper Information**
-> - **Title:** Frequency-Domain Refinement of Vision Transformers for Robust Medical Image Segmentation under Degradation
-> - **Authors:** Sanaz Karimijafarbigloo, Sina Ghorbani Kolahi, Reza Azad, Ulas Bagci, Dorit Merhof
-> - **Affiliations:** University of Regensburg, Tarbiat Modares University, Northwestern University, Fraunhofer MEVIS
-> - **Venue:** WACV 2025
-> - **Code:** [GitHub](https://github.com/)
+> <b>Paper Information</b>
+> - <b>Title:</b> Frequency-Domain Refinement of Vision Transformers for Robust Medical Image Segmentation under Degradation
+> - <b>Authors:</b> Sanaz Karimijafarbigloo, Sina Ghorbani Kolahi, Reza Azad, Ulas Bagci, Dorit Merhof
+> - <b>Affiliations:</b> University of Regensburg, Tarbiat Modares University, Northwestern University, Fraunhofer MEVIS
+> - <b>Venue:</b> WACV 2025
+> - <b>Code:</b> [GitHub](https://github.com/)
 
 ---
 
 ## 1. TL;DR
 
-A medical image segmentation framework that integrates **wavelet decomposition** into the self-attention block of Vision Transformers to adaptively refine low- and high-frequency components, combines a **Prompt-Guided High-Frequency Refiner (PGHFR)** with **contrastive learning**, and achieves state-of-the-art performance on Synapse, ISIC2018, and ACDC datasets under various degradation conditions including noise and blur.
+A medical image segmentation framework that integrates <b>wavelet decomposition</b> into the self-attention block of Vision Transformers to adaptively refine low- and high-frequency components, combines a <b>Prompt-Guided High-Frequency Refiner (PGHFR)</b> with <b>contrastive learning</b>, and achieves state-of-the-art performance on Synapse, ISIC2018, and ACDC datasets under various degradation conditions including noise and blur.
 
 ---
 
@@ -30,23 +30,23 @@ A medical image segmentation framework that integrates **wavelet decomposition**
 
 ### 2.1. Problem Definition
 
-Medical Image Segmentation is a core process for precise diagnosis, treatment planning, and disease monitoring. CNN-based methods (particularly U-Net) have achieved remarkable results but face **limitations in modeling long-range dependencies**. Vision Transformers (ViTs) capture global contextual information through self-attention, but they have a structural weakness of **insufficient local feature representation**.
+Medical Image Segmentation is a core process for precise diagnosis, treatment planning, and disease monitoring. CNN-based methods (particularly U-Net) have achieved remarkable results but face <b>limitations in modeling long-range dependencies</b>. Vision Transformers (ViTs) capture global contextual information through self-attention, but they have a structural weakness of <b>insufficient local feature representation</b>.
 
 ### 2.2. Limitations of Existing Methods
 
 To complement ViTs' lack of local features, CNN-Transformer hybrid architectures (TransUNet, HiFormer, CoTr, etc.) have been proposed, but they have the following limitations:
 
-- **High parameter count and computational cost**: TransUNet has 96M parameters and 88.91G FLOPs, making it inefficient.
-- **CNN backbone dependency**: HiFormer, CoTr, and others still heavily depend on CNN backbones, with insufficient integration of multi-scale information.
-- **Failure to capture high-frequency components**: Research shows that self-attention acts as a **low-pass filter**, failing to sufficiently capture high-frequency components (boundaries, fine textures, etc.).
-- **Neglect of degradation conditions**: Existing frequency-based methods (Laplacian-Former, WaveFormer) preserve high-frequency information, but cannot handle situations where **noise, blur, and haze** — common in medical images — corrupt high-frequency components.
+- <b>High parameter count and computational cost</b>: TransUNet has 96M parameters and 88.91G FLOPs, making it inefficient.
+- <b>CNN backbone dependency</b>: HiFormer, CoTr, and others still heavily depend on CNN backbones, with insufficient integration of multi-scale information.
+- <b>Failure to capture high-frequency components</b>: Research shows that self-attention acts as a <b>low-pass filter</b>, failing to sufficiently capture high-frequency components (boundaries, fine textures, etc.).
+- <b>Neglect of degradation conditions</b>: Existing frequency-based methods (Laplacian-Former, WaveFormer) preserve high-frequency information, but cannot handle situations where <b>noise, blur, and haze</b> — common in medical images — corrupt high-frequency components.
 
 ### 2.3. Key Contributions
 
-1. **Wavelet-based frequency domain modeling**: Performs wavelet decomposition within self-attention to halve spatial dimensions while simultaneously capturing multi-scale representations, reducing computational complexity.
-2. **PGHFR module**: Uses learnable prompts to implicitly encode degradation-related information and dynamically refine high-frequency components to remove noise effects.
-3. **Contrastive learning for feature consistency**: Maintains representational consistency through contrastive learning between original and degradation-augmented features, providing indirect guidance to the PGHFR module.
-4. **Degradation robustness verification**: Demonstrates model robustness through comprehensive ablation studies across various degradation types including Gaussian noise, blur, and color jittering.
+1. <b>Wavelet-based frequency domain modeling</b>: Performs wavelet decomposition within self-attention to halve spatial dimensions while simultaneously capturing multi-scale representations, reducing computational complexity.
+2. <b>PGHFR module</b>: Uses learnable prompts to implicitly encode degradation-related information and dynamically refine high-frequency components to remove noise effects.
+3. <b>Contrastive learning for feature consistency</b>: Maintains representational consistency through contrastive learning between original and degradation-augmented features, providing indirect guidance to the PGHFR module.
+4. <b>Degradation robustness verification</b>: Demonstrates model robustness through comprehensive ablation studies across various degradation types including Gaussian noise, blur, and color jittering.
 
 ---
 
@@ -58,11 +58,11 @@ To complement ViTs' lack of local features, CNN-Transformer hybrid architectures
 
 *Figure 1: Overall structure of EW-ViT. A U-shaped encoder-decoder configuration where the encoder repeats EW-ViT blocks with patch embedding, and the decoder uses EW-ViT blocks with integrated PGHFR and patch expansion. The Contrastive Head handles feature consistency learning.*
 
-EW-ViT is composed of a U-shaped architecture with an **encoder**, **decoder**, and two heads (**Contrastive Head** and **Segmentation Head**).
+EW-ViT is composed of a U-shaped architecture with an <b>encoder</b>, <b>decoder</b>, and two heads (<b>Contrastive Head</b> and <b>Segmentation Head</b>).
 
-- **Encoder**: Consists of 3 layers, each with an EW-ViT block followed by patch embedding (downsampling + dimension expansion).
-- **Decoder**: Consists of 3 layers with EW-ViT blocks (including PGHFR) followed by patch expansion (upsampling).
-- **Contrastive Head**: Performs contrastive learning using the output from the encoder bottleneck layer.
+- <b>Encoder</b>: Consists of 3 layers, each with an EW-ViT block followed by patch embedding (downsampling + dimension expansion).
+- <b>Decoder</b>: Consists of 3 layers with EW-ViT blocks (including PGHFR) followed by patch expansion (upsampling).
+- <b>Contrastive Head</b>: Performs contrastive learning using the output from the encoder bottleneck layer.
 
 ### 3.2. Enhanced Wave ViT (EW-ViT) Block
 
@@ -72,49 +72,49 @@ EW-ViT is composed of a U-shaped architecture with an **encoder**, **decoder**, 
 
 The operation of the EW-ViT block proceeds as follows:
 
-**① Channel Reduction and Wavelet Decomposition**
+<b>① Channel Reduction and Wavelet Decomposition</b>
 
-A linear transformation is applied to the 2D feature map $X \in \mathbb{R}^{H \times W \times D}$ to reduce channels by 1/4 ($\widetilde{X} = XW_d$), followed by **Discrete Wavelet Transform (DWT)**. Using the classical Haar wavelet, low-pass and high-pass filters are applied sequentially along rows and columns, generating 4 subbands:
+A linear transformation is applied to the 2D feature map $X \in \mathbb{R}^{H \times W \times D}$ to reduce channels by 1/4 ($\widetilde{X} = XW_d$), followed by <b>Discrete Wavelet Transform (DWT)</b>. Using the classical Haar wavelet, low-pass and high-pass filters are applied sequentially along rows and columns, generating 4 subbands:
 
 - $X_{LL}$: Low-frequency component — captures the basic structure of objects at a coarse level
 - $X_{LH}, X_{HL}, X_{HH}$: High-frequency components — preserves fine textures and boundary information
 
-Each subband has half the spatial resolution of the original ($H/2 \times W/2$), naturally **reducing the computational cost** of subsequent self-attention.
+Each subband has half the spatial resolution of the original ($H/2 \times W/2$), naturally <b>reducing the computational cost</b> of subsequent self-attention.
 
-**② High-Frequency Refinement via PGHFR**
+<b>② High-Frequency Refinement via PGHFR</b>
 
 The three high-frequency subbands are concatenated channel-wise as $X_H = [X_{LH}, X_{HL}, X_{HH}]$, and the PGHFR module is applied to obtain degradation-free $X'_H$ (see Section 3.3 for details).
 
-**③ Wavelet-Attention Computation**
+<b>③ Wavelet-Attention Computation</b>
 
 The refined high-frequency component $X'_H$ and low-frequency component $X_L$ are combined, then a $3 \times 3$ convolution enforces locality to produce the downsampled feature map $X^d$. This $X^d$ is transformed into keys ($K$) and values ($V$), and multi-head self-attention is performed with queries ($Q$) extracted from the original feature map:
 
 $$head_j = \text{Softmax}\left(\frac{Q_j K_j^T}{\sqrt{D_h}}\right) V_j$$
 
-**④ IDWT Path and Final Output Synthesis**
+<b>④ IDWT Path and Final Output Synthesis</b>
 
-Separately, **Inverse Discrete Wavelet Transform (IDWT)** is applied to $[X_L, X'_H]$ to restore refined features at the original resolution. The output from this IDWT path is combined with the multi-head attention output to compose the final EW-ViT block output:
+Separately, <b>Inverse Discrete Wavelet Transform (IDWT)</b> is applied to $[X_L, X'_H]$ to restore refined features at the original resolution. The output from this IDWT path is combined with the multi-head attention output to compose the final EW-ViT block output:
 
 $$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_0, \ldots, \text{head}_{N_h}) \widetilde{W}^O$$
 
 ### 3.3. Prompt-Guided High-Frequency Refiner (PGHFR)
 
-PGHFR is the core module for removing degradation effects (noise, blur) from high-frequency components, consisting of two sub-modules: **Component Prompt Generation (CPG)** and **Implicit Prompt Interaction (IPI)**.
+PGHFR is the core module for removing degradation effects (noise, blur) from high-frequency components, consisting of two sub-modules: <b>Component Prompt Generation (CPG)</b> and <b>Implicit Prompt Interaction (IPI)</b>.
 
 $$X'_H = \text{IPI}(\text{CPG}(P_c, X_H), X_H)$$
 
-**Component Prompt Generation (CPG)**
+<b>Component Prompt Generation (CPG)</b>
 
 Learnable prompt components $P_c \in \mathbb{R}^{N \times \frac{H}{2} \times \frac{W}{2} \times D'}$ are dynamically combined according to the context of input high-frequency features $X_H$.
 
-1. **Global Average Pooling (GAP)** and **Global Max Pooling (GMP)** are applied to $X_H$ to compress spatial information.
-2. The two pooling results are summed and passed through **Point-Wise Convolution (PWC)** + Softmax to generate prompt weights $w \in \mathbb{R}^{D'}$.
+1. <b>Global Average Pooling (GAP)</b> and <b>Global Max Pooling (GMP)</b> are applied to $X_H$ to compress spatial information.
+2. The two pooling results are summed and passed through <b>Point-Wise Convolution (PWC)</b> + Softmax to generate prompt weights $w \in \mathbb{R}^{D'}$.
 3. Prompt components are weighted-summed, then refined with a $3 \times 3$ convolution to produce the final prompt $P$.
 
 $$w_i = \text{Softmax}(\text{PWC}(\text{GAP}(X_H) + \text{GMP}(X_H)))$$
 $$P = \text{Conv}_{3 \times 3}\left(\sum_{c=1}^{D'} w_i P_c\right)$$
 
-**Implicit Prompt Interaction (IPI)**
+<b>Implicit Prompt Interaction (IPI)</b>
 
 The generated prompt $P$ and high-frequency input $X_H$ are concatenated channel-wise, then interacted through an attention block. In this process, the prompt conveys degradation-related information to selectively suppress noise in high-frequency components:
 
@@ -122,7 +122,7 @@ $$X'_H = \text{Conv}_{3 \times 3}(\text{Attention}(X_H, P))$$
 
 ### 3.4. Contrastive Learning for Feature Consistency
 
-At the encoder bottleneck layer, **random degradation noise** $G(X_H)$ is injected into high-frequency components, followed by IDWT reconstruction to generate augmented features $X^{aug}$. Pixels from identical spatial locations in both original and augmented features are sampled as contrastive learning candidates.
+At the encoder bottleneck layer, <b>random degradation noise</b> $G(X_H)$ is injected into high-frequency components, followed by IDWT reconstruction to generate augmented features $X^{aug}$. Pixels from identical spatial locations in both original and augmented features are sampled as contrastive learning candidates.
 
 The class prototype for class $k$ is computed as the mean of pixel features belonging to that class:
 
@@ -146,13 +146,13 @@ $$Loss = \lambda_s \mathcal{L}_{Seg} + \lambda_c \mathcal{L}_c$$
 
 | Dataset | Type | Scale | Segmentation Targets |
 |---------|------|-------|---------------------|
-| **Synapse** | Abdominal CT | 30 cases, 3,779 slices | 8 organs (spleen, kidneys, etc.) |
-| **ISIC2018** | Dermoscopy | — | Skin lesions |
-| **ACDC** | Cardiac MRI | 100 scans (train 70/val 10/test 20) | RV, Myo, LV |
+| <b>Synapse</b> | Abdominal CT | 30 cases, 3,779 slices | 8 organs (spleen, kidneys, etc.) |
+| <b>ISIC2018</b> | Dermoscopy | — | Skin lesions |
+| <b>ACDC</b> | Cardiac MRI | 100 scans (train 70/val 10/test 20) | RV, Myo, LV |
 
-- **Optimizer**: Synapse — SGD (lr=0.05, momentum=0.9), ISIC/ACDC — Adam (lr=0.0001)
-- **Loss function**: Synapse/ISIC — BDOU + contrastive loss, ACDC — CE + DICE + contrastive loss
-- **GPU**: Single RTX 3090
+- <b>Optimizer</b>: Synapse — SGD (lr=0.05, momentum=0.9), ISIC/ACDC — Adam (lr=0.0001)
+- <b>Loss function</b>: Synapse/ISIC — BDOU + contrastive loss, ACDC — CE + DICE + contrastive loss
+- <b>GPU</b>: Single RTX 3090
 
 ### 4.2. Synapse Dataset Results
 
@@ -165,9 +165,9 @@ $$Loss = \lambda_s \mathcal{L}_{Seg} + \lambda_c \mathcal{L}_c$$
 | Laplacian-Former | 27.54 | 6.68 | 81.90 | 18.86 |
 | WaveFormer | 47.01 | 7.75 | 81.92 | 18.41 |
 | VM-UNet | 44.27 | 6.52 | 81.08 | 19.21 |
-| **EW-ViT** | **33.35** | **6.03** | **83.51** | **16.68** |
+| <b>EW-ViT</b> | <b>33.35</b> | <b>6.03</b> | <b>83.51</b> | <b>16.68</b> |
 
-EW-ViT achieves **~1/3 the parameters and ~1/15 the FLOPs** of TransUNet while improving DSC by **6.02%p**. Compared to existing frequency-based methods Laplacian-Former (81.90%) and WaveFormer (81.92%), it shows gains of **1.61%p and 1.59%p**, respectively.
+EW-ViT achieves <b>~1/3 the parameters and ~1/15 the FLOPs</b> of TransUNet while improving DSC by <b>6.02%p</b>. Compared to existing frequency-based methods Laplacian-Former (81.90%) and WaveFormer (81.92%), it shows gains of <b>1.61%p and 1.59%p</b>, respectively.
 
 ![Visual Comparison on Synapse Dataset](/images/ew_vit/synapse_visual.jpeg)
 
@@ -180,7 +180,7 @@ EW-ViT achieves **~1/3 the parameters and ~1/15 the FLOPs** of TransUNet while i
 | Swin-UNet | 0.8946 | 0.9056 | 0.9798 | 0.9645 |
 | VM-UNet | 0.8971 | 0.9112 | 0.9613 | 0.9491 |
 | Laplacian-Former | 0.9128 | 0.9290 | 0.9626 | 0.9640 |
-| **EW-ViT** | **0.9164** | **0.9297** | 0.9571 | **0.9643** |
+| <b>EW-ViT</b> | <b>0.9164</b> | <b>0.9297</b> | 0.9571 | <b>0.9643</b> |
 
 EW-ViT achieved the highest overall performance with DSC of 0.9164 and Sensitivity (SE) of 0.9297. The slightly lower Specificity (SP) of 0.9571 suggests that the high-frequency-based feature enhancement may cause slight over-segmentation by aggressively detecting lesion boundaries.
 
@@ -191,7 +191,7 @@ EW-ViT achieved the highest overall performance with DSC of 0.9164 and Sensitivi
 | TransUNet | 89.71 | 88.86 | 84.53 | 95.73 |
 | Swin-UNet | 90.00 | 88.55 | 85.62 | 95.83 |
 | MT-UNet | 90.43 | 86.64 | 89.04 | 95.62 |
-| **EW-ViT** | **90.29** | 88.05 | **87.56** | 95.25 |
+| <b>EW-ViT</b> | <b>90.29</b> | 88.05 | <b>87.56</b> | 95.25 |
 
 On ACDC, EW-ViT achieved an Avg DICE of 90.29%, surpassing TransUNet and Swin-UNet by 0.58%p and 0.29%p, respectively. Notably, it recorded 87.56% for myocardium (Myo) segmentation, outperforming Swin-UNet (85.62%) by 1.94%p. While MT-UNet is 0.14%p higher in overall average, EW-ViT significantly outperforms it in robustness under degradation conditions.
 
@@ -202,9 +202,9 @@ On ACDC, EW-ViT achieved an Avg DICE of 90.29%, surpassing TransUNet and Swin-UN
 | | DSC / $\Delta$↓ | DSC / $\Delta$↓ | DSC / $\Delta$↓ |
 | Swin-UNet | 88.20 / 1.80 | 85.49 / 4.51 | 82.54 / 7.46 |
 | MT-UNet | 88.12 / 2.31 | 81.53 / 8.90 | 75.53 / 14.90 |
-| **EW-ViT** | **89.52 / 0.77** | **86.68 / 3.61** | **83.52 / 6.77** |
+| <b>EW-ViT</b> | <b>89.52 / 0.77</b> | <b>86.68 / 3.61</b> | <b>83.52 / 6.77</b> |
 
-On the ACDC dataset, EW-ViT showed the **smallest performance degradation ($\Delta$)** across all degradation types and levels. Notably, under color jittering at $\gamma$=1.75, MT-UNet dropped by 14.90%p while EW-ViT only dropped by 6.77%p.
+On the ACDC dataset, EW-ViT showed the <b>smallest performance degradation ($\Delta$)</b> across all degradation types and levels. Notably, under color jittering at $\gamma$=1.75, MT-UNet dropped by 14.90%p while EW-ViT only dropped by 6.77%p.
 
 On the Synapse dataset under high noise ($\sigma$=0.25), EW-ViT maintained DSC of 79.70% ($\Delta$=3.81), while TransUNet dropped to 67.87% ($\Delta$=9.62) and WaveFormer to 74.41% ($\Delta$=7.51).
 
@@ -216,18 +216,18 @@ On the Synapse dataset under high noise ($\sigma$=0.25), EW-ViT maintained DSC o
 
 ## 5. Summary of Key Contributions
 
-**① Wavelet Decomposition-Based Frequency Domain Self-Attention Reformulation**
+<b>① Wavelet Decomposition-Based Frequency Domain Self-Attention Reformulation</b>
 
 To address the problem of ViT's self-attention acting as a low-pass filter that loses high-frequency components, DWT is integrated within self-attention. This (1) explicitly separates low-frequency (structure) and high-frequency (boundary/texture) components to provide appropriate processing paths for each, and (2) naturally reduces computational complexity since subband spatial resolution is half that of the original, shrinking Key·Value dimensions in self-attention.
 
-**② PGHFR: Prompt-Based Adaptive High-Frequency Refinement**
+<b>② PGHFR: Prompt-Based Adaptive High-Frequency Refinement</b>
 
 The problem of noise, blur, and haze corrupting high-frequency components — common in medical images — is addressed through learnable prompts. The CPG module dynamically generates prompts reflecting input feature context, and the IPI module interacts these prompts with high-frequency features via attention to selectively remove degradation. This design enables universal operation without prior knowledge of degradation type or intensity.
 
-**③ Degradation-Invariant Representation Learning via Contrastive Learning**
+<b>③ Degradation-Invariant Representation Learning via Contrastive Learning</b>
 
 Contrastive learning between augmented features (with random degradation injected into high-frequency components at the encoder bottleneck) and original features encourages the model to learn consistent representations regardless of degradation. This strategy provides indirect learning signals to the PGHFR module while also strengthening inter-class discriminability through the class prototype separation term.
 
-**④ Comprehensive Degradation Robustness Verification**
+<b>④ Comprehensive Degradation Robustness Verification</b>
 
 Extensive ablation studies were conducted across 9 degradation conditions: Gaussian noise (3 levels), Gaussian blur (3 levels), and color jittering (3 levels). EW-ViT showed the least performance degradation compared to existing methods across all conditions, maintaining 5.29%p higher DSC than WaveFormer even under extreme degradation ($\sigma$=0.25 noise), demonstrating practical applicability in real clinical environments.

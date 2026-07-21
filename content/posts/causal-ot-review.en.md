@@ -11,18 +11,18 @@ cover:
   alt: "Causal-OT Architecture"
 ---
 
-> **Paper Info**
-> - **Title:** Towards Uncertainty-aware Unsupervised Domain Adaptation for Videos and Time-Series with Causal Optimal Transport
-> - **Authors:** Khushboo Mishra, Varun Trivedi, Tanima Dutta
-> - **Affiliation:** Indian Institute of Technology (BHU) Varanasi, India
-> - **Conference:** CVPR 2026
-> - **Code:** [github.com/mynameanonymous/CausalOT](https://github.com/mynameanonymous/CausalOT)
+> <b>Paper Info</b>
+> - <b>Title:</b> Towards Uncertainty-aware Unsupervised Domain Adaptation for Videos and Time-Series with Causal Optimal Transport
+> - <b>Authors:</b> Khushboo Mishra, Varun Trivedi, Tanima Dutta
+> - <b>Affiliation:</b> Indian Institute of Technology (BHU) Varanasi, India
+> - <b>Conference:</b> CVPR 2026
+> - <b>Code:</b> [github.com/mynameanonymous/CausalOT](https://github.com/mynameanonymous/CausalOT)
 
 ---
 
 ## 1. One-line Summary
 
-In Unsupervised Domain Adaptation (UDA) for time-series and video data, the authors propose a unified framework, **Causal-OT**, which integrates **Granger causal graph regularization** into **Optimal Transport (OT)** alignment and combines it with **entropy-based uncertainty-aware pseudo-labeling**, achieving an average improvement of **4.5% in accuracy and 3.8% in F1** across 6 time-series benchmarks, and **2.5% in accuracy** across 4 video benchmarks.
+In Unsupervised Domain Adaptation (UDA) for time-series and video data, the authors propose a unified framework, <b>Causal-OT</b>, which integrates <b>Granger causal graph regularization</b> into <b>Optimal Transport (OT)</b> alignment and combines it with <b>entropy-based uncertainty-aware pseudo-labeling</b>, achieving an average improvement of <b>4.5% in accuracy and 3.8% in F1</b> across 6 time-series benchmarks, and <b>2.5% in accuracy</b> across 4 video benchmarks.
 
 ---
 
@@ -30,20 +30,20 @@ In Unsupervised Domain Adaptation (UDA) for time-series and video data, the auth
 
 ### 2.1. Problem Definition
 
-Time-series data (accelerometer, gyroscope, EMG, etc.) exhibit significant cross-domain variations depending on the user, device, and environment. When a model trained on a labeled source domain is applied to an unlabeled target domain, it faces the dual challenge of **statistical distribution discrepancies** and **temporal dependency shifts**.
+Time-series data (accelerometer, gyroscope, EMG, etc.) exhibit significant cross-domain variations depending on the user, device, and environment. When a model trained on a labeled source domain is applied to an unlabeled target domain, it faces the dual challenge of <b>statistical distribution discrepancies</b> and <b>temporal dependency shifts</b>.
 
 ### 2.2. Limitations of Existing Methods
 
-Existing UDA approaches fail to address the following three key dimensions **simultaneously**:
+Existing UDA approaches fail to address the following three key dimensions <b>simultaneously</b>:
 
 | Model | Distribution Mismatch | Causality Preservation | Uncertainty Handling |
 |------|:---:|:---:|:---:|
 | TransPL [15] | ✓ | ✗ | ✗ |
 | CauDiTS [36] | ✗ | ✓ | ✗ |
 | RAINCOAT [13] | ✓ | ✗ | ✗ |
-| **Causal-OT (Ours)** | **✓** | **✓ (Granger)** | **✓ (entropy-aware)** |
+| <b>Causal-OT (Ours)</b> | <b>✓</b> | <b>✓ (Granger)</b> | <b>✓ (entropy-aware)</b> |
 
-> **Reconstruction of Table 1.** Existing methods only handle portions of distribution alignment, causal structure preservation, and prediction uncertainty. Causal-OT integrates all three.
+> <b>Reconstruction of Table 1.</b> Existing methods only handle portions of distribution alignment, causal structure preservation, and prediction uncertainty. Causal-OT integrates all three.
 
 In particular, TransPL relies on a wide range of pseudo-labels, including those with high-entropy predictions, generating noisy supervisory signals. The figure below demonstrates that the prediction uncertainty of the target domain is significantly higher than that of the source:
 
@@ -59,28 +59,28 @@ In particular, TransPL relies on a wide range of pseudo-labels, including those 
 
 The training pipeline of Causal-OT consists of the following 5 steps:
 
-1. **Causal Graph Construction:** Extract Granger causal graphs $G_s$, $G_t$ from raw time-series of the source and target domains. In the figure, black arrows represent causal relationships between variables, while red arrows indicate non-causal relationships.
+1. <b>Causal Graph Construction:</b> Extract Granger causal graphs $G_s$, $G_t$ from raw time-series of the source and target domains. In the figure, black arrows represent causal relationships between variables, while red arrows indicate non-causal relationships.
 
-2. **Feature Extraction:** A shared feature extractor $f_\theta$ maps the source and target data to the latent feature spaces $Z_s$, $Z_t$.
+2. <b>Feature Extraction:</b> A shared feature extractor $f_\theta$ maps the source and target data to the latent feature spaces $Z_s$, $Z_t$.
 
-3. **Causal Alignment:** Calculate the Optimal Transport (OT) loss $\mathcal{L}_{\text{OT}}$ based on a cost matrix $C$ that combines feature distance and causal graph distance $D_G$.
+3. <b>Causal Alignment:</b> Calculate the Optimal Transport (OT) loss $\mathcal{L}_{\text{OT}}$ based on a cost matrix $C$ that combines feature distance and causal graph distance $D_G$.
 
-4. **Classification and Pseudo-Labeling:** The classifier $h_\phi$ is trained on the source data ($\mathcal{L}_{\text{src}}$), and generates high-confidence pseudo-labels on the target domain ($\mathcal{L}_{\text{PL}}$).
+4. <b>Classification and Pseudo-Labeling:</b> The classifier $h_\phi$ is trained on the source data ($\mathcal{L}_{\text{src}}$), and generates high-confidence pseudo-labels on the target domain ($\mathcal{L}_{\text{PL}}$).
 
-5. **Optimization:** Update model parameters $\theta$, $\phi$ using the weighted sum of the three losses.
+5. <b>Optimization:</b> Update model parameters $\theta$, $\phi$ using the weighted sum of the three losses.
 
 ### 3.2. Granger Causal Graph Extraction
 
 Directional causal relationships between variables are modeled from multivariate time-series $X \in \mathbb{R}^{N \times T \times D}$. Specifically:
 
-- **Stationarity Test:** Check signal stationarity with Augmented Dickey-Fuller test.
-- **VAR Order Selection:** Determine optimal lag order $p$ using Bayesian Information Criterion (BIC).
-- **Significance Filtering:** Retain only edges with p-value < 0.05.
-- **Row Normalization:** Normalize the adjacency matrix $W$ such that row sums equal 1.
-- **Spectral Embedding:** Derive a k-dimensional embedding $\Phi(G) \in \mathbb{R}^{d \times k}$ from the Laplacian $L = D - W$.
+- <b>Stationarity Test:</b> Check signal stationarity with Augmented Dickey-Fuller test.
+- <b>VAR Order Selection:</b> Determine optimal lag order $p$ using Bayesian Information Criterion (BIC).
+- <b>Significance Filtering:</b> Retain only edges with p-value < 0.05.
+- <b>Row Normalization:</b> Normalize the adjacency matrix $W$ such that row sums equal 1.
+- <b>Spectral Embedding:</b> Derive a k-dimensional embedding $\Phi(G) \in \mathbb{R}^{d \times k}$ from the Laplacian $L = D - W$.
 
 > [!IMPORTANT]
-> **Hybrid Graph Update Strategy:** The initial causal graph is extracted from raw data $X$, but is periodically re-estimated and blended from the latent features $Z$ during training.
+> <b>Hybrid Graph Update Strategy:</b> The initial causal graph is extracted from raw data $X$, but is periodically re-estimated and blended from the latent features $Z$ during training.
 >
 > $$
 > A^{(t)} = \alpha A_X + (1-\alpha) A_Z^{(t)}, \quad \alpha \in [0.6, 0.9]
@@ -102,17 +102,17 @@ $$
 \gamma^{\ast} = \arg\min_{\gamma \in \Pi(\mu_s, \mu_t)} \langle \gamma, C \rangle + \varepsilon H(\gamma)
 $$
 
-The core of this design is to **embed causal graph constraints directly into the cost matrix**, ensuring that the alignment is not only geometrically meaningful but also structurally consistent with temporal dependencies.
+The core of this design is to <b>embed causal graph constraints directly into the cost matrix</b>, ensuring that the alignment is not only geometrically meaningful but also structurally consistent with temporal dependencies.
 
 ### 3.4. Uncertainty-aware Pseudo-Labeling
 
-Soft class predictions from the classifier $h_\phi$ are obtained from the encoded target features $Z_t^j$, and uncertainty is estimated using the **entropy** of the predicted distribution:
+Soft class predictions from the classifier $h_\phi$ are obtained from the encoded target features $Z_t^j$, and uncertainty is estimated using the <b>entropy</b> of the predicted distribution:
 
 $$
 U_t^j = -\sum_{k=1}^K \hat{y}_{t,j}^{(k)} \log \hat{y}_{t,j}^{(k)}
 $$
 
-Only **low-entropy (high-confidence)** samples below an entropy threshold $\rho$ are used as pseudo-labels to prevent noise propagation.
+Only <b>low-entropy (high-confidence)</b> samples below an entropy threshold $\rho$ are used as pseudo-labels to prevent noise propagation.
 
 ### 3.5. Total Loss Function
 
@@ -122,19 +122,19 @@ $$
 \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{src}} + \alpha \mathcal{L}_{\text{OT}} + \beta \mathcal{L}_{\text{PL}}
 $$
 
-- **Source Domain Classification Loss ($\mathcal{L}_{\text{src}}$)**: Cross-Entropy
+- <b>Source Domain Classification Loss ($\mathcal{L}_{\text{src}}$)</b>: Cross-Entropy
 
   $$
   \mathcal{L}_{\text{src}} = \frac{1}{N_s}\sum_i \text{CE}(h_\phi(Z_s^i), y_s^i)
   $$
 
-- **Causal Structure Preserving OT Alignment Loss ($\mathcal{L}_{\text{OT}}$)**:
+- <b>Causal Structure Preserving OT Alignment Loss ($\mathcal{L}_{\text{OT}}$)</b>:
 
   $$
   \mathcal{L}_{\text{OT}} = \langle \gamma^{\ast}, C \rangle
   $$
 
-- **Uncertainty-filtered Pseudo-Label Loss ($\mathcal{L}_{\text{PL}}$)**:
+- <b>Uncertainty-filtered Pseudo-Label Loss ($\mathcal{L}_{\text{PL}}$)</b>:
 
   $$
   \mathcal{L}_{\text{PL}} = \frac{1}{| I |}\sum_{j \in I} \text{CE}(h_\phi(Z_t^j), \hat{y}_t^j)
@@ -142,13 +142,13 @@ $$
 
 ### 3.6. Theoretical Analysis
 
-**Proposition 1 (Causal-OT Target Risk Bound):** For a Lipschitz continuous and bounded surrogate loss $\ell$:
+<b>Proposition 1 (Causal-OT Target Risk Bound):</b> For a Lipschitz continuous and bounded surrogate loss $\ell$:
 
 $$
 \mathcal{R}_t(h) \leq \mathcal{R}_s(h) + L \, \mathbb{E}_{(x_s, x_t) \sim \gamma^{\ast}}[\Vert f_s(x_s) - f_t(x_t) \Vert] + \lambda \, \mathbb{E}_{(i,j) \sim \gamma^{\ast}}[\Vert \phi_i^s - \phi_j^t \Vert] + \mathcal{D}_{\mathcal{H}}(P_s, P_t)
 $$
 
-This inequality formalizes that minimizing the Causal-OT objective simultaneously reduces **feature-level distance, causal structure mismatch, and hypothesis mismatch**, enhancing transferability under domain shift.
+This inequality formalizes that minimizing the Causal-OT objective simultaneously reduces <b>feature-level distance, causal structure mismatch, and hypothesis mismatch</b>, enhancing transferability under domain shift.
 
 ### 3.7. Video Data Processing
 
@@ -167,38 +167,38 @@ Video data is integrated into the same pipeline by converting it to time-series 
 
 Evaluated on 6 datasets (UCIHAR, WISDM, HHAR, SSC, MFD, Boiler). Results for WISDM and UCIHAR are below:
 
-**Table 2. WISDM Accuracy (%) — By Source→Target Domain Pair**
+<b>Table 2. WISDM Accuracy (%) — By Source→Target Domain Pair</b>
 
-| Algorithm | 7→18 | 20→30 | 35→31 | 17→23 | 6→19 | 2→11 | 33→12 | 5→26 | 28→4 | 23→32 | **Average** |
+| Algorithm | 7→18 | 20→30 | 35→31 | 17→23 | 6→19 | 2→11 | 33→12 | 5→26 | 28→4 | 23→32 | <b>Average</b> |
 |-----------|------|-------|-------|-------|------|------|-------|------|------|-------|---------|
 | No Adapt  | 80.2 | 64.1  | 66.3  | 48.3  | 62.1 | 31.6 | 60.9  | 73.2 | 83.3 | 27.5  | 59.8    |
 | TransPL   | 84.9 | 66.0  | 63.9  | 66.7  | 48.5 | 61.8 | 88.5  | 74.4 | 54.5 | 30.4  | 64.0    |
 | CoDATS    | 74.5 | 80.6  | 54.2  | 70.0  | 54.5 | 47.4 | 82.8  | 75.6 | 78.8 | 18.8  | 63.7    |
 | RAINCOAT  | 53.1 | 58.5  | 40.2  | 30.6  | 58.9 | 77.8 | 37.0  | 37.8 | 67.6 | 11.8  | 47.3    |
-| **Ours**  | **86.5** | **84.0** | 64.2 | 66.5 | 51.5 | 62.4 | 87.3 | **84.4** | 58.3 | 35.3 | **68.03** |
+| <b>Ours</b>  | <b>86.5</b> | <b>84.0</b> | 64.2 | 66.5 | 51.5 | 62.4 | 87.3 | <b>84.4</b> | 58.3 | 35.3 | <b>68.03</b> |
 
-**Table 3. UCIHAR Accuracy (%) — By Source→Target Domain Pair**
+<b>Table 3. UCIHAR Accuracy (%) — By Source→Target Domain Pair</b>
 
-| Algorithm | 2→11 | 6→23 | 7→13 | 9→18 | 12→16 | 18→27 | 20→5 | 24→8 | 28→27 | 30→20 | **Average** |
+| Algorithm | 2→11 | 6→23 | 7→13 | 9→18 | 12→16 | 18→27 | 20→5 | 24→8 | 28→27 | 30→20 | <b>Average</b> |
 |-----------|------|------|------|------|-------|-------|------|------|-------|-------|---------|
 | No Adapt  | 60.0 | 60.7 | 79.8 | 40.0 | 60.9  | 65.5  | 48.4 | 58.8 | 47.8  | 47.7  | 57.0    |
 | TransPL   | 75.8 | 84.8 | 67.3 | 59.3 | 66.4  | 89.4  | 59.3 | 75.3 | 66.4  | 61.7  | 69.0    |
 | SHOT      | 65.3 | 80.8 | 75.5 | 59.3 | 90.3  | 75.2  | 59.3 | 64.7 | 90.3  | 43.0  | 67.8    |
-| **Ours**  | **84.4** | **86.2** | 71.4 | **62.0** | 68.2 | **89.7** | **64.5** | **78.2** | 68.6 | **66.5** | **73.97** |
+| <b>Ours</b>  | <b>84.4</b> | <b>86.2</b> | 71.4 | <b>62.0</b> | 68.2 | <b>89.7</b> | <b>64.5</b> | <b>78.2</b> | 68.6 | <b>66.5</b> | <b>73.97</b> |
 
-> An improvement of **+4.97%** over TransPL (69.0%), demonstrating the effectiveness of causal structure alignment and uncertainty-aware pseudo-labeling.
+> An improvement of <b>+4.97%</b> over TransPL (69.0%), demonstrating the effectiveness of causal structure alignment and uncertainty-aware pseudo-labeling.
 
 ### 4.2. Video Benchmarks
 
-**Table 4. UCF101 ↔ HMDB51 (full) Classification Accuracy (%)**
+<b>Table 4. UCF101 ↔ HMDB51 (full) Classification Accuracy (%)</b>
 
-| Method | Backbone | U→H | H→U | **Average** |
+| Method | Backbone | U→H | H→U | <b>Average</b> |
 |--------|----------|-----|-----|---------|
 | Source Only | ResNet101 | 73.9 | 71.7 | 72.8 |
 | TA3N | - | 78.3 | 81.8 | 80.1 |
 | MA2LT-D | - | 85.0 | 86.6 | 85.8 |
 | TransferAttn | - | 88.1 | 88.3 | 88.2 |
-| **Ours** | ResNet101 | **90.2** | **89.5** | **89.85** |
+| <b>Ours</b> | ResNet101 | <b>90.2</b> | <b>89.5</b> | <b>89.85</b> |
 
 ### 4.3. Ablation Study
 
@@ -229,14 +229,14 @@ The loss consistently descends across all domain adaptation scenarios, showing t
 | SSC      | 13.55       | 11.23         | ↓ 2.32 |
 | MFD      | 4.37        | 3.78          | ↓ 0.59 |
 
-The reduction in Expected Calibration Error (ECE) quantitatively confirms that Causal-OT **improves alignment between prediction probability and actual accuracy**, reducing overconfidence.
+The reduction in Expected Calibration Error (ECE) quantitatively confirms that Causal-OT <b>improves alignment between prediction probability and actual accuracy</b>, reducing overconfidence.
 
 ---
 
 ## 5. Summary of Key Contributions
 
-1. **Unified Framework:** Simultaneously solves distribution alignment (OT), causal structure preservation (Granger), and uncertainty handling (entropy) within a single framework.
-2. **Causally-Regularized OT:** Embeds the Granger causal graph directly into the OT cost matrix, realizing structurally consistent knowledge transfer.
-3. **Uncertainty-aware Pseudo-Labeling:** Eliminates unreliable target samples using dual filtering based on entropy and causal consistency.
-4. **Modality Generality:** The same pipeline achieves SOTA on both 1D time-series (6 benchmarks) and video (4 benchmarks).
-5. **Theoretical Backbone:** Formally proves that minimizing the Causal-OT objective reduces the target risk upper bound.
+1. <b>Unified Framework:</b> Simultaneously solves distribution alignment (OT), causal structure preservation (Granger), and uncertainty handling (entropy) within a single framework.
+2. <b>Causally-Regularized OT:</b> Embeds the Granger causal graph directly into the OT cost matrix, realizing structurally consistent knowledge transfer.
+3. <b>Uncertainty-aware Pseudo-Labeling:</b> Eliminates unreliable target samples using dual filtering based on entropy and causal consistency.
+4. <b>Modality Generality:</b> The same pipeline achieves SOTA on both 1D time-series (6 benchmarks) and video (4 benchmarks).
+5. <b>Theoretical Backbone:</b> Formally proves that minimizing the Causal-OT objective reduces the target risk upper bound.

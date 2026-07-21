@@ -11,12 +11,12 @@ cover:
   alt: "VSFOT Paradigm"
 ---
 
-> **Paper Information**
-> - **Title:** Vision-Language Model Guided Source-Free Domain Adaptation via Optimal Transport
-> - **Authors:** Shuo Han, Xu Tang, Jingjing Ma, Xiangrong Zhang
-> - **Affiliation:** Xidian University, China
-> - **Conference:** CVPR 2026
-> - **Code:** [github.com/TangXu-Group/VSFOT](https://github.com/TangXu-Group/VSFOT)
+> <b>Paper Information</b>
+> - <b>Title:</b> Vision-Language Model Guided Source-Free Domain Adaptation via Optimal Transport
+> - <b>Authors:</b> Shuo Han, Xu Tang, Jingjing Ma, Xiangrong Zhang
+> - <b>Affiliation:</b> Xidian University, China
+> - <b>Conference:</b> CVPR 2026
+> - <b>Code:</b> [github.com/TangXu-Group/VSFOT](https://github.com/TangXu-Group/VSFOT)
 
 ---
 
@@ -36,15 +36,15 @@ Deep learning models suffer significant performance degradation when applied to 
 
 | Limitation | Description |
 |------|------|
-| **Confirmation Bias** | Existing methods typically assign pseudo-labels to target data using the model itself and retrain on them. This causes initial prediction errors to accumulate, exacerbating bias. |
-| **Uncontrollable Noise** | Even with techniques like selecting high-confidence samples or entropy minimization, large domain gaps make it fundamentally impossible to eliminate noise embedded in pseudo-labels. |
-| **Side Effects of Hard Labels** | Even when using external models like VLMs to provide hard labels, incorrect labels still persist, causing interference that degrades adaptation performance. |
+| <b>Confirmation Bias</b> | Existing methods typically assign pseudo-labels to target data using the model itself and retrain on them. This causes initial prediction errors to accumulate, exacerbating bias. |
+| <b>Uncontrollable Noise</b> | Even with techniques like selecting high-confidence samples or entropy minimization, large domain gaps make it fundamentally impossible to eliminate noise embedded in pseudo-labels. |
+| <b>Side Effects of Hard Labels</b> | Even when using external models like VLMs to provide hard labels, incorrect labels still persist, causing interference that degrades adaptation performance. |
 
 ### 2.3 Main Contributions
 
-1. **Bidirectional Distillation Framework**: Proposed an interactive, iterative optimization framework between the source model and an external VLM, enhancing adaptation performance through bidirectional knowledge distillation.
-2. **Noise Suppression via OT-based Distribution Alignment**: Reinterpreted domain adaptation as an Optimal Transport (OT) problem, thereby preventing noise interference from incorrect pseudo-labels and ensuring robust predictions.
-3. **Achieved SOTA Performance**: Demonstrated the superiority of the proposed framework across 4 major benchmarks, significantly outperforming existing SFDA methods and proving its strong competitiveness.
+1. <b>Bidirectional Distillation Framework</b>: Proposed an interactive, iterative optimization framework between the source model and an external VLM, enhancing adaptation performance through bidirectional knowledge distillation.
+2. <b>Noise Suppression via OT-based Distribution Alignment</b>: Reinterpreted domain adaptation as an Optimal Transport (OT) problem, thereby preventing noise interference from incorrect pseudo-labels and ensuring robust predictions.
+3. <b>Achieved SOTA Performance</b>: Demonstrated the superiority of the proposed framework across 4 major benchmarks, significantly outperforming existing SFDA methods and proving its strong competitiveness.
 
 ![Comparison of VSFOT Paradigm](/images/vsfot/_page_0_Picture_11.jpeg)
 *Figure 1: (Left) Conventional SFDA adapting with only the source model and unlabeled target data. (Right) VSFOT framework utilizing external prior knowledge (VLM) to guide and enhance adaptation performance.*
@@ -63,15 +63,15 @@ $$ \mathcal{D}_s = \{(x_i^s, y_i^s)\}_{i=1}^{N_s} $$
 Unlabeled data distribution in the target domain:
 $$ \mathcal{D}_t = \{x_i^t\}_{i=1}^{N_t} $$
 
-- **Task Model**: A model pre-trained on source data (composed of a feature extractor $f$ and a classifier $c$).
-- **Goal**: Adapt the task model to the target domain using prior knowledge from an auxiliary VLM, without access to any ground truth labels or source data.
+- <b>Task Model</b>: A model pre-trained on source data (composed of a feature extractor $f$ and a classifier $c$).
+- <b>Goal</b>: Adapt the task model to the target domain using prior knowledge from an auxiliary VLM, without access to any ground truth labels or source data.
 
 ### 3.2 Overall Architecture Overview
 
-VSFOT alternately executes two stages, **VGMA** and **MGVA**, realizing bidirectional distillation between the VLM and the task model.
+VSFOT alternately executes two stages, <b>VGMA</b> and <b>MGVA</b>, realizing bidirectional distillation between the VLM and the task model.
 
-1. **VGMA Stage**: The VLM guides the adaptation direction of the task model.
-2. **MGVA Stage**: The task model refines the VLM using its high-confidence predictions.
+1. <b>VGMA Stage</b>: The VLM guides the adaptation direction of the task model.
+2. <b>MGVA Stage</b>: The task model refines the VLM using its high-confidence predictions.
 
 ![VSFOT Overall Architecture](/images/vsfot/_page_2_Figure_0.jpeg)
 *Figure 2: Overall architecture of the VSFOT framework. (Left) VGMA stage (Center) MGVA stage*
@@ -120,8 +120,8 @@ Through this, the VLM learns the target domain characteristics, enabling it to p
 
 ### 3.5 Overall Training Flow
 
-- **VGMA Stage**: Optimize the task model (freeze the VLM).
-- **MGVA Stage**: Refine the VLM adapter (freeze the task model).
+- <b>VGMA Stage</b>: Optimize the task model (freeze the VLM).
+- <b>MGVA Stage</b>: Refine the VLM adapter (freeze the task model).
 This process is repeated alternately, allowing the two models to synergistically improve performance.
 
 ---
@@ -130,15 +130,15 @@ This process is repeated alternately, allowing the two models to synergistically
 
 ### 4.1 Main Benchmark Results
 
-- **DomainNet-126**: VSFOT achieved 82.63% (a 2.55% improvement over the existing VLM-based DIFO).
-- **Office-Home**: VSFOT achieved 85.34% (a 1.14% improvement over existing ProDe).
+- <b>DomainNet-126</b>: VSFOT achieved 82.63% (a 2.55% improvement over the existing VLM-based DIFO).
+- <b>Office-Home</b>: VSFOT achieved 85.34% (a 1.14% improvement over existing ProDe).
 
-**Interpretation**: Even under the harsh conditions of lacking ground truth labels (SFDA), the proposed method showed performance equal to or surpassing existing UDA methodologies.
+<b>Interpretation</b>: Even under the harsh conditions of lacking ground truth labels (SFDA), the proposed method showed performance equal to or surpassing existing UDA methodologies.
 
 ### 4.2 Effects of Bidirectional Distillation and Hyperparameters
 
-- **Bidirectional Distillation**: As training progresses, the VLM and task model interact, and the task model ultimately significantly outperforms the original VLM's zero-shot performance.
-- **Top-k Filtering**: Passing only the top 3 ($k=3$) probabilities when the task model teaches the VLM was most effective at suppressing noise.
+- <b>Bidirectional Distillation</b>: As training progresses, the VLM and task model interact, and the task model ultimately significantly outperforms the original VLM's zero-shot performance.
+- <b>Top-k Filtering</b>: Passing only the top 3 ($k=3$) probabilities when the task model teaches the VLM was most effective at suppressing noise.
 
 ---
 
@@ -146,11 +146,11 @@ This process is repeated alternately, allowing the two models to synergistically
 
 To address the confirmation bias problem of pseudo-labels in existing Source-Free Domain Adaptation (SFDA) research, this paper presents the following three main contributions:
 
-1. **Establishment of a Bidirectional Distillation System**
+1. <b>Establishment of a Bidirectional Distillation System</b>
    Designed an interactive structure between external prior knowledge (VLM) and the task model. The VLM suggests the correct alignment direction to the task model, while the task model feeds back detailed target domain features to the VLM, creating a virtuous cycle that reinforces both.
 
-2. **Noise Suppression Mechanism via Optimal Transport (OT)**
+2. <b>Noise Suppression Mechanism via Optimal Transport (OT)</b>
    Reinterpreted the adaptation process as an Optimal Transport problem and introduced a strategy of decoupling the cost matrix. Instead of blindly matching imperfect ground truth pseudo-labels, it performs a distribution-level soft alignment, fundamentally blocking semantic noise interference.
 
-3. **Achieved Overwhelming SOTA Benchmarks**
+3. <b>Achieved Overwhelming SOTA Benchmarks</b>
    Outperformed all existing SFDA models on 4 challenging benchmarks: Office-31, Office-Home, VisDA, and DomainNet-126. Notably, it recorded performance comparable to UDA methods that directly access original source data, strongly demonstrating the framework's practicality.
