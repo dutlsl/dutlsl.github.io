@@ -21,10 +21,10 @@ The architectural progression from processing 1D temporal dependencies in sequen
 
 ```mermaid
 flowchart TD
-    A["<b>Vanilla RNN</b><br/>Single Recurrent Operation"] 
-    B["<b>LSTM</b><br/>Cell State + 3 Gates"]
-    C["<b>GRU</b><br/>Reset & Update Gates"]
-    D["<b>ConvLSTM</b><br/>3D Tensor & Spatial Grid"]
+    A["Vanilla RNN<br/>(Single Recurrent Operation)"] 
+    B["LSTM<br/>(Cell State + 3 Gates)"]
+    C["GRU<br/>(Reset & Update Gates)"]
+    D["ConvLSTM<br/>(3D Tensor & Spatial Grid)"]
 
     A -->|1. Solves BPTT Vanishing Gradient| B
     B -->|2. Gate Simplification & Lightweight Params| C

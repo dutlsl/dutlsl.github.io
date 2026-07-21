@@ -1,18 +1,15 @@
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: false, theme: 'default' });
-
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
   document.addEventListener("DOMContentLoaded", function () {
-    const mermaidBlocks = document.querySelectorAll("code.language-mermaid");
-    if (mermaidBlocks.length > 0) {
-      mermaidBlocks.forEach(function (element) {
-        const pre = element.parentElement;
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'default' });
+    const mermaidCodes = document.querySelectorAll("code.language-mermaid");
+    if (mermaidCodes.length > 0) {
+      mermaidCodes.forEach(function (code) {
+        const pre = code.closest(".highlight") || code.closest("pre");
         const div = document.createElement("div");
         div.className = "mermaid";
-        div.textContent = element.textContent;
-        if (pre.parentNode && pre.parentNode.classList.contains("highlight")) {
-          pre.parentNode.replaceWith(div);
-        } else {
+        div.textContent = code.textContent;
+        if (pre) {
           pre.replaceWith(div);
         }
       });

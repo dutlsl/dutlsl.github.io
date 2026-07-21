@@ -21,10 +21,10 @@ cover:
 
 ```mermaid
 flowchart TD
-    A["<b>Vanilla RNN</b><br/>단일 순환 연산"] 
-    B["<b>LSTM</b><br/>Cell State + 3 Gates"]
-    C["<b>GRU</b><br/>Reset & Update Gates"]
-    D["<b>ConvLSTM</b><br/>3D Tensor & Spatial Grid"]
+    A["Vanilla RNN<br/>(단일 순환 연산)"] 
+    B["LSTM<br/>(Cell State + 3 Gates)"]
+    C["GRU<br/>(Reset & Update Gates)"]
+    D["ConvLSTM<br/>(3D Tensor & Spatial Grid)"]
 
     A -->|1. BPTT 기울기 소멸 해결| B
     B -->|2. 게이트 단순화 및 파라미터 경량화| C
