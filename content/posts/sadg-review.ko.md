@@ -1,11 +1,11 @@
 ---
-title: "[CVPR 2026] SADG: 구조 인식 도메인 일반화를 통한 다중 태스크 포인트 클라우드 이해"
+title: "[CVPR 2026 Highlight] SADG: 구조 인식 도메인 일반화를 통한 다중 태스크 포인트 클라우드 이해"
 date: 2026-08-03T11:53:00+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Point Cloud", "Domain Generalization", "Mamba", "State Space Model", "CVPR 2026"]
+tags: ["Paper Review", "Point Cloud", "Domain Generalization", "Mamba", "State Space Model", "CVPR 2026 (Highlight)"]
 categories: ["Paper Review"]
-summary: "Mamba 기반 In-Context Learning에 구조 인식 직렬화, 계층적 도메인 모델링, 스펙트럴 그래프 정렬을 결합하여 다중 태스크 포인트 클라우드 도메인 일반화에서 SOTA를 달성한 SADG 프레임워크 리뷰입니다."
+summary: "Mamba 기반 In-Context Learning에 구조 인식 직렬화, 계층적 도메인 모델링, 스펙트럴 그래프 정렬을 결합하여 다중 태스크 포인트 클라우드 도메인 일반화에서 SOTA를 달성한 SADG (CVPR 2026 Highlight) 프레임워크 리뷰입니다."
 cover:
   image: "/images/sadg/overview.jpeg"
   alt: "SADG Framework Overview"
@@ -15,7 +15,7 @@ cover:
 > - 제목: Mamba Learns in Context: Structure-Aware Domain Generalization for Multi-Task Point Cloud Understanding
 > - 저자: Jincen Jiang, Qianyu Zhou, Yuhang Li, Kui Su, Meili Wang, Jian Chang, Jian Jun Zhang, Xuequan Lu
 > - 소속: Bournemouth University, Jilin University, The University of Western Australia 외
-> - 학회: CVPR 2026
+> - 학회: CVPR 2026 (Highlight)
 > - 코드: [github.com/Jinec98/SADG](https://github.com/Jinec98/SADG)
 
 ---

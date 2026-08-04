@@ -1,11 +1,11 @@
 ---
-title: "[CVPR 2026] SADG: Structure-Aware Domain Generalization for Multi-Task Point Cloud Understanding"
+title: "[CVPR 2026 Highlight] SADG: Structure-Aware Domain Generalization for Multi-Task Point Cloud Understanding"
 date: 2026-08-03T11:53:00+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Point Cloud", "Domain Generalization", "Mamba", "State Space Model", "CVPR 2026"]
+tags: ["Paper Review", "Point Cloud", "Domain Generalization", "Mamba", "State Space Model", "CVPR 2026 (Highlight)"]
 categories: ["Paper Review"]
-summary: "A comprehensive paper review of SADG, a Mamba-based In-Context Learning framework for multi-task point cloud domain generalization combining structure-aware serialization, hierarchical domain modeling, and spectral graph alignment."
+summary: "A comprehensive paper review of SADG (CVPR 2026 Highlight), a Mamba-based In-Context Learning framework for multi-task point cloud domain generalization combining structure-aware serialization, hierarchical domain modeling, and spectral graph alignment."
 cover:
   image: "/images/sadg/overview.jpeg"
   alt: "SADG Framework Overview"
@@ -15,7 +15,7 @@ cover:
 > - Title: Mamba Learns in Context: Structure-Aware Domain Generalization for Multi-Task Point Cloud Understanding
 > - Authors: Jincen Jiang, Qianyu Zhou, Yuhang Li, Kui Su, Meili Wang, Jian Chang, Jian Jun Zhang, Xuequan Lu
 > - Affiliation: Bournemouth University, Jilin University, The University of Western Australia, etc.
-> - Conference: CVPR 2026
+> - Conference: CVPR 2026 (Highlight)
 > - Code: [github.com/Jinec98/SADG](https://github.com/Jinec98/SADG)
 
 ---
