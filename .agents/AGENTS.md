@@ -213,4 +213,9 @@ hugo
 - **첫 포스트 이후 아티팩트 리뷰 방법 (피드백 반영 원칙)**:
   - 아티팩트 초안 제출 후 사용자가 코멘트/리뷰를 남기면, 기존 아티팩트 구조와 포스트 골조를 갈아엎는 것을 엄금한다.
   - 사용자가 지적한 오류 수정, 질의사항에 대한 부연 설명, 용어 해석(예: 프롬프트/쿼리 도메인, 공유 맘바, 스펙트럴 도메인 등)을 기존 포스트의 앞뒤 맥락에 자연스럽게 녹여내어 부분 수정/첨부한다.
+- **Do not force Korean translations or translations alongside common English terminology**: For terms widely accepted and used in the industry (e.g., *latency*, *strictly causal constraint*, *visual saliency*, *gaze fixation*, *gaze diffusion*, *target ambiguity*, *isomorphic*, *motion blur*, etc.), use the English term directly instead of forced Korean translations or pairing them together (e.g., 지연 시간(Latency)).
+- **Avoid excessively long, complex, or compound sentence structures**: Keep sentences short, concise, and clear (ideally within 1–2 lines). Break down long sentences with multiple conjunctions or commas to improve readability.
+- **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., `~의 효용성: ~하는가?`, `~의 비단조성`). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
+- **Ensure consistency between model components in figures and textual descriptions**: When describing model architectures, strictly match the names of components used in the text (e.g., `Frozen DINOv3`, `Shared Spatio-Temporal Decoder`, `GLF & Conv Head`) with those labeled in the corresponding figures to prevent confusion. Do not invent arbitrary names.
+
 
