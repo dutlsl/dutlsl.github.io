@@ -1,221 +1,215 @@
 # Deep Vision Insights — AI Agent Guidelines
 
-Computer Vision / Domain Adaptation 분야 논문 리뷰를 게시하는 학술 블로그.
+An academic blog publishing paper reviews in the fields of Computer Vision and Domain Adaptation.
 
 ## Tech Stack
 
-- **SSG**: Hugo 0.147.0 (GitHub Actions), 로컬 빌드 테스트는 hugo 0.124.1
+- **SSG**: Hugo 0.147.0 (GitHub Actions), local build tests with Hugo 0.124.1
 - **Theme**: PaperMod (git submodule: `themes/PaperMod`)
 - **Math**: KaTeX 0.16.8 (`layouts/partials/extend_head.html`)
-- **Hosting**: GitHub Pages (main 브랜치 push → Actions 자동 빌드/배포)
-- **Languages**: en / ko 이중 언어 (`defaultContentLanguage = "en"`)
+- **Hosting**: GitHub Pages (push to main branch → auto build/deploy via Actions)
+- **Languages**: Bilingual (en / ko) (defaultContentLanguage = "en")
 
 ## Directory Structure
 
 ```
-content/posts/           # 포스트 파일 (*.ko.md, *.en.md)
-static/images/<slug>/    # 포스트별 이미지 디렉토리
-layouts/partials/        # 커스텀 partial 오버라이드 (★ _partials 아님!)
-themes/PaperMod/         # 테마 (submodule — 직접 수정 금지)
-converted_mds/           # 논문 PDF를 변환한 원본 마크다운 소스
-original_pdfs/           # 논문 PDF 원본
-hugo.toml                # Hugo 설정
+content/posts/           # Post files (*.ko.md, *.en.md)
+static/images/<slug>/    # Image directory per post
+layouts/partials/        # Custom partial overrides (★ NOT _partials!)
+themes/PaperMod/         # Theme (submodule — DO NOT modify directly)
+converted_mds/           # Original markdown sources converted from paper PDFs
+original_pdfs/           # Original paper PDFs
+hugo.toml                # Hugo configuration
 ```
 
-## 포스트 작성 워크플로우
+## Post Writing Workflow
 
-### Step 1: PDF → 마크다운 변환
+### Step 1: PDF → Markdown Conversion
 
-사용자가 `original_pdfs/` 디렉토리에 논문 PDF를 넣으면, 프로젝트 루트의 가상환경(`.venv`)에 `uv`로 설치된 **marker** 패키지를 사용하여 자동으로 마크다운으로 변환한다.
+When a user places a paper PDF in the `original_pdfs/` directory, it must be automatically converted to markdown using the **marker** package installed in the project root's virtual environment (`.venv`) via `uv`.
 
 ```bash
-# marker_single로 단일 PDF 변환
-.venv/bin/marker_single <PDF 경로> --output_dir converted_mds/
+# Convert a single PDF using marker_single
+.venv/bin/marker_single <PDF path> --output_dir converted_mds/
 ```
 
-변환된 마크다운은 `converted_mds/` 디렉토리에 저장되며, 이를 원본 소스로 삼아 포스트를 작성한다.
+The converted markdown is saved in the `converted_mds/` directory and serves as the raw source for writing the post.
 
-### Step 2: 아티팩트(Artifact)로 초안 작성 및 피드백
+### Step 2: Draft Creation & Feedback via Artifacts
 
-> **중요: `content/posts/`에 `.md` 파일을 사용자 승인 없이 직접 생성하지 말 것.**
+> **IMPORTANT: Do NOT create any `.md` files directly in `content/posts/` without explicit user approval.**
 
-포스트 초안은 반드시 **Antigravity 아티팩트**(편집기 우측 패널에 렌더링되는 마크다운 문서)로 먼저 작성한다. 아티팩트에는 사용자가 인라인 코멘트를 달 수 있으므로, 이를 통해 내용·구조·문체에 대한 피드백을 주고받는다.
+Post drafts must always be written as an **Antigravity Artifact** (rendered in the right panel of the editor) first. Users can leave inline comments on this artifact to provide feedback on content, structure, and style.
 
-- 아티팩트 생성 시 `RequestFeedback: true`를 설정하여 사용자 승인 버튼을 표시한다.
-- 아티팩트 내 수식이 깨져 보이는 것은 뷰어의 한계이므로 무시한다 (아래 LaTeX 섹션 참조).
+- Set `RequestFeedback: true` in the ArtifactMetadata to display the user approval button.
+- Ignore broken math formulas in the artifact preview; this is a viewer limitation (see the LaTeX section below).
 
-### Step 3: 최종 승인 후 배포
+### Step 3: Final Approval and Deployment
 
-사용자가 아티팩트를 확인하고 **"올려" / "배포해" / "커밋해"** 등의 최종 승인을 명시적으로 내린 후에만:
+Only after the user reviews the artifact and gives explicit final approval (e.g., "deploy", "upload", or "commit"):
 
-1. `content/posts/<slug>-review.ko.md`와 `<slug>-review.en.md`를 생성한다.
-2. 이미지를 `static/images/<slug>/`에 배치한다.
-3. `hugo` 로컬 빌드로 에러 여부를 확인한다.
-4. `git add` → `git commit` → `git push`로 배포한다.
+1. Create `content/posts/<slug>-review.ko.md` and `<slug>-review.en.md`.
+2. Place the images in the `static/images/<slug>/` directory.
+3. Verify that the build succeeds without errors using a local `hugo` build.
+4. Run `git add` → `git commit` → `git push` to deploy.
 
 ---
 
 ## Post Convention
 
-### Frontmatter (필수 필드)
+### Frontmatter (Required Fields)
 
 ```yaml
 ---
-title: "[학회 연도] 약칭: 한국어 제목 (ko) / 영문 제목 (en)"
-date: YYYY-MM-DDTHH:MM:SS+09:00   # 반드시 작성 시점의 현재 날짜/시각
+title: "[Venue Year] Abbreviation: Korean Title (ko) / English Title (en)"
+date: YYYY-MM-DDTHH:MM:SS+09:00   # Must be the current date/time at the moment of creation
 draft: false
-math: true                         # 수식이 포함된 포스트는 반드시 true
-tags: ["Paper Review", "키워드1", "키워드2", "학회 연도"]
+math: true                         # Must be true if the post contains equations
+tags: ["Paper Review", "Keyword 1", "Keyword 2", "Venue Year"]
 categories: ["Paper Review"]
-summary: "1~2문장 요약"
+summary: "1~2 sentence summary"
 cover:
-  image: "/images/<slug>/대표이미지.jpeg"
-  alt: "대표 이미지 설명"
+  image: "/images/<slug>/representative_image.jpeg"
+  alt: "Representative image description"
 ---
 ```
 
-### 파일 이름 규칙
+### Naming Conventions
 
-- 한국어: `<slug>-review.ko.md`
-- 영어: `<slug>-review.en.md`
-- 반드시 ko/en 쌍으로 생성할 것
+- Korean: `<slug>-review.ko.md`
+- English: `<slug>-review.en.md`
+- Always create them as a ko/en pair.
 
-### 본문 구조
+### Body Structure
 
-1. 한 줄 요약
-2. 연구 배경 및 동기 (2.1 문제 정의, 2.2 기존 방법의 한계, **2.3 핵심 기여**)
-3. 제안 방법 프레임워크 (수식·그림 포함)
-4. 실험 결과
-5. 핵심 기여 정리 (2.3과 중복이 아닌, 상세 서술 버전)
+1. One-Sentence Summary
+2. Research Background and Motivation (2.1 Problem Definition, 2.2 Limitations of Existing Methods, **2.3 Main Contributions**)
+3. Proposed Framework (Include equations/figures)
+4. Experimental Results
+5. Conclusion and Key Takeaways (A detailed, narrative version of the contributions, not a duplicate of 2.3)
 
-> **주의**: 이 구조에 명시된 5가지 단락을 벗어난 6번째 단락을 만드는 것을 극히 삼갈 것. 골조를 불가피하게 못 맞춘다면 우선 재량껏 생성한 뒤, 본문 구조를 예외 생성했음을 불가피한 이유와 함께 사용자에게 알릴 것.
-> 2단락의 핵심 기여와 5단락의 핵심 기여 정리는 둘 다 반드시 포함해야 한다. 2.3은 요약형 리스트, 5단락은 각 기여에 대한 상세 설명.
+> **WARNING**: Strictly avoid adding a 6th section outside this 5-section structure. If an exception is absolutely necessary, construct it at your discretion first, then inform the user with the rationale for the exception.
+> Both Section 2.3 (summary list) and Section 5 (detailed narrative explanations) must be included.
 
-### 이미지 참조
+### Image Reference
 
-- 경로: `/images/<slug>/파일명.jpeg` (절대 경로, `static/` 접두사 없음)
-- 이미지 파일은 `static/images/<slug>/`에 저장
-- 캡션: `*Figure N: 설명*` 형식 (이미지 바로 아래에 기재)
+- Path: `/images/<slug>/filename.jpeg` (Absolute path, no `static/` prefix)
+- Store image files in `static/images/<slug>/`
+- Caption: Use the `*Figure N: Description*` format directly below the image.
 
-### 문체 규칙
+### Writing Style (For Korean Posts)
 
-- 어투는 '-한다'가 아닌 '-합니다' (합쇼체)로 통일하여 정중하고 자연스러운 한국어로 정리한다.
-- 번역투를 쓰지 않는다. 자연스러운 한국어로 정리한다.
-- 원문을 직역하지 않는다. 핵심 내용을 간결하게 재구성한다.
-- 총평이나 개인적 논평은 넣지 않는다. 논문 내용 전달에 충실한다.
-
+- The tone must be unified in polite, natural Korean (e.g., ending with -합니다/-입니다) rather than neutral -한다 style.
+- Do not use translated tones (번역투). Write in natural Korean.
+- Do not translate the source text literally. Reconstruct key ideas concisely.
+- Do not include general personal commentary or opinions. Stay faithful to the paper's actual content.
 
 ---
 
-## ⚠️ LaTeX 수식 렌더링 — 핵심 주의사항
+## ⚠️ LaTeX Math Rendering — Critical Warnings
 
-> 이 프로젝트에서 수식을 다룰 때는 **두 가지 서로 다른 렌더링 환경**을 반드시 구분해야 한다.
-> 과거 이 구분을 무시하여 수식이 깨지는 사고가 반복적으로 발생했다.
-> **테스트 의무**: 새로 작업에 투입될 경우, 하기 기술된 방법대로 라텍스 테스트 아티팩트와 테스트 포스트(github mcp를 이용해 알아서 푸쉬할 것)를 생성한 뒤 무결성을 스스로 검토할 것.
+> Two rendering environments must be strictly distinguished when handling math equations. Ignoring this distinction previously led to repeated rendering issues.
+> **Testing Obligation**: Before starting work on this repo, create a LaTeX test artifact and a test post (push it automatically using GitHub MCP) to verify rendering integrity.
 
-### 환경 1: Antigravity 아티팩트 뷰어 (편집 중 미리보기)
+### Environment 1: Antigravity Artifact Viewer (Preview in Editor)
 
-- 마크다운 파서가 `_`(언더스코어)를 **이탤릭 구문**으로 해석한다.
-- 따라서 인라인 수식 `$z_i^m$`이 `z`*`i`*`^m`처럼 깨진다.
-- `**`(볼드) 마커 역시 파서가 먹어버려 `*` 기호가 원문에 노출될 수 있다.
-- `$$` 블록 수식은 정상 렌더링된다.
-- `\( \)` 인라인 구문은 일부 환경에서 동작하지 않는다.
+- The markdown parser interprets `_` (underscores) as italic markdown markers.
+- Thus, inline math like `$z_i^m$` gets broken into `z`*`i`*`^m`.
+- Bold markers (`**`) may also be swallowed, exposing raw `*` symbols.
+- `$$` block equations render normally.
+- `\( \)` inline syntax is not supported in some environments.
 
-### 환경 2: Hugo 블로그 (KaTeX 렌더링, 실제 배포 환경)
+### Environment 2: Hugo Blog (KaTeX Rendering, Live Production)
 
-- `hugo.toml`에 passthrough 설정으로 `$`, `$$`, `\(`, `\)`, `\[`, `\]` 모두 수식 구분자로 등록되어 있다.
-- KaTeX auto-render가 페이지 로드 시 수식을 렌더링한다.
-- Goldmark(Hugo의 마크다운 파서)가 passthrough를 활성화했으므로 `_`를 이탤릭으로 해석하지 않는다.
-- **따라서 `$z_i^m$` 같은 표준 LaTeX가 그대로 정상 동작한다.**
+- The `hugo.toml` configuration registers `$`, `$$`, `\(`, `\)`, `\[`, and `\]` as math delimiters via passthrough.
+- KaTeX auto-render renders math dynamically on page load.
+- Goldmark (Hugo's MD parser) has passthrough enabled, so it does not interpret `_` as italics inside delimiters.
+- **Therefore, standard LaTeX like `$z_i^m$` works perfectly out of the box.**
 
-### 작성 원칙 (이 규칙을 어기면 수식이 깨진다)
+### Writing Principles (To Prevent Math Breakage)
 
-1. **포스트 파일(`content/posts/*.md`)에는 표준 LaTeX를 그대로 쓴다.**
-   - 수식은 라텍스 문법으로 작성함을 원칙으로 한다. 유니코드로 작성하여 포스트의 완성도를 떨어뜨리는 것을 엄금한다.
-   - 블록: `$$ ... $$`
-   - `\_`로 이스케이프하지 않는다. Hugo passthrough가 처리한다.
+1. **Use standard LaTeX inside post files (`content/posts/*.md`).**
+   - Write math equations in standard LaTeX. Do not fall back to unicode symbols for post quality.
+   - Block math: `$$ ... $$`
+   - Do not escape underscores with `\_`. The Hugo passthrough will handle it correctly.
 
-2. **★핵심★ 아티팩트용 / 포스팅용 수식 문법 이원화 원칙**
-   - 아티팩트 뷰어에서 인라인 수식의 `_` 기호를 이탤릭체로 오인하여 수식이 깨지는 문제를 원천 차단하기 위해, **아티팩트 작성 시에는 반드시 HTML 태그(`<sub>`, `<sup>`, `<b>`) 및 유니코드 기호 등을 사용합니다.**
-   - **절대 금지**: 아티팩트 내에서 `$z_i^m$`, `$X_H$` (언더스코어 `_` 사용 시 아티팩트 깨짐 발생)
-   - **필수 준수**: 아티팩트 내에서는 **z<sub>i</sub><sup>m</sup>**, **X<sub>H</sub>** 등 시각적으로 완벽하게 렌더링되는 HTML/유니코드를 사용합니다.
-   - 이원화 관리를 통해 아티팩트 검토 시에는 수식 깨짐 없는 깨끗한 문서를 확인하고, 추후 블로그 포스트 `.md` 파일을 생성할 때만 별도의 파이썬 스크립트를 통해 표준 포스팅용 문법(LaTeX)으로 일괄 변환하여 무결성을 유지합니다.
+2. **Isomorphic Math Rule for Artifacts vs. Posts (CRITICAL)**
+   - To prevent underscores from breaking inline math in the artifact viewer, **always use HTML tags (`<sub>`, `<sup>`, `<b>`) and unicode symbols for math in artifacts.**
+   - **ABSOLUTELY PROHIBITED**: Do not use standard LaTeX syntax with underscores (e.g., `$z_i^m$`, `$X_H$`) in artifacts, as they will break.
+   - **MANDATORY**: In artifacts, write math using HTML/Unicode (e.g., **z<sub>i</sub><sup>m</sup>**, **X<sub>H</sub>**).
+   - Convert these HTML representations back to standard LaTeX when generating the final `.md` post files.
 
-3. **아티팩트 수식 깨짐 방지**
-   - 위 2번 규칙(HTML/유니코드 기호)을 준수하여 아티팩트 내 수식 깨짐을 방지합니다.
-   - 단, 아티팩트용으로 사용된 이스케이프(`\_`), HTML 태그(`<sub>`, `<sup>`), 유니코드 문자 등은 **Hugo 블로그에서 수식을 망가뜨리므로 최종 포스트 파일에는 절대 커밋하지 않습니다.**
+3. **Prevent Artifact Math Breakage**
+   - Follow Rule 2 to keep artifacts clean. However, **never commit HTML tags or unicode symbols in place of LaTeX inside the final `.md` files**, as they will break KaTeX rendering on the live blog.
 
-4. **사용자에게 수식 미리보기를 보여줘야 할 때:**
-   - 아티팩트의 수식이 깨져 보이는 이유를 설명한다.
-   - "블로그에서는 정상 렌더링됩니다"라고 안내한다.
-   - 필요하면 `hugo server`로 로컬 빌드 후 브라우저 캡처로 증명한다.
+4. **Showing Math Previews to Users**
+   - Explain the viewer's math rendering limitations.
+   - Assure them it renders fine on the blog, and verify by running `hugo server` locally and capturing a screenshot if needed.
 
-4. **절대 하지 말 것:**
-   - `\_`를 써서 언더스코어를 이스케이프하는 것
-   - **최종 포스트 파일**에 `<sub>`, `<sup>` 등 HTML 태그로 수식을 대체하여 남겨두는 것
-   - **최종 포스트 파일**에 유니코드 특수문자(∑, Γ, ℒ 등)로 LaTeX를 대체하여 남겨두는 것
-   - `\( \)` 인라인 구문을 아티팩트에서만 쓰고 커밋할 때 `$ $`로 바꾸는 이중 관리
+5. **ABSOLUTELY PROHIBITED**:
+   - Do not escape underscores with `\_`.
+   - Do not leave HTML tags (`<sub>`, `<sup>`) in the final post files.
+   - Do not leave unicode representations of LaTeX in the final post files.
+   - Do not mix `\( \)` in artifacts only to rewrite them to `$ $` during commit.
 
 ---
 
 ## Deployment
 
-### 커밋 & 푸시 순서
+### Commit & Push Order
 
 ```bash
-# 1. 이미지 먼저 추가
+# 1. Add images first
 git add static/images/<slug>/
 
-# 2. 포스트 파일 추가
+# 2. Add post files
 git add content/posts/<slug>-review.ko.md content/posts/<slug>-review.en.md
 
-# 3. 커밋 & 푸시
-git commit -m "Add <논문명> paper review post"
+# 3. Commit and push
+git commit -m "Add <Paper Name> paper review post"
 git push
 ```
 
-### 빌드 검증
+### Build Verification
 
 ```bash
-# 로컬 빌드 테스트 (에러 없이 완료되어야 함)
+# Run local build to verify no errors occur
 hugo
 
-# 에러 발생 시 로그 확인 후 수정 → 재커밋
+# Check logs and resolve errors if they occur, then recommit
 ```
 
-### 주의사항
+### Important Notices
 
-- `themes/PaperMod`은 git submodule이다. 내부를 직접 수정하면 커밋이 꼬인다.
-- `layouts/partials/`는 Hugo가 인식하는 정규 경로이다. **절대 `_partials`로 바꾸지 말 것.** (`_partials`로 바꾸면 `partial "head.html" not found` 에러로 전체 사이트 빌드가 실패한다.)
-- GitHub Actions의 Hugo 버전(0.147.0)과 로컬 Hugo 버전(0.124.1)이 다르다. 로컬에서 Warning이 나와도 Actions에서 정상 빌드되면 문제없다.
+- `themes/PaperMod` is a git submodule. Direct modifications inside this directory will break git commits.
+- `layouts/partials/` is the standard Hugo layouts directory. **Do NOT rename it to `_partials`.** (Renaming it will cause `partial "head.html" not found` errors and break the site build).
+- The Hugo version used in GitHub Actions (0.147.0) differs from the local version (0.124.1). Local warnings can be ignored as long as the Actions build succeeds.
 
 ## Do
 
-- 포스트 초안은 반드시 아티팩트(Artifact)로 먼저 작성하며, **모든 포스트 글을 우선 국문으로 작성**한다. 이후 사용자 피드백을 거쳐 최종 승인을 받아 `.md` 파일을 생성한다.
-- `math: true`를 frontmatter에 반드시 포함한다 (수식이 있는 포스트).
-- `date` 필드에 작성 시점의 현재 날짜를 넣는다.
-- 배포 전 `hugo` 로컬 빌드로 에러가 없는지 확인한다.
-- 커밋 전 `git status`로 의도하지 않은 파일이 포함되지 않았는지 확인한다.
+- Draft posts as artifacts first, **writing the initial draft in Korean**. Generate the `.md` files only after receiving final user approval.
+- Always include `math: true` in the frontmatter for posts containing math.
+- Use the current date/time for the `date` field.
+- Verify the build locally with `hugo` before deploying.
+- Run `git status` before committing to avoid staging unintended files.
 
 ## Don't
 
-- 사용자의 명시적 최종 승인 없이 `content/posts/`에 `.md` 파일을 생성하지 않는다.
-- **ko/en 쌍을 매 시행 불필요하게 생성하여 토큰을 낭비하지 말 것.** 국문 최종 포스트 글이 완성된 이후에 그것을 en으로 번역하여 푸쉬한다.
-- **수식은 라텍스 문법으로 작성함을 원칙으로 한다.** 단, 아티팩트 뷰어용으로는 HTML/유니코드를 활용한 이원화를 진행하며, 최종 포스트에는 라텍스 문법으로 원상 복구한다. 유니코드로 포스트의 완성도를 떨어뜨리는 것을 엄금한다.
-- `themes/PaperMod/` 내부 파일을 직접 수정하지 않는다.
-- `layouts/partials`를 `layouts/_partials`로 바꾸지 않는다.
-- 사용자가 명시적으로 요청하지 않은 기존 포스트를 수정하지 않는다.
-- 아티팩트 미리보기에서 수식이 깨진다고 **최종 포스팅용** LaTeX 문법을 변형하지 않는다.
-- `git config user.email`을 임의의 값으로 설정하지 않는다.
-- **국문 포스트 및 아티팩트 내 볼드체 완전히 금지 (`**` 및 `<b>` 태그 모두 엄금)**: 렌더링 오작동 및 별표 노출 문제를 원천 차단하기 위해 마크다운 `**` 및 `<b>` HTML 태그를 포함한 모든 볼드체 강조 표현을 절대 사용하지 않는다.
-- **아티팩트 작성 시 수식 이원화 철저 준수 (블록 수식 포함)**: 아티팩트 생성 시 `$ ... $` 인라인 수식뿐만 아니라 `$$ ... $$` 블록 수식도 뷰어에서 렌더링 오류 및 깨짐이 발생하므로, **아티팩트 내 모든 수식/기호 작성 시에는 블록 수식을 포함하여 100% HTML 태그(`<sub>`, `<sup>`)와 유니코드/텍스트 표기만을 사용**한다. `$$` 블록 구문 사용을 완전히 금지한다.
-- **아티팩트 전용 이미지 표기 규칙**: 아티팩트 미리보기 패널에서 이미지가 시각적으로 완벽히 렌더링되도록 하려면, 추출된 논문 이미지들을 아티팩트 디렉토리(`<appDataDir>/brain/<conversation-id>/`)로 복사한 후 `![caption](/absolute/path/to/image.jpeg)` 형태의 절대 파일 경로 마크다운 구문을 사용한다. (추후 최종 포스트 `.md` 파일 생성 시에만 Hugo 웹 경로 `/images/<slug>/...`로 일괄 변환).
-- **첫 포스트 이후 아티팩트 리뷰 방법 (피드백 반영 원칙)**:
-  - 아티팩트 초안 제출 후 사용자가 코멘트/리뷰를 남기면, 기존 아티팩트 구조와 포스트 골조를 갈아엎는 것을 엄금한다.
-  - 사용자가 지적한 오류 수정, 질의사항에 대한 부연 설명, 용어 해석(예: 프롬프트/쿼리 도메인, 공유 맘바, 스펙트럴 도메인 등)을 기존 포스트의 앞뒤 맥락에 자연스럽게 녹여내어 부분 수정/첨부한다.
+- Do not create `.md` files in `content/posts/` without explicit user approval.
+- **Do not waste tokens by translating to English prematurely.** Only translate the post to English after the Korean draft has been finalized and approved.
+- **Always write math equations in standard LaTeX inside the final post files.** Do not corrupt the post quality with unicode approximations.
+- Do not modify files inside `themes/PaperMod/`.
+- Do not rename `layouts/partials` to `layouts/_partials`.
+- Do not modify existing posts unless explicitly requested.
+- Do not compromise the LaTeX syntax in the final post files to fix artifact preview breakage.
+- Do not configure `git config user.email` to an arbitrary value.
+- **No Bold Text in Korean Posts and Artifacts**: Using `**` or `<b>` tags in Korean posts and artifacts is strictly prohibited to prevent rendering issues and raw asterisks from being displayed.
+- **Strictly Follow the Isomorphic Math Rule**: Never use `$ ... $` or `$$ ... $$` delimiters for math inside artifacts. Use 100% HTML tags (`<sub>`, `<sup>`) and text/unicode equivalents.
+- **Artifact-Specific Image Path Rule**: To render images correctly in the artifact preview, copy the extracted images to the artifact directory (`<appDataDir>/brain/<conversation-id>/`) and reference them using absolute markdown paths (e.g., `![caption](/absolute/path/to/image.jpeg)`). Convert these paths back to `/images/<slug>/...` only when writing the final `.md` files.
+- **Review Strategy for Subsequent Draft Revisions**:
+  - Once a draft is submitted, do not restructure or rewrite the entire post based on user comments.
+  - Keep the original structure intact, and naturally integrate error fixes, answers to user queries, or term definitions (e.g., prompt domain, spectral domain, shared mamba) into the existing text flow.
 - **Do not force Korean translations or translations alongside common English terminology**: For terms widely accepted and used in the industry (e.g., *latency*, *strictly causal constraint*, *visual saliency*, *gaze fixation*, *gaze diffusion*, *target ambiguity*, *isomorphic*, *motion blur*, etc.), use the English term directly instead of forced Korean translations or pairing them together (e.g., 지연 시간(Latency)).
 - **Avoid excessively long, complex, or compound sentence structures**: Keep sentences short, concise, and clear (ideally within 1–2 lines). Break down long sentences with multiple conjunctions or commas to improve readability.
 - **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., `~의 효용성: ~하는가?`, `~의 비단조성`). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
 - **Ensure consistency between model components in figures and textual descriptions**: When describing model architectures, strictly match the names of components used in the text (e.g., `Frozen DINOv3`, `Shared Spatio-Temporal Decoder`, `GLF & Conv Head`) with those labeled in the corresponding figures to prevent confusion. Do not invent arbitrary names.
-
-
