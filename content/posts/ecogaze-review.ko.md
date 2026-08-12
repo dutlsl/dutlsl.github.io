@@ -1,5 +1,5 @@
 ---
-title: "[CVPRW 2026] ECOGaze: 미래 정보가 인과적 시선 추정에 얼마나 도움이 되는가?"
+title: "[CVPRW 2026 (GAZE Best Paper)] ECOGaze: 미래 정보가 인과적 시선 추정에 얼마나 도움이 되는가?"
 date: 2026-08-12T16:19:00+09:00
 draft: false
 math: true

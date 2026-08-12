@@ -1,5 +1,5 @@
 ---
-title: "[CVPRW 2026] ECOGaze: How Much Future Helps for Causal Egocentric Gaze Estimation?"
+title: "[CVPRW 2026 (GAZE Best Paper)] ECOGaze: How Much Future Helps for Causal Egocentric Gaze Estimation?"
 date: 2026-08-12T16:19:00+09:00
 draft: false
 math: true
