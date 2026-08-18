@@ -106,51 +106,43 @@ cover:
 
 ---
 
-## ⚠️ LaTeX Math Rendering — Critical Warnings
+## ⚠️ Artifact Image & Math Insertion Rules (전역 필수 하네스 규정)
 
-> Two rendering environments must be strictly distinguished when handling math equations. Ignoring this distinction previously led to repeated rendering issues.
-> **Testing Obligation**: Before starting work on this repo, create a LaTeX test artifact and a test post (push it automatically using GitHub MCP) to verify rendering integrity.
+아티팩트 뷰어(에디터 우측 패널)와 Hugo 블로그(웹 프로덕션)의 렌더링 엔진 차이로 인한 오류를 방지하기 위해 아래 규칙을 100% 엄격히 준수합니다.
 
-### Environment 1: Antigravity Artifact Viewer (Preview in Editor)
+### 1. 아티팩트 그림/이미지 삽입 규정 (Image Rules)
 
-- The markdown parser interprets `_` (underscores) as italic markdown markers.
-- Thus, inline math like `$z_i^m$` gets broken into `z`*`i`*`^m`.
-- Bold markers (`**`) may also be swallowed, exposing raw `*` symbols.
-- `$$` block equations render normally.
-- `\( \)` inline syntax is not supported in some environments.
+1. **파일 복사 및 권한 설정 (필수 사전 작업)**:
+   - PDF에서 추출된 이미지들은 **즉시** 현재 아티팩트 디렉토리 (`<appDataDir>/brain/<conversation-id>/`) 및 `images/` 하위 폴더로 복사하고, 읽기 권한(`chmod -R 777`)을 부여해야 합니다.
+   - 동시에 블로그 정적 디렉토리(`static/images/<slug>/`)에도 미리 복사해 둡니다.
+2. **아티팩트 내 마크다운 문법 (Artifact Markdown Syntax)**:
+   - **반드시 아티팩트 디렉토리의 절대 경로 사용**:
+     ```markdown
+     ![Figure 1: Architecture Overview](/home/iulab1/.gemini/antigravity-ide/brain/<conversation-id>/filename.jpeg)
+     *Figure 1: 상세 설명*
+     ```
+   - **대괄호 `![...]` 안의 캡션은 짧고 명확하게 작성**: 과도하게 긴 문장이나 특수문자를 대괄호 안에 넣으면 파서에 따라 렌더링이 깨질 수 있으므로, 간결한 제목만 넣고 상세 설명은 바로 아래 줄의 `*Figure N: ...*` 기울임꼴 텍스트로 작성합니다.
+   - **프론트매터 cover image**: 아티팩트에서는 `cover.image`에도 아티팩트 절대 경로를 지정합니다.
+   - **프론트매터 최상단 배치**: 아티팩트 마크다운 파일의 1행 1열은 반드시 `---`로 시작해야 합니다. `---` 앞에 `# 제목` 등을 절대 넣지 않습니다.
+3. **최종 블로그 `.md` 파일 변환 시**:
+   - 최종 승인 후 `content/posts/`에 생성할 때만 모든 이미지 경로를 `/images/<slug>/filename.jpeg`로 일괄 치환합니다.
 
-### Environment 2: Hugo Blog (KaTeX Rendering, Live Production)
+---
 
-- The `hugo.toml` configuration registers `$`, `$$`, `\(`, `\)`, `\[`, and `\]` as math delimiters via passthrough.
-- KaTeX auto-render renders math dynamically on page load.
-- Goldmark (Hugo's MD parser) has passthrough enabled, so it does not interpret `_` as italics inside delimiters.
-- **Therefore, standard LaTeX like `$z_i^m$` works perfectly out of the box.**
+### 2. 아티팩트 vs 블로그 수식 삽입 규정 (Math Formula Rules)
 
-### Writing Principles (To Prevent Math Breakage)
+| 구분 | 아티팩트 뷰어 (에디터 우측 프리뷰) | 최종 Hugo 블로그 (`content/posts/*.md`) |
+|---|---|---|
+| **문법** | **100% HTML 태그 + 유니코드** | **100% 표준 LaTeX (`$ ... $`, `$$ ... $$`)** |
+| **표기 예시** | `z<sub>i</sub><sup>m</sup>`, `ℝ<sup>H×W</sup>`, `θ → 0` | `$z_i^m$`, `$\mathbb{R}^{H \times W}$`, `$\theta \to 0$` |
+| **금지 사항** | `$ ... $`, `$$ ... $$`, `\_` 절대 사용 금지 (마크다운 파서 깨짐) | `<sub>`, `<sup>`, 유니코드 수식 잔존 절대 금지 (KaTeX 깨짐) |
 
-1. **Use standard LaTeX inside post files (`content/posts/*.md`).**
-   - Write math equations in standard LaTeX. Do not fall back to unicode symbols for post quality.
-   - Block math: `$$ ... $$`
-   - Do not escape underscores with `\_`. The Hugo passthrough will handle it correctly.
-
-2. **Isomorphic Math Rule for Artifacts vs. Posts (CRITICAL)**
-   - To prevent underscores from breaking inline math in the artifact viewer, **always use HTML tags (`<sub>`, `<sup>`, `<b>`) and unicode symbols for math in artifacts.**
-   - **ABSOLUTELY PROHIBITED**: Do not use standard LaTeX syntax with underscores (e.g., `$z_i^m$`, `$X_H$`) in artifacts, as they will break.
-   - **MANDATORY**: In artifacts, write math using HTML/Unicode (e.g., **z<sub>i</sub><sup>m</sup>**, **X<sub>H</sub>**).
-   - Convert these HTML representations back to standard LaTeX when generating the final `.md` post files.
-
-3. **Prevent Artifact Math Breakage**
-   - Follow Rule 2 to keep artifacts clean. However, **never commit HTML tags or unicode symbols in place of LaTeX inside the final `.md` files**, as they will break KaTeX rendering on the live blog.
-
-4. **Showing Math Previews to Users**
-   - Explain the viewer's math rendering limitations.
-   - Assure them it renders fine on the blog, and verify by running `hugo server` locally and capturing a screenshot if needed.
-
-5. **ABSOLUTELY PROHIBITED**:
-   - Do not escape underscores with `\_`.
-   - Do not leave HTML tags (`<sub>`, `<sup>`) in the final post files.
-   - Do not leave unicode representations of LaTeX in the final post files.
-   - Do not mix `\( \)` in artifacts only to rewrite them to `$ $` during commit.
+1. **아티팩트 작성 시**:
+   - 에디터 아티팩트 뷰어는 LaTeX의 `_` 기호를 마크다운 이탤릭(`_text_`)으로 오인하여 수식과 텍스트 전체를 파괴합니다.
+   - 따라서 아티팩트 내부에서는 **절대로 `$`나 `$$` 구분자를 쓰지 않고**, 첨자는 `<sub>`, `<sup>` 태그로, 그리스 문자나 연산자는 유니코드 기호(α, β, θ, σ, λ, ×, ∈, ℝ, → 등)로 완전 대체하여 작성합니다.
+2. **최종 블로그 파일 생성 시**:
+   - 사용자의 최종 승인 후 `content/posts/<slug>-review.ko.md` 및 `.en.md`를 생성할 때는, 아티팩트의 HTML 수식을 **완전한 표준 LaTeX 문법(`$ ... $`, `$$ ... $$`)으로 역변환(환원)**하여 저장합니다.
+   - Hugo KaTeX는 Goldmark passthrough 설정이 되어 있으므로 표준 LaTeX가 오류 없이 완벽하게 렌더링됩니다.
 
 ---
 
@@ -213,3 +205,4 @@ hugo
 - **Avoid excessively long, complex, or compound sentence structures**: Keep sentences short, concise, and clear (ideally within 1–2 lines). Break down long sentences with multiple conjunctions or commas to improve readability.
 - **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., `~의 효용성: ~하는가?`, `~의 비단조성`). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
 - **Ensure consistency between model components in figures and textual descriptions**: When describing model architectures, strictly match the names of components used in the text (e.g., `Frozen DINOv3`, `Shared Spatio-Temporal Decoder`, `GLF & Conv Head`) with those labeled in the corresponding figures to prevent confusion. Do not invent arbitrary names.
+
