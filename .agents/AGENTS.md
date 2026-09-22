@@ -106,43 +106,74 @@ cover:
 
 ---
 
-## ⚠️ Artifact Image & Math Insertion Rules (전역 필수 하네스 규정)
+## ⚠️ Artifact Image & Math Insertion Rules (Mandatory Global Rules)
 
-아티팩트 뷰어(에디터 우측 패널)와 Hugo 블로그(웹 프로덕션)의 렌더링 엔진 차이로 인한 오류를 방지하기 위해 아래 규칙을 100% 엄격히 준수합니다.
+To eliminate rendering discrepancies between the Antigravity artifact viewer (editor right panel) and the production Hugo blog (KaTeX), strictly follow these rules:
 
-### 1. 아티팩트 그림/이미지 삽입 규정 (Image Rules)
+### 1. Artifact Image Insertion Rules — ★MANDATORY★
 
-1. **파일 복사 및 권한 설정 (필수 사전 작업)**:
-   - PDF에서 추출된 이미지들은 **즉시** 현재 아티팩트 디렉토리 (`<appDataDir>/brain/<conversation-id>/`) 및 `images/` 하위 폴더로 복사하고, 읽기 권한(`chmod -R 777`)을 부여해야 합니다.
-   - 동시에 블로그 정적 디렉토리(`static/images/<slug>/`)에도 미리 복사해 둡니다.
-2. **아티팩트 내 마크다운 문법 (Artifact Markdown Syntax)**:
-   - **반드시 아티팩트 디렉토리의 절대 경로 사용**:
-     ```markdown
-     ![Figure 1: Architecture Overview](/home/iulab1/.gemini/antigravity-ide/brain/<conversation-id>/filename.jpeg)
-     *Figure 1: 상세 설명*
+To ensure 100% compatibility with the Antigravity artifact viewer and Hugo blog, the following single standard must be strictly enforced. All alternative formats are strictly prohibited.
+
+1. **File Copy and Permission Setup (Mandatory Prerequisite)**:
+   - All extracted image files (`_page_X_...jpeg`) must be **immediately** copied to two locations simultaneously with full permissions (`chmod -R 777`):
+     1. Directly under the current conversation's **artifact root directory** (`/home/iulab1/.gemini/antigravity-ide/brain/<conversation-id>/`)
+     2. The blog static asset directory (`/home/iulab1/dutlsl.github.io/static/images/<slug>/`)
+   - Leaving images solely in an `images/` subfolder without copying them directly to the artifact root directory is strictly prohibited.
+
+2. **Frontmatter Cover Image**:
+   - The YAML frontmatter `cover.image` **must always use the blog standard web path**:
+     ```yaml
+     cover:
+       image: "/images/<slug>/filename.jpeg"
+       alt: "Representative image description"
      ```
-   - **대괄호 `![...]` 안의 캡션은 짧고 명확하게 작성**: 과도하게 긴 문장이나 특수문자를 대괄호 안에 넣으면 파서에 따라 렌더링이 깨질 수 있으므로, 간결한 제목만 넣고 상세 설명은 바로 아래 줄의 `*Figure N: ...*` 기울임꼴 텍스트로 작성합니다.
-   - **프론트매터 cover image**: 아티팩트에서는 `cover.image`에도 아티팩트 절대 경로를 지정합니다.
-   - **프론트매터 최상단 배치**: 아티팩트 마크다운 파일의 1행 1열은 반드시 `---`로 시작해야 합니다. `---` 앞에 `# 제목` 등을 절대 넣지 않습니다.
-3. **최종 블로그 `.md` 파일 변환 시**:
-   - 최종 승인 후 `content/posts/`에 생성할 때만 모든 이미지 경로를 `/images/<slug>/filename.jpeg`로 일괄 치환합니다.
+   - The first line and first column of the file must start with `---`. Never place any title or content before `---`.
+
+3. **Mandatory Top Overview Figure in Body**:
+   - Because `cover.image` in the frontmatter does not render at the top of the artifact preview, **the representative overview diagram (Figure 1) must explicitly be placed as the very first figure in the body, right below the paper metadata block (`> Reference Paper`)**:
+     ```markdown
+     > Reference Paper
+     > - ...
+
+     ![Figure 1: Overview](/home/iulab1/.gemini/antigravity-ide/brain/<conversation-id>/filename.jpeg)
+     *Figure 1: Detailed caption description*
+
+     ---
+
+     ## 1. One-Sentence Summary
+     ```
+
+4. **Image Link Syntax in Artifact Body**:
+   - **Always use the absolute path to the artifact root directory**:
+     ```markdown
+     ![Figure N: Concise Title](/home/iulab1/.gemini/antigravity-ide/brain/<conversation-id>/filename.jpeg)
+     *Figure N: Detailed caption description*
+     ```
+   - **Prohibitions**:
+     - Do NOT use subfolder paths (e.g. `/home/.../images/...`), which trigger Webview CSP blocking.
+     - Do NOT use web relative paths (e.g. `/images/<slug>/...`) in artifact drafts (interpreted as OS root `/images/` by the editor, causing broken image icons).
+     - Do NOT use `file:///` scheme prefixes arbitrarily. Standardize strictly on `/home/iulab1/...` absolute paths.
+   - Keep the alt text inside `![...]` concise (e.g. `![Figure N: Title]`), and place any detailed descriptions on the line immediately below using italic text (`*Figure N: Description*`).
+
+5. **Conversion to Production Blog Markdown**:
+   - Only upon final user approval, when generating the production post files (`content/posts/<slug>-review.ko.md` and `.en.md`), convert all body image paths to Hugo web paths (`/images/<slug>/filename.jpeg`).
 
 ---
 
-### 2. 아티팩트 vs 블로그 수식 삽입 규정 (Math Formula Rules)
+### 2. Artifact vs. Blog Math Formula Rules
 
-| 구분 | 아티팩트 뷰어 (에디터 우측 프리뷰) | 최종 Hugo 블로그 (`content/posts/*.md`) |
+| Scope | Artifact Viewer (Editor Right Panel) | Production Hugo Blog (`content/posts/*.md`) |
 |---|---|---|
-| **문법** | **100% HTML 태그 + 유니코드** | **100% 표준 LaTeX (`$ ... $`, `$$ ... $$`)** |
-| **표기 예시** | `z<sub>i</sub><sup>m</sup>`, `ℝ<sup>H×W</sup>`, `θ → 0` | `$z_i^m$`, `$\mathbb{R}^{H \times W}$`, `$\theta \to 0$` |
-| **금지 사항** | `$ ... $`, `$$ ... $$`, `\_` 절대 사용 금지 (마크다운 파서 깨짐) | `<sub>`, `<sup>`, 유니코드 수식 잔존 절대 금지 (KaTeX 깨짐) |
+| **Syntax** | **100% HTML tags + Unicode** | **100% Standard LaTeX (`$ ... $`, `$$ ... $$`)** |
+| **Examples** | `z<sub>i</sub><sup>m</sup>`, `ℝ<sup>H×W</sup>`, `θ → 0` | `$z_i^m$`, `$\mathbb{R}^{H \times W}$`, `$\theta \to 0$` |
+| **Prohibitions** | Never use `$ ... $`, `$$ ... $$`, or `\_` (breaks Markdown parser) | Never leave `<sub>`, `<sup>`, or Unicode approximations (breaks KaTeX) |
 
-1. **아티팩트 작성 시**:
-   - 에디터 아티팩트 뷰어는 LaTeX의 `_` 기호를 마크다운 이탤릭(`_text_`)으로 오인하여 수식과 텍스트 전체를 파괴합니다.
-   - 따라서 아티팩트 내부에서는 **절대로 `$`나 `$$` 구분자를 쓰지 않고**, 첨자는 `<sub>`, `<sup>` 태그로, 그리스 문자나 연산자는 유니코드 기호(α, β, θ, σ, λ, ×, ∈, ℝ, → 등)로 완전 대체하여 작성합니다.
-2. **최종 블로그 파일 생성 시**:
-   - 사용자의 최종 승인 후 `content/posts/<slug>-review.ko.md` 및 `.en.md`를 생성할 때는, 아티팩트의 HTML 수식을 **완전한 표준 LaTeX 문법(`$ ... $`, `$$ ... $$`)으로 역변환(환원)**하여 저장합니다.
-   - Hugo KaTeX는 Goldmark passthrough 설정이 되어 있으므로 표준 LaTeX가 오류 없이 완벽하게 렌더링됩니다.
+1. **Inside Artifacts**:
+   - The editor artifact viewer misinterprets LaTeX `_` (underscore) as markdown italic (`_text_`), corrupting entire equations and surrounding paragraphs.
+   - Therefore, inside artifacts, **strictly avoid `$` and `$$` delimiters**, and express indices/exponents with `<sub>` and `<sup>` tags and operators/Greek letters with Unicode symbols (α, β, θ, σ, λ, ×, ∈, ℝ, →, etc.).
+2. **Inside Production Blog Posts**:
+   - When generating the final `content/posts/<slug>-review.ko.md` and `.en.md` after user approval, convert all HTML math representations **back to clean standard LaTeX (`$ ... $`, `$$ ... $$`)**.
+   - Hugo KaTeX has Goldmark passthrough configured, guaranteeing flawless LaTeX rendering on the live blog.
 
 ---
 
@@ -197,7 +228,13 @@ hugo
 - Do not configure `git config user.email` to an arbitrary value.
 - **No Bold Text in Korean Posts and Artifacts**: Using `**` or `<b>` tags in Korean posts and artifacts is strictly prohibited to prevent rendering issues and raw asterisks from being displayed.
 - **Strictly Follow the Isomorphic Math Rule**: Never use `$ ... $` or `$$ ... $$` delimiters for math inside artifacts. Use 100% HTML tags (`<sub>`, `<sup>`) and text/unicode equivalents.
-- **Artifact-Specific Image Path Rule**: To render images correctly in the artifact preview, copy the extracted images to the artifact directory (`<appDataDir>/brain/<conversation-id>/`) and reference them using absolute markdown paths (e.g., `![caption](/absolute/path/to/image.jpeg)`). Convert these paths back to `/images/<slug>/...` only when writing the final `.md` files.
+- **Artifact-Specific Image Path Rule (Strictly Enforced)**:
+  - Extracted images must **immediately be copied directly under the artifact root directory** (`<appDataDir>/brain/<conversation-id>/`) and the static asset directory (`static/images/<slug>/`) with full permissions (`chmod -R 777`).
+  - In YAML frontmatter, `cover.image` must always use the blog web path (`/images/<slug>/filename.jpeg`).
+  - The representative overview figure (Figure 1) must explicitly be placed as the first figure directly below the paper reference metadata block.
+  - All image references in the artifact body **must strictly use the absolute path to the brain root directory** (`![Title](/home/iulab1/.gemini/antigravity-ide/brain/<conv_id>/_page_X_...jpeg)`).
+  - Using subfolder paths (e.g. `/home/.../images/...`) or web relative paths (`/images/...`) in the artifact body is strictly prohibited.
+  - Only upon final user deployment approval, convert all body paths to `/images/<slug>/...` when writing the final `.md` files.
 - **Review Strategy for Subsequent Draft Revisions**:
   - Once a draft is submitted, do not restructure or rewrite the entire post based on user comments.
   - Keep the original structure intact, and naturally integrate error fixes, answers to user queries, or term definitions (e.g., prompt domain, spectral domain, shared mamba) into the existing text flow.
@@ -205,6 +242,6 @@ hugo
 - **Avoid excessively long, complex, or compound sentence structures**: Keep sentences short, concise, and clear (ideally within 1–2 lines). Break down long sentences with multiple conjunctions or commas to improve readability.
 - **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., `~의 효용성: ~하는가?`, `~의 비단조성`). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
 - **Ensure consistency between model components in figures and textual descriptions**: When describing model architectures, strictly match the names of components used in the text (e.g., `Frozen DINOv3`, `Shared Spatio-Temporal Decoder`, `GLF & Conv Head`) with those labeled in the corresponding figures to prevent confusion. Do not invent arbitrary names.
-- **괄호(소괄호) 사용 및 정보 욱여넣기 엄격 금지**: 괄호 안에 부가 설명, 보충 정보, 영문 번역, 파라미터 수치, 사족 등을 욱여넣는 작성을 전면 금지합니다 (예: `ViT 이전(before) 단계`, `경량(3M 파라미터) 모듈`, `지연 시간(latency)` 등 금지). 모든 내용과 수치는 괄호 없이 온전하고 자연스러운 문장 서술로 풀어써야 합니다. 수식 표기나 마크다운 링크 문법 등 기술적으로 불가피한 경우를 제외하고 본문 텍스트 내에서 소괄호 사용을 철저히 배제합니다.
-- **머메이드(Mermaid) 다이어그램 작성 금지**: 포스트 및 아티팩트 내에 머메이드(mermaid) 코드 블록이나 플로우차트를 삽입하는 것을 엄격히 금지합니다. AI 특유의 기계적인 템플릿 느낌을 주며 블로그 렌더링에 이질감을 유발하므로, 파이프라인이나 아키텍처 흐름은 논문의 공식 그림과 명확하고 자연스러운 본문 서술, 구조화된 목록 또는 마크다운 표로만 설명해야 합니다.
+- **Strictly prohibit the use of parentheses and cramming information**: Cramming supplementary explanations, parameter values, or English translations inside parentheses is strictly prohibited. State all details and numerical values in complete, natural, and flowing sentences without parentheses. Avoid parentheses entirely in body text unless technically unavoidable (e.g. math formulas or markdown links).
+- **Prohibit Mermaid Diagrams**: Inserting Mermaid diagram code blocks or flowcharts into posts and artifacts is strictly prohibited. Flowcharts look mechanical and clash with the blog's aesthetic. Explain all pipelines and architectures strictly using the paper's official figures, structured markdown tables, and clear narrative prose.
 
