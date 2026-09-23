@@ -82,11 +82,14 @@ cover:
 
 ### Body Structure
 
-1. One-Sentence Summary
-2. Research Background and Motivation (2.1 Problem Definition, 2.2 Limitations of Existing Methods, **2.3 Main Contributions**)
-3. Proposed Framework (Include equations/figures)
-4. Experimental Results
-5. Conclusion and Key Takeaways (A detailed, narrative version of the contributions, not a duplicate of 2.3)
+1. One-Sentence Summary: Condense the core value and contribution of the paper into a single impactful sentence.
+2. Research Background and Motivation:
+   - 2.1 Problem Definition (Opening with a relatable everyday analogy to build empathy → formal technical problem definition)
+   - 2.2 Limitations of Existing Methods (Analysis of critical bottlenecks and failure causes in prior methods)
+   - 2.3 Main Contributions (Present the three core contributions in clear bullet points)
+3. Proposed Framework: Pipeline overview tied to the penetrating analogy, followed by module-by-module mechanisms (analogy-formula-term decomposition sandwich)
+4. Experimental Results: Quantitative and qualitative evaluations, key comparative benchmark tables, ablation study analyses
+5. Conclusion and Key Takeaways: Rather than simply repeating 2.3, expand narratively into the meta-insights and paradigm shift delivered to the field
 
 > **WARNING**: Strictly avoid adding a 6th section outside this 5-section structure. If an exception is absolutely necessary, construct it at your discretion first, then inform the user with the rationale for the exception.
 > Both Section 2.3 (summary list) and Section 5 (detailed narrative explanations) must be included.
@@ -97,12 +100,21 @@ cover:
 - Store image files in `static/images/<slug>/`
 - Caption: Use the `*Figure N: Description*` format directly below the image.
 
-### Writing Style (For Korean Posts)
+### Writing Strategy & Narrative Style
 
-- The tone must be unified in polite, natural Korean (e.g., ending with -합니다/-입니다) rather than neutral -한다 style.
-- Do not use translated tones (번역투). Write in natural Korean.
-- Do not translate the source text literally. Reconstruct key ideas concisely.
-- Do not include general personal commentary or opinions. Stay faithful to the paper's actual content.
+- **Penetrating Analogy**: Establish an intuitive everyday analogy that consistently threads through the entire research from introduction to conclusion. Readers without domain expertise should grasp the core intuition immediately.
+  - **Maintain Domain Diversity**: Avoid reusing analogy domains (e.g., cooking/kitchen) across multiple posts. Discover fresh everyday domains (e.g., architecture, transit/traffic, sports, manufacturing) tailored to each paper's unique mechanism.
+- **Reader-Engaging Opening (Section 2.1)**: Rather than front-loading formulas or technical jargon, open with 3–4 sentences describing a relatable everyday scenario or dilemma to naturally immerse the reader in why the research is necessary.
+- **Analogy-Formula-Decomposition Sandwich (Section 3)**:
+  - Explain the intuitive analogy and physical intuition before introducing any equation.
+  - Present the formula.
+  - Preemptively and completely decompose each term in the equation—explaining its physical meaning, rationale for introduction, basis for signs (+, -), and necessity of regularization or constraints—before the reader can form doubts. Never gloss over, skip, or brush aside the most challenging mathematical parts.
+- **Narrative Conclusion (Section 5)**: Never simply repeat the bullet points from Section 2.3. Expand into a completed narrative discussing the meta-insights and paradigm-shifting value the proposed methodology delivers to academia and industry.
+- **Tone & Readability Principles**:
+  - Unify the writing in polite Korean honorifics (ending with -합니다/-입니다), strictly eliminating unnatural translationese.
+  - Keep sentences short and clear (1–2 lines per sentence), avoiding convoluted compound sentences.
+  - Articulate details in full, standalone sentences without cramming information into parentheses.
+  - Strictly prohibit bold formatting (`**`, `<b>`) in Korean text to prevent editor rendering breakage.
 
 ---
 
@@ -210,6 +222,9 @@ hugo
 
 ## Do
 
+- **Benchmark Golden References First**: Before drafting, read and benchmark the narrative flow, analogy sandwich structure, and decomposition style of the gold standard posts:
+  - `content/posts/fevos-review.ko.md` (Best-in-class analogy-formula-decomposition sandwich, pre-emptive term breakdown, narrative conclusion)
+  - `content/posts/segfs-review.ko.md` (Seamless penetrating analogy threading entire paper, relatable opening)
 - Draft posts as artifacts first, **writing the initial draft in Korean**. Generate the `.md` files only after receiving final user approval.
 - Always include `math: true` in the frontmatter for posts containing math.
 - Use the current date/time for the `date` field.
@@ -218,16 +233,20 @@ hugo
 
 ## Don't
 
-- Do not create `.md` files in `content/posts/` without explicit user approval.
-- **Do not waste tokens by translating to English prematurely.** Only translate the post to English after the Korean draft has been finalized and approved.
-- **Always write math equations in standard LaTeX inside the final post files.** Do not corrupt the post quality with unicode approximations.
-- Do not modify files inside `themes/PaperMod/`.
-- Do not rename `layouts/partials` to `layouts/_partials`.
-- Do not modify existing posts unless explicitly requested.
-- Do not compromise the LaTeX syntax in the final post files to fix artifact preview breakage.
-- Do not configure `git config user.email` to an arbitrary value.
+### Category A: Style & Expression Prohibitions
+
 - **No Bold Text in Korean Posts and Artifacts**: Using `**` or `<b>` tags in Korean posts and artifacts is strictly prohibited to prevent rendering issues and raw asterisks from being displayed.
+- **Strictly prohibit the use of parentheses and cramming information**: Cramming supplementary explanations, parameter values, or English translations inside parentheses is strictly prohibited. State all details and numerical values in complete, natural, and flowing sentences without parentheses. Avoid parentheses entirely in body text unless technically unavoidable (e.g. math formulas or markdown links).
+- **Do not force Korean translations or translations alongside common English terminology**: For terms widely accepted and used in the industry (e.g., *latency*, *strictly causal constraint*, *visual saliency*, *gaze fixation*, *gaze diffusion*, *target ambiguity*, *isomorphic*, *motion blur*, etc.), use the English term directly instead of forced Korean translations or pairing them together (e.g., pairing Korean and English like "지연 시간(Latency)").
+- **Avoid excessively long, complex, or compound sentence structures**: Keep sentences short, concise, and clear (ideally within 1–2 lines). Break down long sentences with multiple conjunctions or commas to improve readability.
+- **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., rhetorical question headers or dry noun phrases like "~의 효용성: ~하는가?" or "~의 비단조성"). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
+- **Do not bypass or gloss over difficult math terms**: Never skip or brush over the explanation of complex terms, signs, or regularization factors in formulas; break them down completely with intuitive rationale.
+- **Avoid repeating the same analogy domain across posts**: Do not reuse analogy domains (e.g., cooking/kitchen) from previous posts; discover fresh everyday domains fitting each paper.
+
+### Category B: Structure & Visualization Prohibitions
+
 - **Strictly Follow the Isomorphic Math Rule**: Never use `$ ... $` or `$$ ... $$` delimiters for math inside artifacts. Use 100% HTML tags (`<sub>`, `<sup>`) and text/unicode equivalents.
+- **Always write math equations in standard LaTeX inside the final post files**: Do not corrupt the post quality with unicode approximations in production markdown. Do not compromise the LaTeX syntax in the final post files to fix artifact preview breakage.
 - **Artifact-Specific Image Path Rule (Strictly Enforced)**:
   - Extracted images must **immediately be copied directly under the artifact root directory** (`<appDataDir>/brain/<conversation-id>/`) and the static asset directory (`static/images/<slug>/`) with full permissions (`chmod -R 777`).
   - In YAML frontmatter, `cover.image` must always use the blog web path (`/images/<slug>/filename.jpeg`).
@@ -235,13 +254,18 @@ hugo
   - All image references in the artifact body **must strictly use the absolute path to the brain root directory** (`![Title](/home/iulab1/.gemini/antigravity-ide/brain/<conv_id>/_page_X_...jpeg)`).
   - Using subfolder paths (e.g. `/home/.../images/...`) or web relative paths (`/images/...`) in the artifact body is strictly prohibited.
   - Only upon final user deployment approval, convert all body paths to `/images/<slug>/...` when writing the final `.md` files.
-- **Review Strategy for Subsequent Draft Revisions**:
-  - Once a draft is submitted, do not restructure or rewrite the entire post based on user comments.
-  - Keep the original structure intact, and naturally integrate error fixes, answers to user queries, or term definitions (e.g., prompt domain, spectral domain, shared mamba) into the existing text flow.
-- **Do not force Korean translations or translations alongside common English terminology**: For terms widely accepted and used in the industry (e.g., *latency*, *strictly causal constraint*, *visual saliency*, *gaze fixation*, *gaze diffusion*, *target ambiguity*, *isomorphic*, *motion blur*, etc.), use the English term directly instead of forced Korean translations or pairing them together (e.g., 지연 시간(Latency)).
-- **Avoid excessively long, complex, or compound sentence structures**: Keep sentences short, concise, and clear (ideally within 1–2 lines). Break down long sentences with multiple conjunctions or commas to improve readability.
-- **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., `~의 효용성: ~하는가?`, `~의 비단조성`). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
 - **Ensure consistency between model components in figures and textual descriptions**: When describing model architectures, strictly match the names of components used in the text (e.g., `Frozen DINOv3`, `Shared Spatio-Temporal Decoder`, `GLF & Conv Head`) with those labeled in the corresponding figures to prevent confusion. Do not invent arbitrary names.
-- **Strictly prohibit the use of parentheses and cramming information**: Cramming supplementary explanations, parameter values, or English translations inside parentheses is strictly prohibited. State all details and numerical values in complete, natural, and flowing sentences without parentheses. Avoid parentheses entirely in body text unless technically unavoidable (e.g. math formulas or markdown links).
 - **Prohibit Mermaid Diagrams**: Inserting Mermaid diagram code blocks or flowcharts into posts and artifacts is strictly prohibited. Flowcharts look mechanical and clash with the blog's aesthetic. Explain all pipelines and architectures strictly using the paper's official figures, structured markdown tables, and clear narrative prose.
+- **No 6th section**: Strictly avoid adding a 6th section outside the 5-section body structure.
+
+### Category C: Process & System Prohibitions
+
+- Do not create `.md` files in `content/posts/` without explicit user approval.
+- **Do not waste tokens by translating to English prematurely.** Only translate the post to English after the Korean draft has been finalized and approved.
+- Do not modify files inside `themes/PaperMod/`.
+- Do not rename `layouts/partials` to `layouts/_partials`.
+- Do not modify existing posts unless explicitly requested.
+- Do not configure `git config user.email` to an arbitrary value.
+- **Review Strategy for Subsequent Draft Revisions**: Once a draft is submitted, do not restructure or rewrite the entire post based on user comments. Keep the original structure intact, and naturally integrate error fixes, answers to user queries, or term definitions into the existing text flow.
+
 
