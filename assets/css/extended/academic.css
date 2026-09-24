@@ -955,3 +955,64 @@ body {
   transform: translateY(0) !important;
 }
 
+/* Floating Responsive Research Card Trigger (Right side, follows on scroll) */
+.floating-research-card {
+  position: fixed !important;
+  right: max(2rem, calc((100vw - 1320px) / 2 + 1.5rem)) !important;
+  bottom: 2.5rem !important;
+  z-index: 900 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  padding: 0.65rem 1.15rem !important;
+  background: var(--bg-surface) !important;
+  color: var(--accent) !important;
+  border: 1.5px solid var(--border-focus) !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(37, 99, 235, 0.15) !important;
+  cursor: pointer !important;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  backdrop-filter: blur(8px) !important;
+  user-select: none !important;
+}
+
+[data-theme="dark"] .floating-research-card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 12px rgba(59, 130, 246, 0.25) !important;
+}
+
+.floating-research-card:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35) !important;
+}
+
+.floating-research-card svg {
+  width: 17px !important;
+  height: 17px !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.2s ease !important;
+}
+.floating-research-card:hover svg {
+  transform: scale(1.1) !important;
+}
+
+@media (max-width: 640px) {
+  .floating-research-card {
+    right: 1.25rem !important;
+    bottom: 1.75rem !important;
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+  }
+  .floating-research-card .frc-text {
+    display: none !important;
+  }
+}
+
+
