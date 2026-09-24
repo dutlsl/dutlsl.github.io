@@ -1,0 +1,419 @@
+<div class="page-layout">
+  <!-- Left Sticky Rail -->
+  <aside class="sidebar-rail">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="profile-avatar-row">
+        <img class="profile-avatar" src="https://github.com/dutlsl.png" alt="dutlsl avatar" loading="lazy">
+        <div class="profile-name-box">
+          <h2>dutlsl</h2>
+          <div class="profile-role">{{ if eq .Lang "ko" }}컴퓨터 비전 연구원{{ else }}Computer Vision & DA Researcher{{ end }}</div>
+        </div>
+      </div>
+      <div class="profile-contact-list">
+        <a href="mailto:hyun02051@g.hongik.ac.kr" class="profile-contact-btn" title="Send email">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+          <span>hyun02051@g.hongik.ac.kr</span>
+        </a>
+        <a href="https://github.com/dutlsl" target="_blank" rel="noopener noreferrer" class="profile-contact-btn" title="GitHub Profile">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+          </svg>
+          <span>github.com/dutlsl</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Category Widget (Conferences & Venues) -->
+    <div class="sidebar-widget">
+      <div class="widget-heading">
+        <span>CATEGORY</span>
+        <span id="active-cat-count" class="filter-count-badge"></span>
+      </div>
+      <ul class="venue-menu">
+        <li>
+          <button class="venue-btn" data-category="CVPR 2026" onclick="toggleCategory('CVPR 2026')">
+            <span>CVPR 2026</span>
+            <span class="venue-count" id="count-cvpr-2026">11</span>
+          </button>
+        </li>
+        <li>
+          <button class="venue-btn" data-category="CVPRW 2026" onclick="toggleCategory('CVPRW 2026')">
+            <span>CVPRW 2026</span>
+            <span class="venue-count" id="count-cvprw-2026">3</span>
+          </button>
+        </li>
+        <li>
+          <button class="venue-btn" data-category="ECCV 2026" onclick="toggleCategory('ECCV 2026')">
+            <span>ECCV 2026</span>
+            <span class="venue-count" id="count-eccv-2026">2</span>
+          </button>
+        </li>
+        <li>
+          <button class="venue-btn" data-category="Tutorials" onclick="toggleCategory('Tutorials')">
+            <span>Tutorials</span>
+            <span class="venue-count" id="count-tutorials">2</span>
+          </button>
+        </li>
+        <li>
+          <button class="venue-btn" data-category="ICLR 2026 Oral" onclick="toggleCategory('ICLR 2026 Oral')">
+            <span>ICLR 2026 Oral</span>
+            <span class="venue-count" id="count-iclr-2026">1</span>
+          </button>
+        </li>
+        <li>
+          <button class="venue-btn" data-category="WACV 2025" onclick="toggleCategory('WACV 2025')">
+            <span>WACV 2025</span>
+            <span class="venue-count" id="count-wacv-2025">1</span>
+          </button>
+        </li>
+        <li>
+          <button class="venue-btn" data-category="TCSVT 2025" onclick="toggleCategory('TCSVT 2025')">
+            <span>TCSVT 2025</span>
+            <span class="venue-count" id="count-tcsvt-2025">1</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Topics Widget (Keywords & Research Areas) -->
+    <div class="sidebar-widget">
+      <div class="widget-heading">
+        <span>TOPICS</span>
+        <span id="active-topic-count" class="filter-count-badge"></span>
+      </div>
+      <div class="topic-pills">
+        <button class="topic-pill" data-topic="Video Understanding" onclick="toggleTopic('Video Understanding')">Video Understanding</button>
+        <button class="topic-pill" data-topic="Gaze Estimation" onclick="toggleTopic('Gaze Estimation')">Gaze Estimation</button>
+        <button class="topic-pill" data-topic="Domain Adaptation" onclick="toggleTopic('Domain Adaptation')">Domain Adaptation</button>
+        <button class="topic-pill" data-topic="Medical Segmentation" onclick="toggleTopic('Medical Segmentation')">Medical Segmentation</button>
+        <button class="topic-pill" data-topic="State Space Models" onclick="toggleTopic('State Space Models')">State Space Models</button>
+        <button class="topic-pill" data-topic="Open-Vocabulary" onclick="toggleTopic('Open-Vocabulary')">Open-Vocabulary</button>
+        <button class="topic-pill" data-topic="Vision-Language" onclick="toggleTopic('Vision-Language')">Vision-Language</button>
+        <button class="topic-pill" data-topic="Point Cloud" onclick="toggleTopic('Point Cloud')">Point Cloud</button>
+        <button class="topic-pill" data-topic="Efficient Inference" onclick="toggleTopic('Efficient Inference')">Efficient Inference</button>
+        <button class="topic-pill" data-topic="Time-Series" onclick="toggleTopic('Time-Series')">Time-Series</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right Wide Magazine Stream -->
+  <main class="stream-container">
+    <!-- Active Filter Feedback Banner -->
+    <div id="filter-banner" class="filter-banner">
+      <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+        <span style="font-weight:600; font-size:0.8rem; color:var(--text-sub);">{{ if eq .Lang "ko" }}선택 필터:{{ else }}Filters:{{ end }}</span>
+        <div id="active-chips-container" class="active-chips-container"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <span id="stream-count-text" style="font-family:'JetBrains Mono',monospace; font-size:0.78rem; font-weight:600;"></span>
+        <button class="clear-filter-btn" onclick="clearAllFilters()">{{ if eq .Lang "ko" }}전체 해제{{ else }}Clear All{{ end }}</button>
+      </div>
+    </div>
+
+    <!-- Paper Stream Grid -->
+    <div id="paper-stream" style="display:flex; flex-direction:column; gap:1.5rem;">
+      {{- $pages := where site.RegularPages "Type" "in" (slice "posts") -}}
+      {{- range $pages }}
+        {{- $title := .Title -}}
+        {{- $category := "Tutorials" -}}
+        {{- $badgeClass := "badge-default" -}}
+        {{- $rawVenue := "Tech Overview" -}}
+
+        {{- if in (upper $title) "CVPRW" -}}
+          {{- $category = "CVPRW 2026" -}}
+          {{- $badgeClass = "badge-cvprw" -}}
+          {{- if in (upper $title) "BEST PAPER" -}}
+            {{- $rawVenue = "CVPRW 2026 Best Paper" -}}
+          {{- else -}}
+            {{- $rawVenue = "CVPRW 2026" -}}
+          {{- end -}}
+        {{- else if in (upper $title) "GAZE 2026" -}}
+          {{- $category = "CVPRW 2026" -}}
+          {{- $badgeClass = "badge-cvprw" -}}
+          {{- $rawVenue = "GAZE 2026" -}}
+        {{- else if in (upper $title) "CVPR 2026" -}}
+          {{- $category = "CVPR 2026" -}}
+          {{- $badgeClass = "badge-cvpr" -}}
+          {{- if in (upper $title) "HIGHLIGHT" -}}
+            {{- $rawVenue = "CVPR 2026 Highlight" -}}
+          {{- else if in (upper $title) "WORKSHOP" -}}
+            {{- $rawVenue = "CVPR 2026 Workshop" -}}
+          {{- else -}}
+            {{- $rawVenue = "CVPR 2026" -}}
+          {{- end -}}
+        {{- else if in (upper $title) "ECCV 2026" -}}
+          {{- $category = "ECCV 2026" -}}
+          {{- $badgeClass = "badge-eccv" -}}
+          {{- $rawVenue = "ECCV 2026" -}}
+        {{- else if in (upper $title) "ICLR" -}}
+          {{- $category = "ICLR 2026 Oral" -}}
+          {{- $badgeClass = "badge-iclr" -}}
+          {{- $rawVenue = "ICLR 2026 Oral" -}}
+        {{- else if in (upper $title) "WACV" -}}
+          {{- $category = "WACV 2025" -}}
+          {{- $badgeClass = "badge-wacv" -}}
+          {{- $rawVenue = "WACV 2025" -}}
+        {{- else if in (upper $title) "TCSVT" -}}
+          {{- $category = "TCSVT 2025" -}}
+          {{- $badgeClass = "badge-tcsvt" -}}
+          {{- $rawVenue = "TCSVT 2025" -}}
+        {{- end -}}
+
+        {{- $filteredTags := slice -}}
+        {{- range .Params.tags -}}
+          {{- if and (ne . "Paper Review") (not (in . "2025")) (not (in . "2026")) -}}
+            {{- $filteredTags = $filteredTags | append . -}}
+          {{- end -}}
+        {{- end -}}
+
+        {{- $coverImg := .Params.cover.image | default "/images/autogaze/_page_0_Figure_5.jpeg" -}}
+
+        <article class="research-card"
+                 data-category="{{ $category }}"
+                 data-topics="{{ delimit $filteredTags "," }}"
+                 data-title="{{ .Title }}"
+                 data-summary="{{ .Summary }}"
+                 onclick="window.location.href='{{ .Permalink }}'">
+          <div class="card-thumb-area">
+            <img class="card-thumb" src="{{ $coverImg }}" alt="{{ .Title }}" loading="lazy">
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="card-meta-line">
+                <span class="badge {{ $badgeClass }}">{{ $rawVenue }}</span>
+                <span class="card-date">{{ .Date.Format "2006.01.02" }}</span>
+              </div>
+              <h3 class="card-title">
+                <a href="{{ .Permalink }}" onclick="event.stopPropagation();">{{ .Title }}</a>
+              </h3>
+              <p class="card-summary">{{ .Summary }}</p>
+            </div>
+            <div class="card-footer">
+              <div class="card-tags">
+                {{ range first 3 $filteredTags }}
+                <span class="tag-chip">#{{ . }}</span>
+                {{ end }}
+              </div>
+              <a href="{{ .Permalink }}" class="card-link" onclick="event.stopPropagation();">
+                {{ if eq $.Lang "ko" }}리뷰 읽기 →{{ else }}Read Review →{{ end }}
+              </a>
+            </div>
+          </div>
+        </article>
+      {{- end }}
+    </div>
+
+    <!-- Empty State -->
+    <div id="stream-empty-state" class="empty-state" style="display: none;">
+      <p>{{ if eq .Lang "ko" }}일치하는 논문 리뷰가 없습니다.{{ else }}No matching paper reviews found.{{ end }}</p>
+      <button class="clear-filter-btn" style="margin-top: 1rem;" onclick="clearAllFilters()">
+        {{ if eq .Lang "ko" }}전체 보기로 돌아가기{{ else }}Reset all filters{{ end }}
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- Real-time Multi-Selection Filtering & Search Script -->
+<script>
+(function() {
+  const selectedCategories = new Set();
+  const selectedTopics = new Set();
+  let searchQuery = "";
+
+  window.toggleCategory = function(cat) {
+    if (selectedCategories.has(cat)) {
+      selectedCategories.delete(cat);
+    } else {
+      selectedCategories.add(cat);
+    }
+    updateFilters();
+  };
+
+  window.toggleTopic = function(topic) {
+    if (selectedTopics.has(topic)) {
+      selectedTopics.delete(topic);
+    } else {
+      selectedTopics.add(topic);
+    }
+    updateFilters();
+  };
+
+  window.clearAllFilters = function() {
+    selectedCategories.clear();
+    selectedTopics.clear();
+    searchQuery = "";
+    const searchInput = document.getElementById("stream-search-input");
+    if (searchInput) searchInput.value = "";
+    updateFilters();
+  };
+
+  window.clearSearch = function() {
+    searchQuery = "";
+    const searchInput = document.getElementById("stream-search-input");
+    if (searchInput) searchInput.value = "";
+    updateFilters();
+  };
+
+  function updateFilters() {
+    // 1. Update Category Buttons
+    document.querySelectorAll(".venue-btn").forEach(btn => {
+      const cat = btn.getAttribute("data-category");
+      if (selectedCategories.has(cat)) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    const activeCatBadge = document.getElementById("active-cat-count");
+    if (activeCatBadge) {
+      activeCatBadge.textContent = selectedCategories.size > 0 ? `(${selectedCategories.size})` : "";
+    }
+
+    // 2. Update Topic Pills
+    document.querySelectorAll(".topic-pill").forEach(pill => {
+      const topic = pill.getAttribute("data-topic");
+      if (selectedTopics.has(topic)) {
+        pill.classList.add("active");
+      } else {
+        pill.classList.remove("active");
+      }
+    });
+
+    const activeTopicBadge = document.getElementById("active-topic-count");
+    if (activeTopicBadge) {
+      activeTopicBadge.textContent = selectedTopics.size > 0 ? `(${selectedTopics.size})` : "";
+    }
+
+    // 3. Filter Cards
+    const cards = document.querySelectorAll(".research-card");
+    let visibleCount = 0;
+    const lowerQuery = searchQuery.trim().toLowerCase();
+
+    // Mapping for semantic topic expansion
+    const topicKeywords = {
+      "video understanding": ["video", "temporal", "rvos", "scanpaths", "action"],
+      "gaze estimation": ["gaze", "scanpath", "eye", "head position", "gazing"],
+      "domain adaptation": ["domain adaptation", "uda", "sfda", "domain generalization", "optimal transport"],
+      "medical segmentation": ["medical", "ultrasound", "segmentation", "shape", "weakmed", "ew-vit", "vivim"],
+      "state space models": ["mamba", "ssm", "state space"],
+      "open-vocabulary": ["open-vocabulary", "open vocabulary", "dual-path", "rvos"],
+      "vision-language": ["vision-language", "clip", "mllm", "large language model", "llm"],
+      "point cloud": ["point cloud", "3d", "sadg"],
+      "efficient inference": ["efficient", "token reduction", "real-time", "real time"],
+      "time-series": ["time-series", "causal", "rnn", "convlstm", "temporal"]
+    };
+
+    cards.forEach(card => {
+      const cardCat = card.getAttribute("data-category") || "";
+      const cardTopicsRaw = card.getAttribute("data-topics") || "";
+      const cardTopics = cardTopicsRaw.split(",").map(t => t.trim().toLowerCase());
+      const cardTitle = (card.getAttribute("data-title") || "").toLowerCase();
+      const cardSummary = (card.getAttribute("data-summary") || "").toLowerCase();
+
+      // Category match: matches if no category selected OR cardCat in selectedCategories
+      let catMatch = true;
+      if (selectedCategories.size > 0) {
+        catMatch = selectedCategories.has(cardCat);
+      }
+
+      // Topic match: matches if no topic selected OR card matches ANY selected topic
+      let topicMatch = true;
+      if (selectedTopics.size > 0) {
+        topicMatch = Array.from(selectedTopics).some(selectedTopic => {
+          const s = selectedTopic.toLowerCase();
+          const kws = topicKeywords[s] || [s];
+          return cardTopics.some(ct => kws.some(kw => ct.includes(kw) || kw.includes(ct))) ||
+                 kws.some(kw => cardTitle.includes(kw) || cardSummary.includes(kw));
+        });
+      }
+
+      // Search match
+      let searchMatch = true;
+      if (lowerQuery !== "") {
+        searchMatch = cardTitle.includes(lowerQuery) ||
+                      cardSummary.includes(lowerQuery) ||
+                      cardCat.toLowerCase().includes(lowerQuery) ||
+                      cardTopics.some(t => t.includes(lowerQuery));
+      }
+
+      if (catMatch && topicMatch && searchMatch) {
+        card.style.display = "";
+        visibleCount++;
+      } else {
+        card.style.display = "none";
+      }
+    });
+
+    // 4. Update Filter Banner & Active Chips
+    const banner = document.getElementById("filter-banner");
+    const chipsContainer = document.getElementById("active-chips-container");
+    const countText = document.getElementById("stream-count-text");
+    const emptyState = document.getElementById("stream-empty-state");
+
+    const hasFilters = selectedCategories.size > 0 || selectedTopics.size > 0 || lowerQuery !== "";
+
+    if (banner) {
+      if (hasFilters) {
+        banner.classList.add("show");
+        if (chipsContainer) {
+          let html = "";
+          selectedCategories.forEach(cat => {
+            html += `<span class="active-filter-chip" onclick="toggleCategory('${cat}')">${cat} <span class="chip-x">✕</span></span>`;
+          });
+          selectedTopics.forEach(top => {
+            html += `<span class="active-filter-chip" onclick="toggleTopic('${top}')">${top} <span class="chip-x">✕</span></span>`;
+          });
+          if (lowerQuery) {
+            html += `<span class="active-filter-chip" onclick="clearSearch()">"${searchQuery}" <span class="chip-x">✕</span></span>`;
+          }
+          chipsContainer.innerHTML = html;
+        }
+        if (countText) {
+          const isKo = document.documentElement.lang === "ko";
+          countText.textContent = isKo ? `${visibleCount}개 논문 표시 중` : `Showing ${visibleCount} papers`;
+        }
+      } else {
+        banner.classList.remove("show");
+      }
+    }
+
+    if (emptyState) {
+      emptyState.style.display = visibleCount === 0 ? "block" : "none";
+    }
+  }
+
+  // Wire search input and initialize counts on load
+  document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById("stream-search-input");
+    if (searchInput) {
+      searchInput.addEventListener("input", function(e) {
+        searchQuery = e.target.value;
+        updateFilters();
+      });
+    }
+
+    // Dynamic count calculation for category buttons
+    const cards = document.querySelectorAll(".research-card");
+    const catCounts = {};
+    cards.forEach(card => {
+      const cat = card.getAttribute("data-category") || "";
+      if (cat) {
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll(".venue-btn").forEach(btn => {
+      const cat = btn.getAttribute("data-category");
+      const countEl = btn.querySelector(".venue-count");
+      if (countEl && catCounts[cat]) {
+        countEl.textContent = catCounts[cat];
+      }
+    });
+  });
+})();
+</script>
