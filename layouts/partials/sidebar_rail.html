@@ -1,0 +1,119 @@
+<aside class="sidebar-rail" data-home-url="{{ "" | absLangURL }}">
+  <!-- Profile Card -->
+  <div class="profile-card">
+    <div class="profile-avatar-row">
+      <img class="profile-avatar" src="https://github.com/dutlsl.png" alt="dutlsl avatar" loading="lazy">
+      <div class="profile-name-box">
+        <h2>dutlsl</h2>
+        <div class="profile-role">{{ if eq .Lang "ko" }}컴퓨터 비전 연구원{{ else }}Computer Vision Researcher{{ end }}</div>
+      </div>
+    </div>
+    <div class="profile-contact-list">
+      <a href="mailto:hyun02051@g.hongik.ac.kr" class="profile-contact-btn" title="Send email">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+        </svg>
+        <span>hyun02051@g.hongik.ac.kr</span>
+      </a>
+      <a href="https://github.com/dutlsl" target="_blank" rel="noopener noreferrer" class="profile-contact-btn" title="GitHub Profile">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+        <span>github.com/dutlsl</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Category Widget (Conferences & Venues) -->
+  <div class="sidebar-widget">
+    <div class="widget-heading">
+      <span>CATEGORY</span>
+      <span id="active-cat-count" class="filter-count-badge"></span>
+    </div>
+    <ul class="venue-menu">
+      <li>
+        <button class="venue-btn" data-category="CVPR 2026" onclick="handleCategoryClick('CVPR 2026')">
+          <span>CVPR 2026</span>
+          <span class="venue-count" id="count-cvpr-2026">11</span>
+        </button>
+      </li>
+      <li>
+        <button class="venue-btn" data-category="CVPRW 2026" onclick="handleCategoryClick('CVPRW 2026')">
+          <span>CVPRW 2026</span>
+          <span class="venue-count" id="count-cvprw-2026">3</span>
+        </button>
+      </li>
+      <li>
+        <button class="venue-btn" data-category="ECCV 2026" onclick="handleCategoryClick('ECCV 2026')">
+          <span>ECCV 2026</span>
+          <span class="venue-count" id="count-eccv-2026">2</span>
+        </button>
+      </li>
+      <li>
+        <button class="venue-btn" data-category="Tutorials" onclick="handleCategoryClick('Tutorials')">
+          <span>Tutorials</span>
+          <span class="venue-count" id="count-tutorials">2</span>
+        </button>
+      </li>
+      <li>
+        <button class="venue-btn" data-category="ICLR 2026 Oral" onclick="handleCategoryClick('ICLR 2026 Oral')">
+          <span>ICLR 2026 Oral</span>
+          <span class="venue-count" id="count-iclr-2026">1</span>
+        </button>
+      </li>
+      <li>
+        <button class="venue-btn" data-category="WACV 2025" onclick="handleCategoryClick('WACV 2025')">
+          <span>WACV 2025</span>
+          <span class="venue-count" id="count-wacv-2025">1</span>
+        </button>
+      </li>
+      <li>
+        <button class="venue-btn" data-category="TCSVT 2025" onclick="handleCategoryClick('TCSVT 2025')">
+          <span>TCSVT 2025</span>
+          <span class="venue-count" id="count-tcsvt-2025">1</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Topics Widget (Keywords & Research Areas) -->
+  <div class="sidebar-widget">
+    <div class="widget-heading">
+      <span>TOPICS</span>
+      <span id="active-topic-count" class="filter-count-badge"></span>
+    </div>
+    <div class="topic-pills">
+      <button class="topic-pill" data-topic="Video Understanding" onclick="handleTopicClick('Video Understanding')">Video Understanding</button>
+      <button class="topic-pill" data-topic="Gaze Estimation" onclick="handleTopicClick('Gaze Estimation')">Gaze Estimation</button>
+      <button class="topic-pill" data-topic="Domain Adaptation" onclick="handleTopicClick('Domain Adaptation')">Domain Adaptation</button>
+      <button class="topic-pill" data-topic="Medical Segmentation" onclick="handleTopicClick('Medical Segmentation')">Medical Segmentation</button>
+      <button class="topic-pill" data-topic="State Space Models" onclick="handleTopicClick('State Space Models')">State Space Models</button>
+      <button class="topic-pill" data-topic="Open-Vocabulary" onclick="handleTopicClick('Open-Vocabulary')">Open-Vocabulary</button>
+      <button class="topic-pill" data-topic="Vision-Language" onclick="handleTopicClick('Vision-Language')">Vision-Language</button>
+      <button class="topic-pill" data-topic="Point Cloud" onclick="handleTopicClick('Point Cloud')">Point Cloud</button>
+      <button class="topic-pill" data-topic="Efficient Inference" onclick="handleTopicClick('Efficient Inference')">Efficient Inference</button>
+      <button class="topic-pill" data-topic="Time-Series" onclick="handleTopicClick('Time-Series')">Time-Series</button>
+    </div>
+  </div>
+</aside>
+<script>
+function handleCategoryClick(cat) {
+  if (typeof toggleCategory === 'function' && document.getElementById('paper-stream')) {
+    toggleCategory(cat);
+  } else {
+    const rail = document.querySelector('.sidebar-rail');
+    const homeUrl = (rail && rail.getAttribute('data-home-url')) || '/';
+    window.location.href = homeUrl + '?category=' + encodeURIComponent(cat);
+  }
+}
+function handleTopicClick(topic) {
+  if (typeof toggleTopic === 'function' && document.getElementById('paper-stream')) {
+    toggleTopic(topic);
+  } else {
+    const rail = document.querySelector('.sidebar-rail');
+    const homeUrl = (rail && rail.getAttribute('data-home-url')) || '/';
+    window.location.href = homeUrl + '?topic=' + encodeURIComponent(topic);
+  }
+}
+</script>

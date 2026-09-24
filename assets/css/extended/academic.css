@@ -744,6 +744,214 @@ body {
 .post-single {
   max-width: 860px !important;
   margin: 0 auto !important;
-  padding: 2rem 1.5rem 5rem !important;
+  padding: 1.5rem 0 5rem !important;
+  width: 100% !important;
+}
+
+/* Research Card Buttons & Modal Styles */
+.view-research-card-btn,
+.copy-bibtex-btn,
+.card-preview-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  padding: 0.38rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+}
+
+.view-research-card-btn {
+  background: var(--accent-light) !important;
+  border: 1px solid var(--border-focus) !important;
+  color: var(--accent) !important;
+}
+.view-research-card-btn:hover {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+.copy-bibtex-btn {
+  background: var(--bg-subtle) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
+}
+.copy-bibtex-btn:hover {
+  border-color: var(--border-focus) !important;
+  color: var(--accent) !important;
+  background: var(--accent-light) !important;
+}
+
+.card-preview-btn {
+  background: var(--bg-subtle) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-sub) !important;
+  padding: 0.22rem 0.5rem !important;
+  font-size: 0.72rem !important;
+}
+.card-preview-btn:hover {
+  border-color: var(--border-focus) !important;
+  color: var(--accent) !important;
+  background: var(--accent-light) !important;
+}
+
+/* Modal Overlay & Dialog */
+.modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 1000 !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1.5rem !important;
+}
+.modal-overlay.active {
+  display: flex !important;
+}
+
+.modal-dialog {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 14px !important;
+  max-width: 680px !important;
+  width: 100% !important;
+  box-shadow: var(--shadow-md) !important;
+  overflow: hidden !important;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+@keyframes modalFadeIn {
+  from { transform: translateY(12px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-bar {
+  padding: 0.85rem 1.25rem !important;
+  background: var(--bg-subtle) !important;
+  border-bottom: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+.modal-bar span {
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: var(--text-sub) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+.modal-close {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-sub) !important;
+  font-size: 1.2rem !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  padding: 0.2rem 0.4rem !important;
+  border-radius: 4px !important;
+}
+.modal-close:hover {
+  background: var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+.modal-content {
+  padding: 1.5rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+}
+
+.paper-header-box {
+  background: var(--bg-subtle) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  padding: 1.25rem !important;
+}
+
+.phb-badge-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 0.65rem !important;
+}
+
+.phb-title {
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  font-family: 'Outfit', sans-serif !important;
+  line-height: 1.35 !important;
+  margin-bottom: 0.5rem !important;
+  color: var(--text-main) !important;
+}
+
+.phb-summary {
+  font-size: 0.88rem !important;
+  color: var(--text-muted) !important;
+  line-height: 1.6 !important;
+  margin-bottom: 1rem !important;
+}
+
+.phb-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+}
+
+.action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.4rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+}
+.action-btn-primary {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--accent) !important;
+}
+.action-btn-primary:hover {
+  background: var(--accent-hover) !important;
+}
+.action-btn-outline {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-strong) !important;
+  color: var(--text-main) !important;
+}
+.action-btn-outline:hover {
+  border-color: var(--border-focus) !important;
+  color: var(--accent) !important;
+}
+
+.toast-notification {
+  position: fixed !important;
+  bottom: 2rem !important;
+  right: 2rem !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  padding: 0.6rem 1.1rem !important;
+  border-radius: 8px !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  box-shadow: var(--shadow-md) !important;
+  z-index: 2000 !important;
+  opacity: 0 !important;
+  transform: translateY(10px) !important;
+  transition: all 0.25s ease !important;
+  pointer-events: none !important;
+}
+.toast-notification.show {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
 

@@ -1,104 +1,6 @@
 <div class="page-layout">
   <!-- Left Sticky Rail -->
-  <aside class="sidebar-rail">
-    <!-- Profile Card -->
-    <div class="profile-card">
-      <div class="profile-avatar-row">
-        <img class="profile-avatar" src="https://github.com/dutlsl.png" alt="dutlsl avatar" loading="lazy">
-        <div class="profile-name-box">
-          <h2>dutlsl</h2>
-          <div class="profile-role">{{ if eq .Lang "ko" }}컴퓨터 비전 연구원{{ else }}Computer Vision & DA Researcher{{ end }}</div>
-        </div>
-      </div>
-      <div class="profile-contact-list">
-        <a href="mailto:hyun02051@g.hongik.ac.kr" class="profile-contact-btn" title="Send email">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-          </svg>
-          <span>hyun02051@g.hongik.ac.kr</span>
-        </a>
-        <a href="https://github.com/dutlsl" target="_blank" rel="noopener noreferrer" class="profile-contact-btn" title="GitHub Profile">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-          </svg>
-          <span>github.com/dutlsl</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- Category Widget (Conferences & Venues) -->
-    <div class="sidebar-widget">
-      <div class="widget-heading">
-        <span>CATEGORY</span>
-        <span id="active-cat-count" class="filter-count-badge"></span>
-      </div>
-      <ul class="venue-menu">
-        <li>
-          <button class="venue-btn" data-category="CVPR 2026" onclick="toggleCategory('CVPR 2026')">
-            <span>CVPR 2026</span>
-            <span class="venue-count" id="count-cvpr-2026">11</span>
-          </button>
-        </li>
-        <li>
-          <button class="venue-btn" data-category="CVPRW 2026" onclick="toggleCategory('CVPRW 2026')">
-            <span>CVPRW 2026</span>
-            <span class="venue-count" id="count-cvprw-2026">3</span>
-          </button>
-        </li>
-        <li>
-          <button class="venue-btn" data-category="ECCV 2026" onclick="toggleCategory('ECCV 2026')">
-            <span>ECCV 2026</span>
-            <span class="venue-count" id="count-eccv-2026">2</span>
-          </button>
-        </li>
-        <li>
-          <button class="venue-btn" data-category="Tutorials" onclick="toggleCategory('Tutorials')">
-            <span>Tutorials</span>
-            <span class="venue-count" id="count-tutorials">2</span>
-          </button>
-        </li>
-        <li>
-          <button class="venue-btn" data-category="ICLR 2026 Oral" onclick="toggleCategory('ICLR 2026 Oral')">
-            <span>ICLR 2026 Oral</span>
-            <span class="venue-count" id="count-iclr-2026">1</span>
-          </button>
-        </li>
-        <li>
-          <button class="venue-btn" data-category="WACV 2025" onclick="toggleCategory('WACV 2025')">
-            <span>WACV 2025</span>
-            <span class="venue-count" id="count-wacv-2025">1</span>
-          </button>
-        </li>
-        <li>
-          <button class="venue-btn" data-category="TCSVT 2025" onclick="toggleCategory('TCSVT 2025')">
-            <span>TCSVT 2025</span>
-            <span class="venue-count" id="count-tcsvt-2025">1</span>
-          </button>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Topics Widget (Keywords & Research Areas) -->
-    <div class="sidebar-widget">
-      <div class="widget-heading">
-        <span>TOPICS</span>
-        <span id="active-topic-count" class="filter-count-badge"></span>
-      </div>
-      <div class="topic-pills">
-        <button class="topic-pill" data-topic="Video Understanding" onclick="toggleTopic('Video Understanding')">Video Understanding</button>
-        <button class="topic-pill" data-topic="Gaze Estimation" onclick="toggleTopic('Gaze Estimation')">Gaze Estimation</button>
-        <button class="topic-pill" data-topic="Domain Adaptation" onclick="toggleTopic('Domain Adaptation')">Domain Adaptation</button>
-        <button class="topic-pill" data-topic="Medical Segmentation" onclick="toggleTopic('Medical Segmentation')">Medical Segmentation</button>
-        <button class="topic-pill" data-topic="State Space Models" onclick="toggleTopic('State Space Models')">State Space Models</button>
-        <button class="topic-pill" data-topic="Open-Vocabulary" onclick="toggleTopic('Open-Vocabulary')">Open-Vocabulary</button>
-        <button class="topic-pill" data-topic="Vision-Language" onclick="toggleTopic('Vision-Language')">Vision-Language</button>
-        <button class="topic-pill" data-topic="Point Cloud" onclick="toggleTopic('Point Cloud')">Point Cloud</button>
-        <button class="topic-pill" data-topic="Efficient Inference" onclick="toggleTopic('Efficient Inference')">Efficient Inference</button>
-        <button class="topic-pill" data-topic="Time-Series" onclick="toggleTopic('Time-Series')">Time-Series</button>
-      </div>
-    </div>
-  </aside>
+  {{ partial "sidebar_rail.html" . }}
 
   <!-- Right Wide Magazine Stream -->
   <main class="stream-container">
@@ -198,9 +100,27 @@
                 <span class="tag-chip">#{{ . }}</span>
                 {{ end }}
               </div>
-              <a href="{{ .Permalink }}" class="card-link" onclick="event.stopPropagation();">
-                {{ if eq $.Lang "ko" }}리뷰 읽기 →{{ else }}Read Review →{{ end }}
-              </a>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button type="button" class="card-preview-btn"
+                        data-title="{{ .Title }}"
+                        data-venue="{{ $rawVenue }}"
+                        data-badge="{{ $badgeClass }}"
+                        data-date="{{ .Date.Format "2006.01.02" }}"
+                        data-summary="{{ .Summary }}"
+                        data-link="{{ .Permalink }}"
+                        onclick="event.stopPropagation(); openCardModalFromBtn(this);"
+                        title="Quick Card Preview">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                  </svg>
+                  <span>{{ if eq $.Lang "ko" }}카드{{ else }}Card{{ end }}</span>
+                </button>
+                <a href="{{ .Permalink }}" class="card-link" onclick="event.stopPropagation();">
+                  {{ if eq $.Lang "ko" }}리뷰 읽기 →{{ else }}Read Review →{{ end }}
+                </a>
+              </div>
             </div>
           </div>
         </article>
@@ -217,12 +137,94 @@
   </main>
 </div>
 
+<!-- Modal for Quick Card Preview in Stream -->
+<div class="modal-overlay" id="stream-paper-modal" onclick="closeStreamModal(event)">
+  <div class="modal-dialog" onclick="event.stopPropagation()">
+    <div class="modal-bar">
+      <span>{{ if eq .Lang "ko" }}논문 요약 카드{{ else }}Research Paper Card{{ end }}</span>
+      <button class="modal-close" onclick="closeStreamModal()">✕</button>
+    </div>
+    <div class="modal-content">
+      <div class="paper-header-box">
+        <div class="phb-badge-row">
+          <span class="badge" id="m-badge">VENUE</span>
+          <span style="font-size: 0.76rem; color: var(--text-faint); font-family: 'JetBrains Mono', monospace;" id="m-date">DATE</span>
+        </div>
+        <h2 class="phb-title" id="m-title">Title</h2>
+        <p class="phb-summary" id="m-summary">Summary</p>
+        <div class="phb-actions">
+          <a class="action-btn action-btn-primary" id="m-read-link" href="#">
+            <span>{{ if eq .Lang "ko" }}리뷰 본문 읽기 →{{ else }}Read Review →{{ end }}</span>
+          </a>
+          <button class="action-btn action-btn-outline" onclick="copyModalBibtex()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>BibTeX</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stream-toast" class="toast-notification"></div>
+
 <!-- Real-time Multi-Selection Filtering & Search Script -->
 <script>
 (function() {
   const selectedCategories = new Set();
   const selectedTopics = new Set();
   let searchQuery = "";
+  let activeModalData = null;
+
+  window.openCardModalFromBtn = function(btn) {
+    const title = btn.getAttribute('data-title') || '';
+    const venue = btn.getAttribute('data-venue') || '';
+    const badgeClass = btn.getAttribute('data-badge') || 'badge-default';
+    const date = btn.getAttribute('data-date') || '';
+    const summary = btn.getAttribute('data-summary') || '';
+    const link = btn.getAttribute('data-link') || '#';
+    openCardModal(title, venue, badgeClass, date, summary, link);
+  };
+
+  window.openCardModal = function(title, venue, badgeClass, date, summary, link) {
+    activeModalData = { title, venue, date, link };
+    document.getElementById('m-title').textContent = title;
+    document.getElementById('m-badge').textContent = venue;
+    document.getElementById('m-badge').className = 'badge ' + badgeClass;
+    document.getElementById('m-date').textContent = date;
+    document.getElementById('m-summary').textContent = summary;
+    document.getElementById('m-read-link').href = link;
+    document.getElementById('stream-paper-modal').classList.add('active');
+  };
+
+  window.closeStreamModal = function() {
+    document.getElementById('stream-paper-modal').classList.remove('active');
+  };
+
+  window.copyModalBibtex = function() {
+    if (!activeModalData) return;
+    const year = activeModalData.date.split('.')[0] || "2026";
+    const bibtex = `@article{dutlsl${year},\n  title={${activeModalData.title}},\n  year={${year}},\n  url={${activeModalData.link}}\n}`;
+    navigator.clipboard.writeText(bibtex).then(() => {
+      const isKo = document.documentElement.lang === "ko";
+      showStreamToast(isKo ? "BibTeX 인용 정보가 복사되었습니다." : "BibTeX citation copied to clipboard.");
+    });
+  };
+
+  function showStreamToast(msg) {
+    const t = document.getElementById('stream-toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeStreamModal();
+  });
 
   window.toggleCategory = function(cat) {
     if (selectedCategories.has(cat)) {
@@ -387,7 +389,7 @@
     }
   }
 
-  // Wire search input and initialize counts on load
+  // Wire search input, handle URL params, and initialize counts on load
   document.addEventListener("DOMContentLoaded", function() {
     const searchInput = document.getElementById("stream-search-input");
     if (searchInput) {
@@ -396,6 +398,13 @@
         updateFilters();
       });
     }
+
+    // Check URL parameters (e.g., navigated from single post)
+    const urlParams = new URLSearchParams(window.location.search);
+    const catParam = urlParams.get("category");
+    const topicParam = urlParams.get("topic");
+    if (catParam) selectedCategories.add(catParam);
+    if (topicParam) selectedTopics.add(topicParam);
 
     // Dynamic count calculation for category buttons
     const cards = document.querySelectorAll(".research-card");
@@ -414,6 +423,10 @@
         countEl.textContent = catCounts[cat];
       }
     });
+
+    if (catParam || topicParam) {
+      updateFilters();
+    }
   });
 })();
 </script>
