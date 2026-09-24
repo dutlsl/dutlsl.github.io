@@ -1,9 +1,9 @@
 ---
-title: "[arXiv 2025] AutoGaze: Efficient and Scalable Video Understanding via Autoregressive Gazing"
+title: "[CVPR 2026] AutoGaze: Efficient and Scalable Video Understanding via Autoregressive Gazing"
 date: 2026-09-17T18:18:30+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Video Understanding", "Efficient Inference", "Token Reduction", "MLLM", "ViT", "Reinforcement Learning", "arXiv 2025"]
+tags: ["Paper Review", "Video Understanding", "Efficient Inference", "Token Reduction", "MLLM", "ViT", "Reinforcement Learning", "CVPR 2026"]
 categories: ["Paper Review"]
 summary: "Introducing AutoGaze, a lightweight 3M-parameter autoregressive gazing module placed before the ViT backbone that reduces visual tokens by up to 100x and enables MLLMs to process 1024-frame 4K videos without out-of-memory errors."
 cover:
@@ -12,7 +12,7 @@ cover:
 ---
 
 > Reference
-> - Shi, B., Fu, S., Lian, L. et al. "Attend Before Attention: Efficient and Scalable Video Understanding via Autoregressive Gazing." arXiv 2025.
+> - Shi, B., Fu, S., Lian, L. et al. "Attend Before Attention: Efficient and Scalable Video Understanding via Autoregressive Gazing." CVPR 2026.
 > - Project Page: https://autogaze.github.io/
 
 ---

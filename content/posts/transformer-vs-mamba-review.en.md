@@ -15,7 +15,7 @@ cover:
 > - Vaswani, A. et al. "Attention Is All You Need." NeurIPS 2017.
 > - Gu, A. & Dao, T. "Mamba: Linear-Time Sequence Modeling with Selective State Spaces." ICLR 2024.
 > - Dao, T. & Gu, A. "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality." ICML 2024.
-> - Lahoti, A. et al. "Mamba-3: Improved Sequence Modeling using State Space Principles." arXiv 2026.
+> - Lahoti, A. et al. "Mamba-3: Improved Sequence Modeling using State Space Principles." ICLR 2026.
 
 ---
 

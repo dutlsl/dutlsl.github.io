@@ -1,9 +1,9 @@
 ---
-title: "[arXiv 2026] Mamba-3: Improved Sequence Modeling using State Space Principles"
+title: "[ICLR 2026 Oral] Mamba-3: Improved Sequence Modeling using State Space Principles"
 date: 2026-08-26T17:37:42+09:00
 draft: false
 math: true
-tags: ["Paper Review", "State Space Model", "Mamba", "SSM", "Linear Attention", "Efficient Inference", "arXiv 2026"]
+tags: ["Paper Review", "State Space Model", "Mamba", "SSM", "Linear Attention", "Efficient Inference", "ICLR 2026"]
 categories: ["Paper Review"]
 summary: "A paper review of Mamba-3, which advances the performance-efficiency Pareto frontier by introducing three methodological innovations from the SSM perspective: exponential-trapezoidal discretization, complex-valued state transitions, and multi-input multi-output (MIMO) architectures."
 cover:
@@ -15,7 +15,7 @@ cover:
 > - Title: Mamba-3: Improved Sequence Modeling using State Space Principles
 > - Authors: Aakash Lahoti*, Kevin Y. Li*, Berlin Chen*, Caitlin Wang*, Aviv Bick, J. Zico Kolter, Tri Dao†, Albert Gu†
 > - Affiliation: Carnegie Mellon University, Princeton University, Together AI, Cartesia AI
-> - Venue: arXiv preprint (2026)
+> - Venue: ICLR 2026 (Oral)
 > - Code: [github.com/state-spaces/mamba](https://github.com/state-spaces/mamba)
 
 ![Mamba-3 Architecture Overview](/images/mamba3/_page_10_Picture_0.jpeg)

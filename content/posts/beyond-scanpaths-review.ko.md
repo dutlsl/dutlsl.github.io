@@ -1,9 +1,9 @@
 ---
-title: "Beyond Scanpaths: 동적 장면에서의 그래프 기반 시선 시뮬레이션"
+title: "[CVPR 2026] Beyond Scanpaths: 동적 장면에서의 그래프 기반 시선 시뮬레이션"
 date: 2026-09-18T18:36:00+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Gaze Prediction", "Graph Neural Network", "Heterogeneous Graph Transformer", "Driver Attention", "Dynamical Systems", "GlimpseML 2025"]
+tags: ["Paper Review", "Gaze Prediction", "Graph Neural Network", "Heterogeneous Graph Transformer", "Driver Attention", "Dynamical Systems", "CVPR 2026"]
 categories: ["Paper Review"]
 summary: "운전 장면에서 사람의 시선을 그래프 기반 동역학 시뮬레이션으로 모델링하여, 하나의 모델로 원시 시선 시퀀스와 scanpath, saliency map을 모두 생성하는 통합 프레임워크를 소개합니다."
 cover:
@@ -12,7 +12,7 @@ cover:
 ---
 
 > 참조 논문
-> - Palmer, L., Palasek, P., Abdelkawy, H. "Beyond Scanpaths: Graph-Based Gaze Simulation in Dynamic Scenes." GlimpseML / Toyota Motor Europe.
+> - Palmer, L., Palasek, P., Abdelkawy, H. "Beyond Scanpaths: Graph-Based Gaze Simulation in Dynamic Scenes." CVPR 2026.
 > - Project Page: https://glimpse.ml/beyond-scanpaths
 
 ---

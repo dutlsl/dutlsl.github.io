@@ -1,9 +1,9 @@
 ---
-title: "[arXiv 2025] Omni-MMSI: Reference-Guided Social Interaction Understanding from Raw Video"
+title: "[CVPR 2026] Omni-MMSI: Reference-Guided Social Interaction Understanding from Raw Video"
 date: 2026-09-22T11:53:32+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Social Interaction", "Multi-modal LLM", "Identity Attribution", "Chain-of-Thought", "arXiv 2025"]
+tags: ["Paper Review", "Social Interaction", "Multi-modal LLM", "Identity Attribution", "Chain-of-Thought", "CVPR 2026"]
 categories: ["Paper Review"]
 summary: "Unlike prior works assuming clean oracle social cues, Omni-MMSI formulates the task of multi-party social interaction understanding directly from raw audio-video, resolving identity attribution with reference profiles and structured CoT reasoning in Omni-MMSI-R."
 cover:
@@ -12,7 +12,7 @@ cover:
 ---
 
 > Reference Paper
-> - Li, X., Lai, B., Chen, H. et al. "Omni-MMSI: Toward Identity-attributed Social Interaction Understanding." arXiv 2025.
+> - Li, X., Lai, B., Chen, H. et al. "Omni-MMSI: Toward Identity-attributed Social Interaction Understanding." CVPR 2026.
 > - Project Page: https://sampson-lee.github.io/omni-mmsi-project-page
 
 ![Omni-MMSI Overview Diagram](/images/omni-mmsi/_page_0_Figure_10.jpeg)

@@ -1,9 +1,9 @@
 ---
-title: "[arXiv 2026] Mamba-3: 상태 공간 원리를 활용한 개선된 시퀀스 모델링"
+title: "[ICLR 2026 Oral] Mamba-3: 상태 공간 원리를 활용한 개선된 시퀀스 모델링"
 date: 2026-08-26T17:37:42+09:00
 draft: false
 math: true
-tags: ["Paper Review", "State Space Model", "Mamba", "SSM", "Linear Attention", "Efficient Inference", "arXiv 2026"]
+tags: ["Paper Review", "State Space Model", "Mamba", "SSM", "Linear Attention", "Efficient Inference", "ICLR 2026"]
 categories: ["Paper Review"]
 summary: "SSM 관점에서 지수-사다리꼴 이산화, 복소수 상태 전이, 다중입력-다중출력 MIMO 세 가지 방법론적 혁신을 도입하여, 성능-효율성 최적 균형을 전진시킨 Mamba-3 논문 리뷰입니다."
 cover:
@@ -15,7 +15,7 @@ cover:
 > - 제목: Mamba-3: Improved Sequence Modeling using State Space Principles
 > - 저자: Aakash Lahoti*, Kevin Y. Li*, Berlin Chen*, Caitlin Wang*, Aviv Bick, J. Zico Kolter, Tri Dao†, Albert Gu†
 > - 소속: Carnegie Mellon University, Princeton University, Together AI, Cartesia AI
-> - 학회: arXiv preprint (2026)
+> - 학회: ICLR 2026 (Oral)
 > - 코드: [github.com/state-spaces/mamba](https://github.com/state-spaces/mamba)
 
 ![Mamba-3 개요 구조도](/images/mamba3/_page_10_Picture_0.jpeg)

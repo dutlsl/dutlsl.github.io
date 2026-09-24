@@ -1,9 +1,9 @@
 ---
-title: "[arXiv 2025] AutoGaze: ViT 앞단에서 불필요한 패치를 걷어내는 Autoregressive Gazing 기반 비디오 이해"
+title: "[CVPR 2026] AutoGaze: ViT 앞단에서 불필요한 패치를 걷어내는 Autoregressive Gazing 기반 비디오 이해"
 date: 2026-09-17T18:18:30+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Video Understanding", "Efficient Inference", "Token Reduction", "MLLM", "ViT", "Reinforcement Learning", "arXiv 2025"]
+tags: ["Paper Review", "Video Understanding", "Efficient Inference", "Token Reduction", "MLLM", "ViT", "Reinforcement Learning", "CVPR 2026"]
 categories: ["Paper Review"]
 summary: "ViT 백본 앞단에 autoregressive gazing 모듈을 배치하여 visual token을 최대 100배 줄이고, MLLM이 1024 프레임과 4K 고해상도 비디오를 메모리 부족 없이 처리할 수 있도록 돕는 AutoGaze를 소개합니다."
 cover:
@@ -12,7 +12,7 @@ cover:
 ---
 
 > 참조 논문
-> - Shi, B., Fu, S., Lian, L. et al. "Attend Before Attention: Efficient and Scalable Video Understanding via Autoregressive Gazing." arXiv 2025.
+> - Shi, B., Fu, S., Lian, L. et al. "Attend Before Attention: Efficient and Scalable Video Understanding via Autoregressive Gazing." CVPR 2026.
 > - Project Page: https://autogaze.github.io/
 
 ---
