@@ -3,8 +3,8 @@ title: "[CVPR 2026] Gaze Target Estimation Anywhere with Concepts"
 date: 2026-10-01T14:56:26+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Gaze Target Estimation", "Promptable Vision", "End-to-End", "Vision Foundation Model", "CVPR 2026"]
-categories: ["Paper Review"]
+tags: ["Paper Review", "GAZE 2026", "Gaze Target Estimation", "Gaze Estimation", "Promptable Vision", "End-to-End", "Vision Foundation Model", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
 summary: "자연어 프롬프트 한 줄로 특정 인물을 지목하고 그 사람이 바라보는 곳까지 end-to-end로 추정하는 Promptable Gaze Target Estimation 과제를 정의하고, 12만 장 규모의 Gaze-Co 데이터셋과 함께 GazeAnywhere 모델을 제안하여 기존 multi-stage 파이프라인을 대체합니다."
 cover:
   image: "/images/gazeanywhere/_page_2_Figure_0.jpeg"

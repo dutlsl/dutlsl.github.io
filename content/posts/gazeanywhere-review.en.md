@@ -3,8 +3,8 @@ title: "[CVPR 2026] Gaze Target Estimation Anywhere with Concepts"
 date: 2026-10-01T14:56:26+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Gaze Target Estimation", "Promptable Vision", "End-to-End", "Vision Foundation Model", "CVPR 2026"]
-categories: ["Paper Review"]
+tags: ["Paper Review", "GAZE 2026", "Gaze Target Estimation", "Gaze Estimation", "Promptable Vision", "End-to-End", "Vision Foundation Model", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
 summary: "Introducing Promptable Gaze Target Estimation (PGE) to identify subjects and estimate their gaze targets end-to-end via natural language prompts, supported by the GazeAnywhere framework and the 120K Gaze-Co dataset."
 cover:
   image: "/images/gazeanywhere/_page_2_Figure_0.jpeg"
