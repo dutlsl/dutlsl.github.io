@@ -106,18 +106,39 @@ cover:
 ### Writing Strategy & Narrative Style
 
 - **Penetrating Analogy**: Establish an intuitive everyday analogy that consistently threads through the entire research from introduction to conclusion. Readers without domain expertise should grasp the core intuition immediately.
+  - **Mechanistic Isomorphism**: The analogy must not be a mere introductory flavor or superficial metaphor. It must serve as a **cognitive explanatory engine** that maps 1:1 to the core technical dilemma and architectural modules.
+  - **Strict Ban on Decorative Garnish**: Sticking a one-liner analogy at the end of a dense academic paragraph (e.g. `이는 ~와 같습니다`, `~에 해당합니다`) is strictly prohibited. The analogy must introduce the physical necessity of the component before delving into the technical mechanics.
   - **Maintain Domain Diversity**: Avoid reusing analogy domains (e.g., cooking/kitchen) across multiple posts. Discover fresh everyday domains (e.g., architecture, transit/traffic, sports, manufacturing) tailored to each paper's unique mechanism.
 - **Reader-Engaging Opening (Section 2.1)**: Rather than front-loading formulas or technical jargon, open with 3–4 sentences describing a relatable everyday scenario or dilemma to naturally immerse the reader in why the research is necessary.
 - **Analogy-Formula-Decomposition Sandwich (Section 3)**:
-  - Explain the intuitive analogy and physical intuition before introducing any equation.
-  - Present the formula.
-  - Preemptively and completely decompose each term in the equation—explaining its physical meaning, rationale for introduction, basis for signs (+, -), and necessity of regularization or constraints—before the reader can form doubts. Never gloss over, skip, or brush aside the most challenging mathematical parts.
+  - **Zero Math Compression**: Never compress, omit, or replace any core mathematical formula into a brief prose summary. Every loss function, token formulation, and projection in the paper must appear as an explicit, isolated formula block.
+  - **Mandatory 4-Step Sandwich Protocol**:
+    1. **Intuitive Dilemma & Physical Analogy**: Before presenting the formula, explain the intuitive problem or dilemma in the analogy domain that demands this specific mathematical mechanism.
+    2. **Isolated Formula Block**: Present the equation clearly as a standalone block (HTML/Unicode in artifacts, standard LaTeX in production posts).
+    3. **Preemptive Term-by-Term Complete Decomposition**: Preemptively decompose every single variable, index, and operator. Explain:
+       - The physical meaning and dimensional context of every symbol.
+       - The mathematical rationale for every sign (+, -): why a term is subtracted to penalize error, or why a minus sign turns negative log-probabilities into positive loss penalties.
+       - Extreme boundary behavior: what happens when the prediction is perfect (loss drops to 0) versus completely wrong (penalty shoots to infinity).
+       - Hyperparameter and scale justification: why specific weights (e.g. λ=5, λ=2) are applied to balance coordinate units against ratio scales.
+    4. **Analogy Resolution**: Briefly explain how this mathematical optimization resolves the original dilemma in the everyday analogy domain.
 - **Narrative Conclusion (Section 5)**: Never simply repeat the bullet points from Section 2.3. Expand into a completed narrative discussing the meta-insights and paradigm-shifting value the proposed methodology delivers to academia and industry.
 - **Tone & Readability Principles**:
   - Unify the writing in polite Korean honorifics (ending with -합니다/-입니다), strictly eliminating unnatural translationese.
   - Keep sentences short and clear (1–2 lines per sentence), avoiding convoluted compound sentences.
+  - **Syntactic Brevity vs. Explanatory Depth**: The 1–2 line sentence length rule applies strictly to syntactic sentence structure, NOT to the depth or volume of technical content. Never truncate or omit mathematical depth to make text short; instead, articulate profound technical reasoning across multiple consecutive, punchy sentences.
   - Articulate details in full, standalone sentences without cramming information into parentheses.
   - Strictly prohibit bold formatting (`**`, `<b>`) in Korean text to prevent editor rendering breakage.
+
+### Concrete Anti-Pattern vs. Golden Pattern Comparison
+
+- ❌ **Anti-Pattern (Superficial Garnish & Math Compression)**:
+  `Z_V = W_V · ϕ_V(I)는 시각 토큰의 투영 결과입니다. 이는 관제 지시와 레이더의 신호가 같은 형식으로 통일되는 것과 같습니다.`
+  *(Why this fails: The equation is stated without motivation, the dimension constraint D < min is skipped, and the analogy is slapped on as a lazy decorative garnish at the end.)*
+
+- ⭕ **Golden Pattern (Analogy-Formula-Decomposition Sandwich)**:
+  `공항 레이더의 관제 신호 규격과 무전기에서 출력되는 음성 신호 규격은 차원이 서로 전혀 다릅니다. 이 둘을 하나의 중앙 모니터에 함께 띄우려면 동일한 표준 프로토콜로 신호를 맞춰주는 변조기가 필수적입니다. 이를 위해 두 개의 학습 가능한 선형 투영 행렬 W_V와 W_T를 도입합니다.`
+  `Z_V = W_V · ϕ_V(I)`
+  `여기서 투영 행렬 W_V는 고차원 시각 신호를 공통의 저차원 D로 압축 투영합니다. 공통 차원 D를 시각과 텍스트 차원의 최솟값보다 작게 설정한 이유는, 각 모달리티의 불필요한 고주파 잡음을 걸러내고 두 신호가 교차 학습하기에 가장 핵심적인 정보만을 밀도 높게 정제하기 위함입니다.`
 
 ---
 
@@ -243,6 +264,8 @@ hugo
 - **Do not force Korean translations or translations alongside common English terminology**: For terms widely accepted and used in the industry (e.g., *latency*, *strictly causal constraint*, *visual saliency*, *gaze fixation*, *gaze diffusion*, *target ambiguity*, *isomorphic*, *motion blur*, etc.), use the English term directly instead of forced Korean translations or pairing them together (e.g., pairing Korean and English like "지연 시간(Latency)").
 - **Avoid excessively long, complex, or compound sentence structures**: Keep sentences short, concise, and clear (ideally within 1–2 lines). Break down long sentences with multiple conjunctions or commas to improve readability.
 - **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., rhetorical question headers or dry noun phrases like "~의 효용성: ~하는가?" or "~의 비단조성"). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
+- **Prohibit Decorative Garnish Analogy (장식용 비유 및 말장난 금지)**: Writing dense academic jargon and superficially tacking on a one-liner analogy at the end of a paragraph (e.g. `이는 ~와 같습니다`, `~에 해당합니다`) is strictly forbidden. The analogy must act as the primary engine that explains the problem and intuition before formulas or mechanics are presented.
+- **Prohibit Math Compression and Skipping (수식 압축 및 생략 금지)**: Condensing mathematical formulations, objective functions, or architectural token equations into a single prose sentence without an isolated formula block and term-by-term breakdown is strictly prohibited.
 - **Do not bypass or gloss over difficult math terms**: Never skip or brush over the explanation of complex terms, signs, or regularization factors in formulas; break them down completely with intuitive rationale.
 - **Avoid repeating the same analogy domain across posts**: Do not reuse analogy domains (e.g., cooking/kitchen) from previous posts; discover fresh everyday domains fitting each paper.
 - **Prohibit Korean Translation of Paper Titles in Frontmatter**: Translating paper titles into Korean in `.ko.md` frontmatter is strictly prohibited. The original English paper title must be preserved verbatim across both `.ko.md` and `.en.md`.
