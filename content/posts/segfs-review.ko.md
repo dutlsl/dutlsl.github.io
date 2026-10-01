@@ -1,5 +1,5 @@
 ---
-title: "[ECCV 2026] SegFS: 느린 경로와 빠른 경로의 분업으로 실시간 Open-Vocabulary Video Instance Segmentation을 달성하다"
+title: "[ECCV 2026] SegFS: Real-Time Open-Vocabulary Video Instance Segmentation with Dual-Path Processing"
 date: 2026-09-22T20:16:59+09:00
 draft: false
 math: true

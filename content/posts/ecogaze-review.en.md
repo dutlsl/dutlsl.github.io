@@ -3,17 +3,26 @@ title: "[CVPRW 2026 (GAZE Best Paper)] ECOGaze: How Much Future Helps for Causal
 date: 2026-08-12T16:19:00+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Egocentric Gaze Estimation", "Future-Privileged Supervision", "Knowledge Distillation", "Causal Inference", "CVPRW 2026"]
-categories: ["Paper Review"]
-summary: "We propose ECOGaze, a controlled future-privileged training framework that enhances strictly causal egocentric gaze estimation. We demonstrate that the benefit of future look-ahead peaks within a bounded temporal window of 1.7 to 3.3 seconds."
+tags: ["Paper Review", "GAZE 2026", "Egocentric Gaze Estimation", "Future-Privileged Supervision", "Knowledge Distillation", "Causal Inference", "CVPRW 2026"]
+categories: ["GAZE 2026", "Paper Review"]
+summary: "Reviewing ECOGaze, the Best Paper Award winner at the CVPR 2026 GAZE Workshop. Introducing a controlled future-privileged training framework that enhances strictly causal egocentric gaze prediction, proving that the optimal future context window resides within 1.7 to 3.3 seconds."
 cover:
   image: "/images/ecogaze/_page_0_Figure_9.jpeg"
-  alt: "ECOGaze framework overview"
+  alt: "ECOGaze Framework Overview"
+---
+
+> Reference Paper
+> - Li, J., Zhao, W., Atisri, F., Aripineni, S., Deng, S., Froehlich, J. E., Zhao, Y., Tian, Y. "How Much Future Helps? A Controlled Study of Future-Privileged Supervision for Causal Egocentric Gaze Estimation." CVPRW 2026.
+> - Award: The 7th International Workshop on Eye and Gaze in Computer Vision (GAZE 2026) Best Paper Award
+
+![Figure 1: Offline versus Strictly Causal Online Gaze Estimation](/images/ecogaze/_page_0_Figure_9.jpeg)
+*Figure 1: Many existing egocentric gaze models assume offline bidirectional access to future frames. In contrast, practical wearable systems must operate strictly causally from past and present observations. ECOGaze introduces a controlled framework where future context is granted exclusively during training via a future-aware branch, while inference remains strictly causal.*
+
 ---
 
 ## 1. One-Sentence Summary
 
-ECOGaze is a future-privileged supervision framework that accesses future frames only during training and operates strictly causally at inference. It effectively distills anticipatory cues from future contexts into a causal model, proving that the utility of future look-ahead peaks within a bounded temporal window of approximately 1.7 to 3.3 seconds on the EGTEA Gaze+ and Ego4D benchmarks.
+ECOGaze establishes a controlled future-privileged supervision framework for strictly causal egocentric gaze estimation, empirically demonstrating that distilling look-ahead signals into a causal model peaks within a bounded temporal window of approximately 1.7 to 3.3 seconds across benchmark environments.
 
 ---
 
@@ -21,191 +30,184 @@ ECOGaze is a future-privileged supervision framework that accesses future frames
 
 ### 2.1 Problem Definition
 
-Egocentric gaze estimation is the task of predicting the camera wearer's gaze fixation point from first-person video. It is a core technology for various real-time interactive applications, such as augmented reality (AR) assistance, wearable systems, and large-scale attention analysis.
+Consider a chef chopping vegetables on a busy cutting board. The chef's eyes do not remain passively fixed on the exact point where the blade meets the carrot. Well before the current slicing cut concludes, their gaze preemptively shifts 0.5 to 1.0 second ahead toward the handle of the adjacent pan or the spice rack on the counter. Human gaze fixation during goal-directed motor activities is inherently anticipatory rather than merely reactive, guiding hand-object interactions and preparing for the subsequent physical step.
 
-![Figure 1: Comparison between offline and online gaze estimation settings](/images/ecogaze/_page_0_Figure_9.jpeg)
-*Figure 1: Existing offline methods access future frames. In contrast, real-time online systems must predict gaze using only past and present observations. ECOGaze utilizes future context exclusively during training, while inference remains strictly causal.*
+Predicting the camera wearer's focal point from first-person video, known as egocentric gaze estimation, is an essential capability for augmented reality glasses, assistive wearable robotics, and large-scale attention modeling. To render contextual interfaces or assist physical tasks naturally, systems must track the user's attention without latency.
 
-Most state-of-the-art models assume an offline setting where they can freely look forward and backward in time. Although look-ahead settings that access future frames are not entirely impossible to deploy online—provided we tolerate a latency equivalent to the look-ahead window—even a few frames of delay can severely degrade the user experience in highly interactive environments like AR headsets. Furthermore, allowing look-ahead during evaluation artificially inflates benchmark performance compared to real-world deployment.
+However, a fundamental disconnect has persisted between benchmark evaluations and practical deployments. Most high-performing gaze models assume an offline setting where the entire video sequence is pre-recorded, granting bidirectional temporal access to future frames. While look-ahead buffer designs could theoretically function online with buffered latency, even a delay of several frames induces severe motion sickness and breaks interactivity in wearable AR displays.
 
-Therefore, this study focuses on a strictly causal constraint with zero latency. Mathematically, the predicted gaze map $\hat{G}_t$ at time $t$ must not depend on any future frames $x_s$ ($s > t$), which means $\frac{\partial \hat{G}_t}{\partial x_s} = 0$.
+In practical deployment, the predicted gaze probability map $\hat{G}_t$ at timestamp $t$ must maintain strict temporal causality, with zero mathematical dependence on future frames $x_s$ ($s > t$). Under this uncompromising constraint, two foundational questions arise:
 
-Under this strict condition of not borrowing even a single future frame at inference, this research aims to answer two fundamental questions:
+First, does completely depriving a model of future context fundamentally prevent it from acquiring the anticipatory cues inherent to human gaze?
 
-- Does the complete absence of future context inherently deprive causal gaze estimators of valuable anticipatory cues?
-- If future context is indeed useful, how much look-ahead horizon should be used to train the causal model most effectively?
+Second, if future information is useful during training, what temporal look-ahead horizon optimally supervises a strictly causal model without introducing task-irrelevant noise?
 
 ### 2.2 Limitations of Existing Methods
 
-Early egocentric gaze estimation methods relied heavily on hand-crafted features, visual saliency, and short-term temporal modeling. Recently, transformer-based architectures like GLC have significantly improved performance by modeling long-range spatiotemporal dependencies. However, even these modern approaches mostly operate in offline settings, relying on bidirectional temporal contexts.
+Early first-person gaze estimation relied heavily on bottom-up visual saliency, hand-crafted optical flow, and center-bias heuristics. While recent vision transformer architectures have dramatically improved spatiotemporal modeling, they remain overwhelmingly tethered to offline bidirectional attention.
 
-While some recurrent network-based methods support causal inference, systematic attempts to leverage future observations during training to enhance strictly causal inference at test time have been scarce.
+A few recurrent neural network architectures have supported causal online prediction, but their capacity remained constrained, and none systematically investigated whether future information could be distilled during training to uplift causal inference.
 
-Gaze anticipation, which forecasts future gaze locations, is a related but fundamentally distinct task from our objective of estimating the current gaze under a causal constraint. In addition, although privileged supervision and knowledge distillation have been explored in action recognition to manage temporal contexts, no prior work in egocentric gaze estimation has systematically profiled how the utility of look-ahead changes with varying temporal horizons.
+Furthermore, while privileged temporal supervision has been explored in action classification, gaze estimation lacks a controlled experimental protocol to isolate the exact marginal utility of varying look-ahead horizons under fixed visual representations.
 
 ### 2.3 Main Contributions
 
-The main contributions of this paper are summarized as follows:
+ECOGaze addresses these open challenges through three core contributions:
 
-1. A controlled framework for temporal analysis: We formally define egocentric gaze estimation in a causal online setting and propose a training framework that isolates the impact of look-ahead horizons while keeping the inference architecture fixed.
-2. Characterization of the optimal future range: Through extensive experiments on EGTEA Gaze+ and Ego4D, we demonstrate that future-privileged supervision consistently improves the causal baseline, with the benefits concentrating within a bounded temporal range of 1.7 to 3.3 seconds.
-3. Practical guidance for real-time systems: We show that a lightweight causal decoder can successfully absorb future-aware signals during training while maintaining strict causality at inference, providing actionable insights for designing low-latency wearable systems.
+1. A controlled experimental framework that freezes the visual encoder and ties decoder weights, isolating the exact impact of the look-ahead horizon $H$ from confounders in representation learning and parameter capacity.
+2. An empirical discovery on EGTEA Gaze+ and Ego4D showing that future-privileged supervision consistently uplifts causal models, with performance peaking in a bounded temporal window of 1.7 to 3.3 seconds.
+3. An ultra-efficient 14.2M causal gaze predictor that achieves 60 FPS on a single GPU while outperforming 70M transformer baselines, providing concrete architectural guidance for wearable AR devices.
 
 ---
 
-## 3. Proposed Method: ECOGaze Framework
+## 3. Proposed Framework
 
-### 3.1 Framework Overview
+### 3.1 Overview and the Exam Tutor Analogy
 
-![Figure 2: Overview of the ECOGaze training framework](/images/ecogaze/_page_3_Figure_0.jpeg)
-*Figure 2: The training pipeline of ECOGaze. It utilizes a frozen DINOv3 encoder and a shared spatiotemporal decoder. By applying different temporal attention masks, the framework simultaneously computes the outputs of a future-aware teacher (top) and a strictly causal student (bottom). At inference, only the causal student is deployed.*
+The operational mechanism of ECOGaze is analogous to a student preparing for an examination under the guidance of an expert tutor holding the future answer key. During the real exam, the student must solve problems in real time without access to future answers, relying entirely on intrinsic reasoning.
 
-The ECOGaze framework is carefully designed to control visual representations and model capacity, allowing us to isolate and evaluate the impact of the look-ahead horizon $H$ during training. The key components are:
+During pre-exam practice, however, the tutor examines the upcoming questions and guides the student: "Observe how this current premise sets up the trap in the subsequent step; focus your attention here." Through this privileged supervision, the student internalizes the causal structure of problem-solving without ever needing the answer key during the test itself.
 
-- Frozen DINOv3: We adopt a pretrained DINOv3 Vision Transformer from Meta as the scene encoder and keep its parameters frozen. This eliminates representation-level confounds (such as feature drift) and ensures that any performance variations are solely attributable to the future-privileged supervision.
-- Shared Spatio-Temporal Decoder: This is a lightweight transformer decoder based on Divided Space-Time Attention that models temporal dynamics and eye-hand coordination from the frozen DINOv3 features. During training, two different temporal attention masks are applied:
-  1. Future-aware teacher: The temporal attention mask is expanded to allow each token to attend to the past, present, and $H$ future frames.
-  2. Strictly causal student: A strict lower-triangular temporal mask is enforced ($H=0$), restricting attention to past and present frames only.
-- GLF & Conv Head: A compact prediction pipeline that refines features via Global-Local Focusing (GLF) and projects them through a $1 \times 1$ convolution and a temperature-scaled softmax to yield the final spatial gaze probability map $\hat{G}_t$.
+![Figure 2: ECOGaze Architecture Overview](/images/ecogaze/_page_3_Figure_0.jpeg)
+*Figure 2: Overview of the ECOGaze framework. A frozen DINOv3 vision transformer processes the scene. A shared Spatio-Temporal Decoder runs two simultaneous forward passes differing only by their temporal attention masks: a future-aware teacher observing look-ahead horizon $H$, and a strictly causal student restricted to $H=0$. Following training, the teacher branch is discarded, and the lightweight causal student executes independently.*
 
-### 3.2 Rationale Behind the Isomorphic Design
+In ECOGaze, the frozen visual encoder extracts frame tokens, which enter a shared decoder. The teacher branch accesses $H$ future frames to predict future-aware gaze maps, while the student branch operates with a lower-triangular causal mask. Knowledge is transferred exclusively during training, after which the teacher is discarded.
 
-Sharing decoder parameters between the teacher and student branches is a critical design choice for controlled analysis. If we were to use a separate, larger teacher network, it would be impossible to determine whether the performance gains stem from the future look-ahead context or simply from the teacher's superior capacity. By sharing parameters, the temporal mask becomes the sole variable, allowing us to cleanly isolate the effect of future context.
+### 3.2 Isomorphic Decoder for Rigorous Controlled Isolation
 
-### 3.3 Global-Local Focusing and Prediction Head
+To ensure that performance variations stem solely from temporal look-ahead rather than auxiliary parameters, ECOGaze enforces strict variable control.
 
-Features from the final decoder layer are processed sequentially through GLF, a $1 \times 1$ convolution, and a temperature-scaled softmax to produce the final gaze map.
+The visual backbone uses Meta's DINOv3 Vision Transformer, whose weights remain completely frozen throughout training. This eliminates feature drift as a confounding variable.
 
-- GLF (Global-Local Focusing): This module dynamically highlights gaze-relevant regions (such as hands and manipulated tools) in the patch features. A query vector, composed of a learnable spatial prior and the frame's global token, computes cosine similarity with all local patch features. This generates a residual gate $\alpha_t$ that suppresses background noise and highlights gaze targets. The gated feature is fused residually:
-  
-  $X_{t,n}^{\text{focus}} = X_{t,n}^{(L)} + \alpha_{t,n} X_{t,n}^{(L)}$
+Furthermore, the teacher and student branches share identical Spatio-Temporal Decoder parameters. The two branches are distinguished solely by their temporal attention masks: the student employs a lower-triangular causal mask, whereas the teacher expands attention into the subsequent $H$ frames. This isomorphic design guarantees that performance gains cannot be attributed to model capacity disparities.
 
-- $1 \times 1$ Convolution: The focused patch tokens are reshaped back into a 2D spatial grid and upsampled. A $1 \times 1$ convolution then collapses the feature channels into a single channel (gaze map logit) at the target spatial resolution (e.g., 64×64).
+### 3.3 Global-Local Focusing Mechanism
 
-- Temperature-scaled Softmax: During training, this operation smooths the output distributions of the teacher and student, facilitating stable knowledge distillation. A standard softmax tends to polarize probabilities, destroying subtle spatial correlations (dark knowledge) across alternative gaze candidates. By dividing logits by a temperature parameter $\tau$ ($\tau=2$ in our setup) before softmax, we preserve these soft probability distributions to ease the transfer of anticipatory knowledge.
+Following the final transformer layer, sequence tokens undergo Global-Local Focusing to highlight gaze-relevant spatial regions.
 
-### 3.4 Training Objective
+Because egocentric gaze clusters around hands and manipulated objects, the module constructs a query vector combining a learnable central prior and the global scene token. Computing cosine similarity between this query and local patch features yields a dynamic residual gate $\alpha_t$:
 
-During training, the strictly causal student is optimized using a combination of a ground-truth loss and a distillation signal from the future-aware teacher.
+$$X_{t,n}^{\text{focus}} = X_{t,n}^{(L)} + \alpha_{t,n} X_{t,n}^{(L)}$$
 
-Using the temperature-scaled distributions of the student ($\tilde{G}_t^{stu}$) and the teacher ($\tilde{G}_t^{fut}$), we minimize the joint objective:
+Here, $X_{t,n}^{(L)}$ represents the $n$-th local patch feature from the $L$-th layer, and $\alpha_{t,n}$ attenuates irrelevant background tokens while amplifying task-critical focal points.
 
-$\mathcal{L} = \alpha \mathcal{L}_{GT} + \beta \mathcal{L}_{FPS}$
+A $1 \times 1$ convolution subsequently reduces channel dimensions into a single gaze logit map, followed by temperature-scaled softmax normalization.
 
-Each loss component is defined via KL divergence:
+### 3.4 Loss Formulation and Gradient Decoupling
 
-- $\mathcal{L}_{GT} = \sum_{t} D_{KL}(G_t \parallel \tilde{G}_t^{stu})$: The distance between the ground-truth gaze map and the student's prediction.
-- $\mathcal{L}_{FPS} = \sum_{t} D_{KL}(\text{sg}(\tilde{G}_t^{fut}) \parallel \tilde{G}_t^{stu})$: The distance between the teacher's prediction (with stop-gradient applied) and the student's prediction.
+The overall objective optimizes the causal student against ground truth annotations and the teacher's anticipatory distribution:
 
-Applying the stop-gradient operator $\text{sg}(\cdot)$ to the teacher branch serves two key functions:
-First, it ensures that the shared decoder weights are updated primarily to improve the student's causal predictions by routing gradients exclusively through the student path.
-Second, it prevents co-degradation. Without the stop-gradient, the teacher might deteriorate its own predictions to match the causal student, rather than guiding the student to anticipate the future. The teacher thus remains a fixed anchor representing optimal future-aware predictions.
-We set $\alpha=1$ and $\beta=1$ across all experiments.
+$$\mathcal{L} = \alpha \mathcal{L}_{GT} + \beta \mathcal{L}_{FPS}$$
+
+Both components are formulated using Kullback-Leibler divergence:
+
+$$\mathcal{L}_{GT} = \sum_{t} D_{KL}(G_t \parallel \tilde{G}_t^{stu})$$
+
+$$\mathcal{L}_{FPS} = \sum_{t} D_{KL}(\text{sg}(\tilde{G}_t^{fut}) \parallel \tilde{G}_t^{stu})$$
+
+Ground truth map $G_t$ represents the annotated fixation coordinate. Student distribution $\tilde{G}_t^{stu}$ and teacher distribution $\tilde{G}_t^{fut}$ are computed using temperature $\tau=2$, softening the probability landscape to preserve secondary gaze candidates.
+
+Crucially, the teacher output is wrapped in a stop-gradient operator $\text{sg}$. This decouples the teacher path from backpropagation, serving two functions:
+
+First, it forces gradients to flow exclusively through the student pathway, compelling the shared parameters to update the causal representation toward the teacher's anticipatory target.
+
+Second, it prevents co-degradation. Without the stop-gradient operator, the loss could be minimized by degrading the teacher's predictive quality toward the student's causal baseline. Locking the teacher as a stationary anchor ensures robust knowledge transfer.
 
 ---
 
 ## 4. Experimental Results
 
-### 4.1 Setup
+### 4.1 Impact of the Look-Ahead Horizon $H$
 
-- Datasets: EGTEA Gaze+ (24 FPS, 28 hours of cooking videos, 8,299 training / 2,022 test clips) and the gaze subset of Ego4D (30 FPS, normalized 2D gaze coordinates).
-- Evaluation Metrics: We report the Adaptive F1 Score, Precision, and Recall, which measure the spatial overlap between the predicted and ground-truth gaze maps.
-- Implementation Details: Models are trained on a single A5000 GPU using a frozen Meta DINOv3-ViT-S/16 backbone. We use the AdamW optimizer (learning rate $1\times10^{-4}$, weight decay 0.05, and a cosine learning rate schedule) for 25 epochs on EGTEA Gaze+ and 15 epochs on Ego4D.
+Evaluating look-ahead horizons from $H=0$ to $H=15$ on EGTEA Gaze+ and Ego4D reveals a distinct performance curve.
 
-### 4.2 How Much Future Context Helps
-
-| | EGTEA Gaze+ | | | Ego4D | | |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| H | F1 | Rec. | Prec. | F1 | Rec. | Prec. |
-| H = 0 (Baseline) | 44.7 | 60.3 | 35.5 | 40.7 | 56.3 | 31.9 |
-| H = 1 | 45.1 | 59.2 | 36.4 | 41.8 | 56.1 | 33.4 |
-| H = 3 | 45.5 | 61.5 | 36.1 | 41.5 | 56.8 | 32.7 |
-| H = 5 | 45.9 | 61.1 | 36.7 | 41.9 | 55.7 | 33.6 |
-| H = 7 | 45.6 | 60.3 | 36.6 | 42.6 | 56.9 | 34.0 |
-| H = 10 | 45.9 | 63.6 | 35.9 | 42.7 | 57.6 | 34.0 |
-| H = 15 | 45.4 | 61.5 | 36.1 | 41.9 | 56.6 | 33.2 |
-
-*Table 1: Causal gaze estimation performance across different look-ahead horizons $H$. Future-privileged supervision consistently improves performance, peaking around $H \in [5, 10]$ before degrading at an extreme horizon of $H=15$.*
-
-The empirical trends reveal several key characteristics of future context:
-
-- Clear gains over the causal baseline: Incorporating future context during training improves the F1 score from 44.7 to 45.9 ($H=5/10$) on EGTEA Gaze+, and from 40.7 to 42.7 ($H=10$) on Ego4D.
-- Non-monotonicity of the look-ahead horizon: Performance does not scale indefinitely with a longer future window. At $H=15$, the F1 score declines on both datasets.
-- Optimal temporal window of 1.7 to 3.3 seconds: Given our frame strides, the peak performance corresponds to roughly 1.67–3.33 seconds ($H \in [5, 10]$) on EGTEA Gaze+ and 2.67 seconds ($H=10$) on Ego4D.
-
-This optimal window of 2 to 3 seconds aligns interestingly with cognitive science. While human eye-hand coordination operates on sub-second scales (500–1000 ms), the benefits of future supervision extend further. This is because a 2-to-3-second window captures entire goal-directed actions (e.g., reaching for and grasping a tool) and subsequent object state changes. Conversely, looking too far ahead ($H=15$, ≈4–5 seconds) introduces noise from subsequent, unrelated actions, which contaminates the distillation signal.
-
-### 4.3 Comparison with Prior Methods
-
-| | EGTEA Gaze+ | | | Ego4D | | |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Method | F1 | Rec. | Prec. | F1 | Rec. | Prec. |
-| Center Prior | 10.7 | 32.0 | 6.4 | 14.9 | 21.9 | 11.3 |
-| GBVS | 15.7 | 45.1 | 9.5 | 18.0 | 47.2 | 11.1 |
-| EgoGaze | 16.3 | 16.3 | 16.3 | – | – | – |
-| Gaze MLE† | 26.6 | 35.7 | 21.3 | – | – | – |
-| Joint Learning† | 34.0 | 42.7 | 28.3 | – | – | – |
-| I3D-R50† | 40.9 | 57.2 | 31.8 | – | – | – |
-| Attention Transition | 37.2 | 51.9 | 29.0 | 36.4 | 47.5 | 29.5 |
-| GLC (Causal) | 41.6 | 57.9 | 32.4 | 41.2 | 56.1 | 32.5 |
-| ECOGaze (Ours) | 45.9 | 61.1 | 36.7 | 42.7 | 57.6 | 34.0 |
-
-*Table 2: Comparison with prior methods on egocentric gaze prediction. ECOGaze outperforms all reported baselines on both benchmarks.*
-
-By deploying the best causal student variants ($H=5$ for EGTEA Gaze+ and $H=10$ for Ego4D), ECOGaze achieves state-of-the-art results under strictly causal constraints. It outperforms a causal variant of the state-of-the-art GLC model by +4.3 F1 on EGTEA Gaze+ and +1.5 F1 on Ego4D, proving that our framework is a robust methodology for deriving strong causal predictors.
-
-### 4.4 Efficiency Analysis
-
-![Figure 4: Accuracy-efficiency trade-off](/images/ecogaze/_page_6_Figure_0.jpeg)
-*Figure 4: Accuracy-efficiency trade-off on EGTEA Gaze+ and Ego4D. ECOGaze achieves higher F1 scores with fewer GFLOPs per clip compared to the causal GLC baseline.*
-
-| Model | EGTEA Gaze+ | | Ego4D | |
-|:---|:---:|:---:|:---:|:---:|
-| | Para. (M) | FPS ↑ | Para. (M) | FPS ↑ |
-| GLC (Causal) | 70.18 | 30.28 | 70.18 | 29.27 |
-| ECOGaze (Ours) | 14.19 | 59.01 | 14.19 | 59.73 |
-
-*Table 3: Model size and inference throughput. ECOGaze is substantially smaller (5× fewer parameters) and faster (2× throughput) than GLC.*
-
-Thanks to its lightweight decoder design, ECOGaze contains only 14.2M parameters—a nearly 5× reduction compared to GLC's 70.2M. Deployed on a single A5000 GPU, it runs at approximately 60 FPS, representing a 2× speedup over GLC (30 FPS). This makes ECOGaze highly suitable for real-time wearable deployments.
-
-### 4.5 Component-wise Ablation
-
-| SAttn | TAttn | GLF | FPS | F1 | Rec. | Prec. |
+| Horizon $H$ | EGTEA Gaze+ F1 | EGTEA Recall | EGTEA Precision | Ego4D F1 | Ego4D Recall | Ego4D Precision |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| ✘ | ✘ | ✘ | ✘ | 39.1 | 63.9 | 28.2 |
-| ✔ | ✘ | ✘ | ✘ | 42.3 | 58.8 | 33.0 |
-| ✔ | ✔ | ✘ | ✘ | 44.4 | 58.7 | 35.8 |
-| ✔ | ✔ | ✔ | ✘ | 44.7 | 60.3 | 35.5 |
-| ✔ | ✔ | ✔ | ✔ | 45.9 | 61.1 | 36.7 |
+| $H = 0$ (Causal Baseline) | 44.7 | 60.3 | 35.5 | 40.7 | 56.3 | 31.9 |
+| $H = 1$ | 45.1 | 59.2 | 36.4 | 41.8 | 56.1 | 33.4 |
+| $H = 3$ | 45.5 | 61.5 | 36.1 | 41.5 | 56.8 | 32.7 |
+| $H = 5$ | 45.9 | 61.1 | 36.7 | 41.9 | 55.7 | 33.6 |
+| $H = 7$ | 45.6 | 60.3 | 36.6 | 42.6 | 56.9 | 34.0 |
+| $H = 10$ | 45.9 | 63.6 | 35.9 | 42.7 | 57.6 | 34.0 |
+| $H = 15$ | 45.4 | 61.5 | 36.1 | 41.9 | 56.6 | 33.2 |
 
-*Table 4: Component-wise ablation on EGTEA Gaze+. Spatial attention (SAttn), temporal attention (TAttn), global-local focusing (GLF), and future-privileged supervision (FPS) incrementally improve performance.*
+Three empirical insights emerge:
 
-We verified the contributions of each module step-by-step:
+First, future context substantially benefits causal learning. Incorporating future look-ahead improves F1 score from 44.7 to 45.9 on EGTEA Gaze+ and from 40.7 to 42.7 on Ego4D.
 
-- The baseline using only static features (F1 39.1) yields high recall but low precision, indicating scattered and imprecise gaze localization.
-- Adding spatial attention (SAttn) improves F1 to 42.3, highlighting the importance of modeling intra-frame patch interactions even on top of frozen representations.
-- Integrating temporal attention (TAttn) raises F1 to 44.4, demonstrating the value of short-range temporal dynamics.
-- Incorporating the GLF module brings F1 to 44.7 by offering global scene guidance.
-- Finally, future-privileged supervision (FPS) boosts F1 to the peak of 45.9, validating our core hypothesis that future-aware signals distill valuable anticipatory cues into the causal student.
+Second, the benefit of look-ahead is bounded. Extending horizons to $H=15$ causes performance to plateau and degrade.
 
-### 4.6 Failure Case Analysis
+Third, optimal look-ahead clusters tightly within 1.7 to 3.3 seconds. On EGTEA Gaze+ (24 FPS), peaks occur at $H \in [5, 10]$ (1.67 to 3.33 seconds). On Ego4D (30 FPS), peak accuracy occurs at $H=10$ (2.67 seconds).
 
-![Figure 6: Typical failure modes of ECOGaze](/images/ecogaze/_page_7_Figure_10.jpeg)
-*Figure 6: Representative failure modes under strictly causal inference: (1) early-stage gaze diffusion during visual search before fixation, (2) motion blur from rapid head rotations that degrades visual features, and (3) target ambiguity in cluttered environments.*
+This aligns with human motor cognition: while gaze fixations anticipate actions by roughly 0.5 to 1.0 second, meaningful goal-directed action segments span approximately two to three seconds. Look-ahead windows matching this duration capture the full intent trajectory, whereas longer horizons introduce extraneous actions and noise.
 
-Operating strictly causally without future frames at inference leads to performance degradation in several challenging scenarios:
+### 4.2 Benchmark Comparisons
 
-- Early-stage gaze diffusion: When a user is searching for a target but has not yet fixated, the model's predictions tend to diffuse across a wide area.
-- Motion blur: Rapid head movements corrupt input frames, degrading the quality of the spatial features extracted by DINOv3.
-- Target ambiguity: In cluttered scenes with multiple potential objects, the short-term causal history is sometimes insufficient to resolve the user's specific intent.
+Comparative evaluation against established gaze baselines demonstrates the effectiveness of ECOGaze.
 
-Addressing these limitations by integrating longer-term memory or multi-modal inputs remains an important direction for future work.
+| Model | Paradigm | EGTEA Gaze+ F1 | Ego4D F1 |
+|---|---|:---:|:---:|
+| Center Prior | Static Heuristic | 10.7 | 14.9 |
+| GBVS | Bottom-up Saliency | 15.7 | 18.0 |
+| EgoGaze | Early Deep Model | 16.3 | – |
+| Joint Learning | Multi-Task CNN | 34.0 | – |
+| I3D-R50 | 3D Convolutional | 40.9 | – |
+| GLC Causal | Transformer Baseline | 41.6 | 41.2 |
+| ECOGaze (Ours) | Future-Privileged Causal | 45.9 | 42.7 |
+
+ECOGaze outperforms all prior approaches across both benchmarks, exceeding the causal variant of GLC by 4.3 F1 points on EGTEA Gaze+ and 1.5 points on Ego4D.
+
+### 4.3 Model Efficiency and Runtime Latency
+
+![Figure 3: Accuracy versus Compute Efficiency](/images/ecogaze/_page_6_Figure_0.jpeg)
+*Figure 3: Accuracy versus computational complexity. ECOGaze achieves superior F1 accuracy while requiring substantially fewer GFLOPs than transformer baselines.*
+
+Evaluating computational complexity on an NVIDIA A5000 GPU underscores the practicality of the model.
+
+| Model | Parameters | EGTEA Gaze+ FPS | Ego4D FPS |
+|---|:---:|:---:|:---:|
+| GLC Causal | 70.2M | 30.3 | 29.3 |
+| ECOGaze (Ours) | 14.2M | 59.0 | 59.7 |
+
+ECOGaze maintains a compact footprint of 14.2M parameters—one-fifth the size of GLC (70.2M). It runs at 60 FPS, doubling the processing speed of prior models and enabling low-latency deployment on wearable edge devices.
+
+### 4.4 Ablation Analysis
+
+Ablation experiments on EGTEA Gaze+ track incremental gains across architecture modules.
+
+| Spatial Attention | Temporal Attention | Global-Local Focusing | Future Supervision | F1 Score |
+|:---:|:---:|:---:|:---:|:---:|
+| No | No | No | No | 39.1 |
+| Yes | No | No | No | 42.3 |
+| Yes | Yes | No | No | 44.4 |
+| Yes | Yes | Yes | No | 44.7 |
+| Yes | Yes | Yes | Yes | 45.9 |
+
+Spatial attention lifts the baseline from 39.1 to 42.3 F1, while temporal attention and Global-Local Focusing raise it to 44.7. The final injection of future-privileged supervision yields an additional 1.2 point jump to 45.9 F1.
+
+### 4.5 Qualitative Failure Modes
+
+![Figure 4: Qualitative Failure Cases under Causal Inference](/images/ecogaze/_page_7_Figure_10.jpeg)
+*Figure 4: Characteristic failure modes under strictly causal conditions. Gaze diffusion during unfocused visual search (left), spatial distortion from severe head motion blur (center), and target ambiguity within cluttered tool environments (right).*
+
+Three distinct failure scenarios occur due to the causal constraint:
+
+First, gaze diffusion during exploratory search phases before fixation settles on an object.
+
+Second, motion blur caused by rapid head saccades, which degrades spatial features from the frozen vision backbone.
+
+Third, target ambiguity in visually cluttered workspaces where past frames alone provide insufficient evidence to resolve which of several adjacent tools the user intends to grasp.
 
 ---
 
 ## 5. Conclusion and Key Takeaways
 
-1. Controlled temporal analysis framework: ECOGaze features a parameter-sharing isomorphic decoder structure alongside a frozen DINOv3 encoder. By varying only the temporal attention masks, it isolates and evaluates the pure impact of future context on causal inference without changing representations or model capacity.
-2. Characterization of the optimal future look-ahead: Future-privileged supervision consistently improves the causal baseline, peaking within a window of 1.7 to 3.3 seconds. This range successfully captures task-level action progression and object state changes while avoiding noise from unrelated subsequent actions.
-3. Compact, real-time causal predictor: ECOGaze requires 5× fewer parameters and runs 2× faster (60 FPS vs. 30 FPS) than GLC. It achieves state-of-the-art causal results on EGTEA Gaze+ (45.9 F1) and Ego4D (42.7 F1), proving its practicality for real-time wearables.
+ECOGaze bridges the gap between offline theoretical models and the causal requirements of real-world wearable computing. By employing an isomorphic shared-decoder design, the authors demonstrate that causal models can absorb anticipatory future signals during training, identifying an optimal look-ahead window between 1.7 and 3.3 seconds.
+
+The broader takeaways of this research are threefold:
+
+First, future-privileged training establishes an effective paradigm for causal sequence modeling. Real-time inference requirements should not artificially constrain training regimes. Exposing models to future outcomes during training instills anticipatory representations that persist at inference.
+
+Second, temporal horizons must align with cognitive action boundaries. The empirical peak at two to three seconds reflects the natural physical duration of human sub-actions, providing an empirical baseline for future intentional reasoning and robotics research.
+
+Third, architectural elegance trumps parameter scale. Delivering state-of-the-art accuracy with a 14.2M model running at 60 FPS confirms that principled information routing delivers higher practical utility than simply scaling parameter capacity.

@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] SHAPE: 의료 영상 분할을 위한 구조 인식 계층적 비지도 도메인 적응 논문 리뷰"
+title: "[CVPR 2026] SHAPE: Structure-aware Hierarchical Unsupervised Domain Adaptation with Plausibility Evaluation for Medical Image Segmentation"
 date: 2026-06-30T17:50:00+09:00
 draft: false
 math: true

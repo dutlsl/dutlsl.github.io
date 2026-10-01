@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] WeakMed: 바운딩 박스 어노테이션 기반 약지도 의료 영상 분할 프레임워크 논문 리뷰"
+title: "[CVPR 2026] WeakMed: Rethinking Box Supervision — Bias-Free Weakly Supervised Medical Segmentation"
 date: 2026-07-29T19:27:00+09:00
 draft: false
 math: true

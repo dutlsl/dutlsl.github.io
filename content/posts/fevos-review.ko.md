@@ -1,5 +1,5 @@
 ---
-title: "[ECCV 2026] FeVOS: 미래 행동을 미리 내다보고 대상을 짚어내는 Foresight 비디오 객체 분할"
+title: "[ECCV 2026] FeVOS: Foresight Expression Video Object Segmentation by Anticipating Future Actions and Pixel-Level Grounding"
 date: 2026-09-23T16:35:00+09:00
 draft: false
 math: true

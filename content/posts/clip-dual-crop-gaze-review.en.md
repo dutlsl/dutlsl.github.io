@@ -3,8 +3,8 @@ title: "[GAZE 2026] Learning to Look: CLIP-Guided Dual-Crop Fusion for Head Posi
 date: 2026-08-28T15:10:14+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Gaze Estimation", "CLIP", "Fusion", "CVPR 2026"]
-categories: ["Paper Review"]
+tags: ["Paper Review", "GAZE 2026", "Gaze Estimation", "CLIP", "Fusion", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
 summary: "A review of the Mercedes-Benz R&D paper presented at the CVPR 2026 GAZE Workshop. The authors present a dual-stream architecture with Fourier head position embeddings, a learnable pinhole coordinate transformation, and CLIP-guided dynamic fusion to achieve robust head position-invariant 3D gaze estimation across diverse benchmarks."
 cover:
   image: "/images/clip-dual-crop-gaze/fig2_architecture.jpeg"
@@ -17,13 +17,14 @@ cover:
 > - Affiliation: Mercedes-Benz Research and Development, Karnataka, India
 > - Venue: The 7th International Workshop on Eye and Gaze in Computer Vision (GAZE 2026) at CVPR 2026
 
-![Learning to Look Architecture Overview](/images/clip-dual-crop-gaze/fig2_architecture.jpeg)
+![Figure 1: Qualitative Gaze Estimation in In-Cabin Scenarios](/images/clip-dual-crop-gaze/fig1_qualitative_teaser.jpeg)
+*Figure 1: Qualitative gaze estimation results across challenging in-cabin scenarios, including glasses reflections, mask occlusions, and extreme gaze deviations. Green arrows denote ground truth, blue arrows indicate the proposed method, and red arrows represent the baseline. Angular errors in yaw and pitch are listed in degrees beneath each image.*
 
 ---
 
 ## 1. One-Sentence Summary
 
-This paper presents a dual-stream gaze estimation framework combining eye crops and full-face crops with Fourier head position embeddings, a learnable pinhole coordinate transformation, and CLIP-guided vision-language feature fusion, achieving 6.3% to 39.3% error reductions over state-of-the-art baselines across three major benchmarks (IVGaze, GazeGene, and MPIIFaceGaze).
+This paper presents a dual-stream gaze estimation framework combining eye crops and full-face crops with Fourier head position embeddings, a learnable pinhole coordinate transformation, and CLIP-guided vision-language feature fusion, achieving substantial error reductions of 6.3% to 39.3% over state-of-the-art baselines across real in-cabin IR, synthetic multi-view RGB, and in-the-wild webcam benchmarks.
 
 ---
 
@@ -31,226 +32,197 @@ This paper presents a dual-stream gaze estimation framework combining eye crops 
 
 ### 2.1 Problem Definition
 
-Appearance-based 3D gaze estimation aims to directly regress 3D gaze vectors from facial or ocular images. It serves as a foundational building block for Driver Monitoring Systems (DMS), gaze-contingent Human-Computer Interaction (HCI), and driver behavior analytics in modern intelligent vehicles.
+Consider driving out of an unlit highway tunnel on a brilliant summer afternoon. The sudden burst of sunlight sweeps across the vehicle cabin, casting sharp shadows over the dashboard while oncoming headlights reflect brightly off the driver's corrective lenses. Concurrently, the driver leans forward, turns their head left and right to inspect the side mirrors, and glances back toward the center lane.
 
-However, in-cabin automotive settings present exceptionally challenging conditions for visual gaze estimation models:
+Under such volatile real-world driving conditions, the driver's head moves dynamically across wide three-dimensional translational and rotational ranges, while optical reflections, protective masks, and illumination variations frequently obscure crucial visual features. Appearance-based three-dimensional gaze estimation seeks to regress precise 3D line-of-sight vectors directly from in-cabin camera images. It serves as a vital component for driver monitoring systems and next-generation in-vehicle human-machine interfaces, yet existing vision models suffer severe degradation whenever the driver shifts position or ocular details become partially obstructed.
 
-First, drastic illumination shifts, strong shadows, and direct solar glare frequently degrade image fidelity depending on the time of day and driving trajectory.
-Second, severe occlusions frequently arise from optical glasses reflections, sunglasses, protective masks, and headwear.
-Third, drivers continuously shift their 3D head position and rotate their heads across wide ranges, resulting in dynamically varying geometric arrangements between the camera and the subject.
+Legacy benchmarks such as MPIIFaceGaze and GazeCapture were captured under stationary frontal postures and uniformly controlled lighting, leaving the severe spatial and optical variability of real vehicle cabins unaddressed. The recent introduction of the IVGaze dataset—encompassing 44,705 infrared in-cabin images collected during real driving—has catalyzed urgent interest in developing gaze estimation models that maintain strict invariance to head position shifts and visual occlusions.
 
-![Figure 1](/images/clip-dual-crop-gaze/fig1_qualitative_teaser.jpeg)
+### 2.2 Limitations of Existing Methods
 
-*Figure 1: Qualitative gaze estimation results across challenging scenarios including glasses reflection, mask occlusion, and extreme gaze angles (lizard gaze). Green arrows denote ground truth, blue arrows denote the proposed method (Ours), and red arrows represent the baseline. Angular errors in yaw and pitch (in degrees) are indicated below each image.*
+Existing appearance-based gaze estimation approaches suffer from fundamental limitations in input crop selection and three-dimensional geometric normalization:
 
-Early laboratory benchmarks (e.g., MPIIFaceGaze, GazeCapture) were collected under constrained head positions and controlled lighting, failing to reflect the harsh variability of automotive environments. The recent release of IVGaze—featuring 44,705 infrared (IR) in-cabin driving images across 125 subjects—has catalyzed rigorous research into real-world in-cabin gaze estimation under challenging conditions.
+First, models face an unresolved resolution trade-off and the multi-mapping dilemma. Prior architectures typically rely either on full-face images or on tightly cropped eye patches. Full-face models preserve global facial geometry and macroscopic head orientation, but the fine-grained rotational cues of the pupil and iris become diluted in downsampled feature maps. Conversely, eye-crop models isolate high-resolution ocular boundaries, yet they completely discard the driver's three-dimensional spatial coordinates relative to the vehicle camera.
 
-### 2.2 Limitations of Existing Methods and Related Work
+![Figure 4: Multi-Mapping Dilemma from Head Pose Variations](/images/clip-dual-crop-gaze/fig4_multi_mapping.jpeg)
+*Figure 4: Illustration of the multi-mapping dilemma in the IVGaze dataset. Due to variations in 3D head orientation, identical 3D gaze directions produce noticeably different 2D eye appearances as the eyeball center and iris boundaries shift relative to the eye corner landmarks.*
 
-Existing appearance-based gaze estimation approaches suffer from fundamental trade-offs in input cropping and structural vulnerabilities in coordinate normalization.
+This isolation triggers the multi-mapping dilemma. Because physical gaze direction is the composite outcome of eyeball rotation and three-dimensional head pose, identical line-of-sight directions yield entirely different two-dimensional eye textures whenever the driver tilts or turns their head. Conversely, visually indistinguishable eye crops correspond to divergent absolute gaze vectors under different head orientations. This non-bijective correspondence severely destabilizes regression training.
 
-#### 1. Input Granularity Trade-Off and the Multi-Mapping Dilemma
-
-Prior methods generally adopt one of two input configurations:
-
-- Full-face Input: While full-face models capture macroscopic facial geometry and head orientation effectively, the crucial local ocular features (pupil and iris rotation) become diluted at lower relative resolutions, hindering fine-grained angular precision.
-- Eye-crop Input: Focusing exclusively on cropped eye regions preserves high-resolution ocular details. However, it strips away the 3D relative positioning and global facial context.
-
-The most critical defect of eye-crop models is the **multi-mapping dilemma** (many-to-one and one-to-many mappings). Physical gaze direction is the composite result of eyeball orientation and 3D head pose. Under varying 3D head positions and rotations, the exact same absolute gaze direction projects onto the 2D image sensor as distinctly different eye appearances.
-
-![Figure 4](/images/clip-dual-crop-gaze/fig4_multi_mapping.jpeg)
-
-*Figure 4: Illustration of the multi-mapping problem in the IVGaze dataset. Due to variations in 3D head orientation, identical 3D gaze directions produce noticeably different 2D eye appearances as the eyeball center and iris boundaries shift relative to the eye corner landmarks.*
-
-Conversely, visually identical eye crops can correspond to entirely different absolute 3D gaze directions depending on head pose. This non-bijective relationship destabilizes naive regression models during training.
-
-#### 2. Vulnerabilities of Traditional 3D Gaze Normalization
-
-To eliminate multi-mapping, classical pipelines apply 3D geometric gaze normalization, notably Zhang's MPIIGaze normalization and IVGaze axis normalization. These methods estimate the 3D Head Position (HP) and Head Rotation from facial landmarks or external head pose estimators, construct a virtual normalized camera coordinate frame looking directly at the eye center, and perspective-warp the input image accordingly.
-
-Despite its theoretical appeal, traditional normalization exhibits severe failure modes in practice:
-
-- Extreme Sensitivity to HP Estimation Errors: Inaccurate 3D head position estimates from external landmark detectors or pose estimators distort the virtual camera matrix, corrupting the perspective-warped input image.
-- Cascading Error Propagation: A mere 10 cm displacement or estimation error in head position causes the normalized gaze error to explode beyond $7^\circ$, leading to catastrophic performance degradation.
+Second, traditional three-dimensional gaze normalization suffers from catastrophic error propagation. To resolve multi-mapping, prior works commonly construct a virtual camera coordinate frame centered at the eye and perspective-warp the raw image. However, computing this virtual camera depends heavily on external facial landmark detectors or three-dimensional head pose estimators. If the upstream estimator misjudges head position by even a few centimeters, large geometric distortions are amplified across the perspective warping matrix. In practice, a mere 10 cm shift in estimated head position causes angular gaze errors to surge past $7^\circ$.
 
 ### 2.3 Main Contributions
 
-To overcome multi-mapping ambiguity without suffering from the error propagation of explicit 3D normalization, the paper introduces four core contributions:
+To resolve multi-mapping ambiguity while bypassing the fragility of explicit three-dimensional camera recalibration, the paper establishes three primary contributions:
 
-- A Dual-stream Architecture ($\Phi_{\text{eye}}, \Phi_{\text{face}}$) that processes dedicated eye crops and full-face crops in parallel, jointly capturing fine-grained ocular cues and holistic facial context.
-- A Learnable Coordinate Transformation $h(\cdot)$ parameterized by a lightweight MLP based on pinhole camera geometry, mapping crop-space gaze predictions back to global image space without fragile 3D camera recalibration.
-- A Fourier Head Position (HP) Embedding that projects 3D head position vectors into high-frequency continuous representations to restore spatial positioning context lost during tight cropping.
-- A CLIP-Guided Fusion Module that exploits pre-trained vision-language semantic representations to dynamically weigh eye-branch and face-branch predictions according to visibility and occlusion conditions.
+- It develops a dual-stream architecture that processes dedicated eye crops and full-face crops in parallel, restoring lost spatial geometry through high-frequency continuous Fourier head position embeddings.
+- It formulates a learnable pinhole coordinate transformation module parameterized by a lightweight neural network, deriving a closed-form geometric mapping from canonical crop space to global image space based purely on two-dimensional bounding box coordinates.
+- It introduces a dynamic fusion mechanism guided by pre-trained CLIP vision-language semantic representations, adaptively arbitrating between eye and face branches based on real-time visual occlusions and surface reflections.
 
 ---
 
 ## 3. Proposed Framework
 
-![Figure 2](/images/clip-dual-crop-gaze/fig2_architecture.jpeg)
+The dual-stream formulation can be intuitively understood through the analogy of a harbor control tower navigating ships through dense fog and choppy waters. To track an approaching vessel, the harbor master combines two distinct vantage points: a high-magnification spotting telescope focused on the ship's rudder and compass wheel, alongside a wide-angle observation deck overlooking the entire harbor basin. The telescope view (eye crop) captures millimeter-level adjustments in steering angle but loses track of the vessel's global position. The wide-angle deck view (face crop) tracks the macroscopic hull orientation and mooring channel but misses subtle steering vibrations. To reconcile both observations into a unified navigational chart (image space), the system applies a closed-form coordinate translation. When sea spray blurs the telescope or harbor floodlights glare across the deck, an intelligent supervisor (CLIP) dynamically shifts confidence toward the clearer observation stream.
 
-*Figure 2: Overview of the proposed architecture. Given an input face image $I$, HRNet extracts 2D landmarks to crop left/right eye regions ($I_c^L, I_c^R$) and the full face ($I_f$). $\Phi_{\text{eye}}$ (4-stack Hourglass) and $\Phi_{\text{face}}$ (6-stack Hourglass) ingest the cropped images alongside Fourier HP embeddings to regress gaze in crop space ($\mathcal{C}_{\text{crop}}$), which are then mapped to image space ($\mathcal{C}_{\text{img}}$) via $h(\cdot)$. Finally, $\Phi_{\text{fuse}}$ leverages CLIP vision-language features $F_{\text{CLIP}}$ to dynamically fuse the predictions.*
+![Figure 2: Overall System Architecture](/images/clip-dual-crop-gaze/fig2_architecture.jpeg)
+*Figure 2: Architecture of the proposed framework. Given an input facial image, HRNet extracts 2D landmarks to segment left/right eye crops and a normalized face crop. The 4-stack Hourglass eye branch and 6-stack Hourglass face branch ingest their respective crops with Fourier head position embeddings to predict gaze in crop space. The predictions are subsequently mapped to image space via the learnable transformation module, and a CLIP-guided fusion module dynamically produces the final integrated gaze vector.*
 
-Given an input face image $I \in \mathbb{R}^{H \times W}$, a pre-trained HRNet backbone detects 2D facial landmarks. Based on these landmarks, left/right eye crops $I_c^L, I_c^R \in \mathbb{R}^{H_c \times W_c}$ and a standardized face crop $I_f \in \mathbb{R}^{H_f \times W_f}$ ($H_f=96, W_f=224$) are extracted.
+Given an input face image $I \in \mathbb{R}^{H \times W}$, a pre-trained HRNet backbone detects two-dimensional landmarks to segment left and right eye crops $I_c^L, I_c^R \in \mathbb{R}^{H_c \times W_c}$ and a standardized face crop $I_f \in \mathbb{R}^{H_f \times W_f}$ ($H_f=96, W_f=224$). The pipeline consists of the coordinate transformation module, the eye branch, the face branch, and the CLIP-guided fusion module.
 
-The pipeline comprises four key components: (1) Learnable Coordinate Transformation $h(\cdot)$, (2) Eye Branch $\Phi_{\text{eye}}$, (3) Face Branch $\Phi_{\text{face}}$, and (4) CLIP-Guided Fusion Module $\Phi_{\text{fuse}}$.
+### 3.1 Learnable Coordinate Transformation $h(\cdot)$ and Mathematical Derivation
 
-### 3.1 Mathematical Derivation of Learnable Coordinate Transformation $h(\cdot)$
+Decoupling gaze estimation across two coordinate domains resolves the multi-mapping dilemma:
+1. Gaze regression is initially executed within a canonical Crop Space ($\mathcal{C}_{\text{crop}}$), where local eyeball rotation corresponds bijectively to pupil and iris textures regardless of global head movement.
+2. The localized crop prediction is subsequently translated back into the global Image Space ($\mathcal{C}_{\text{img}}$) to compute vehicle-level metrics and supervision loss.
 
-The core strategy for resolving multi-mapping is decoupling gaze regression into two coordinate spaces:
+The transformation module $h(\cdot)$ establishes the formal geometric bridge between these domains.
 
-1. Gaze regression is first performed within the localized Crop Space ($\mathcal{C}_{\text{crop}}$). In this tight crop, the correspondence between eye appearance and local eyeball orientation remains unique and stable.
-2. The localized gaze prediction is subsequently mapped back to the global Image Space ($\mathcal{C}_{\text{img}}$) to evaluate the true line-of-sight relative to the vehicle coordinate frame.
+![Figure 3: Pinhole Geometry and Coordinate Mapping](/images/clip-dual-crop-gaze/fig3_transformation.jpeg)
+*Figure 3: Geometric relationship between Crop Space and Image Space based on pinhole camera projection and 2D translation matrix $M_T$.*
 
-The transformation module $h(\cdot)$ acts as the geometric bridge between these two spaces.
-
-![Figure 3](/images/clip-dual-crop-gaze/fig3_transformation.jpeg)
-
-*Figure 3: Geometric relationship between Crop Space ($\mathcal{C}_{\text{crop}}$) and Image Space ($\mathcal{C}_{\text{img}}$) based on pinhole camera projection and 2D translation matrix $M_T$.*
-
-#### 1. Pinhole Camera Projection Formulation
-
-The standard pinhole projection of a 3D world point onto the 2D image plane is expressed as:
+Under standard pinhole camera projection, a physical 3D point $P_{\text{3D}} = (X, Y, Z)$ projects onto sensor pixel $p_{\text{2D}} = (u, v)$ according to:
 
 $$[p_{\text{2D}}, 1]^T = K_{\text{img}} [R_{\text{img}} \mid T_{\text{img}}] [P_{\text{3D}}, 1]^T$$
 
 Where:
-- $P_{\text{3D}} = (X, Y, Z)$ represents the physical 3D coordinates of the eye center in 3D space. Appending $1$ forms homogeneous coordinates $[X, Y, Z, 1]^T$ to compute 3D rotation and translation via a single linear matrix multiplication.
-- $[R_{\text{img}} \mid T_{\text{img}}] \in \mathbb{R}^{3 \times 4}$ denotes the extrinsic camera matrix, where $R_{\text{img}} \in \mathbb{R}^{3 \times 3}$ is the 3D gaze rotation matrix and $T_{\text{img}} \in \mathbb{R}^{3 \times 1}$ is the 3D translation vector (head position relative to the camera).
-- $K_{\text{img}} \in \mathbb{R}^{3 \times 3}$ is the intrinsic camera matrix:
+- $[P_{\text{3D}}, 1]^T$ is the homogeneous coordinate column vector of the physical 3D ocular point, enabling rotation and translation to be evaluated via a single linear transformation.
+- $[R_{\text{img}} \mid T_{\text{img}}] \in \mathbb{R}^{3 \times 4}$ denotes the extrinsic camera matrix, where $R_{\text{img}} \in \mathbb{R}^{3 \times 3}$ is the 3D gaze rotation matrix and $T_{\text{img}} \in \mathbb{R}^{3 \times 1}$ is the 3D translation vector representing head position relative to the camera lens.
+- $K_{\text{img}} \in \mathbb{R}^{3 \times 3}$ represents the intrinsic camera calibration matrix:
   $$K_{\text{img}} = \begin{bmatrix} f & 0 & W/2 \\ 0 & f & H/2 \\ 0 & 0 & 1 \end{bmatrix}$$
-  where $f$ is the focal length and $(W/2, H/2)$ is the optical center (principal point).
-- $p_{\text{2D}} = (u, v)$ denotes the resulting 2D pixel coordinates on the full image sensor.
+  where $f$ denotes the camera focal length and $(W/2, H/2)$ specifies the optical center principal point.
+- $p_{\text{2D}}$ denotes the resulting 2D pixel coordinates on the sensor plane.
 
-#### 2. Virtual Pinhole Projection in Crop Space
-
-Cropping a localized patch around the eye is geometrically equivalent to capturing the eye with a dedicated virtual pinhole camera:
+Applying the same pinhole formulation to a cropped sub-region $p'_{\text{2D}} = (u', v')$ defines a virtual pinhole camera:
 
 $$[p'_{\text{2D}}, 1]^T = K_c [R_c \mid T_c] [P_{\text{3D}}, 1]^T$$
 
-Here, $p'_{\text{2D}} = (u', v')$ are pixel coordinates in the crop, $R_c$ is the local 3D gaze rotation in crop space, and $K_c$ is the virtual intrinsic matrix:
+Here, $R_c$ is the localized ocular rotation within the crop frame, and $K_c$ is the virtual intrinsic matrix of the crop window:
+
 $$K_c = \begin{bmatrix} f_x & 0 & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1 \end{bmatrix}$$
-where $(f_x, f_y)$ represents the virtual focal scaling factor and $(c_x, c_y)$ is the center of the cropped region.
 
-#### 3. Derivation of 2D Translation $M_T$ and Closed-Form Rotation Mapping
-
-The 2D spatial relationship between image coordinates $(u, v)$ and crop coordinates $(u', v')$ is defined by a translation corresponding to the top-left bounding box anchor $(x_s, y_s)$:
+The spatial offset between raw image pixel $(u, v)$ and crop pixel $(u', v')$ is defined by the top-left bounding box anchor coordinates $(x_s, y_s)$:
 
 $$u' = u - x_s, \quad v' = v - y_s$$
 
-Expressing this translation as a $3 \times 3$ matrix $M_T$:
+Formulating this translation as a $3 \times 3$ matrix $M_T$:
 
 $$[p'_{\text{2D}}, 1]^T = \begin{bmatrix} 1 & 0 & -x_s \\ 0 & 1 & -y_s \\ 0 & 0 & 1 \end{bmatrix} [p_{\text{2D}}, 1]^T = M_T [p_{\text{2D}}, 1]^T$$
 
-Equating the two projection equations yields:
+Multiplying the full-image projection equation by $M_T$ equates both projections:
 
 $$M_T K_{\text{img}} [R_{\text{img}} \mid T_{\text{img}}] = K_c [R_c \mid T_c]$$
 
-Isolating the rotational component $R_{\text{img}}$ by inverting the extrinsic and translation terms yields the closed-form transformation:
+Isolating the rotational component $R_{\text{img}}$ by taking inverse operations yields the closed-form transformation:
 
-$$R_{\text{img}} = K_c \cdot R_c \cdot M_T^{-1} \cdot K_{\text{img}}^{-1}$$
+$$R_{\text{img}} = K_c R_c M_T^{-1} K_{\text{img}}^{-1}$$
 
-This closed-form formulation:
-1. Inverts the original sensor intrinsic distortion ($K_{\text{img}}^{-1}$) and crop translation ($M_T^{-1}$),
-2. Re-scales by the crop virtual intrinsic matrix $K_c$, and
-3. Accurately maps the local crop gaze rotation $R_c$ back to global image space $R_{\text{img}}$.
+The functional operators operate as follows:
+- $K_{\text{img}}^{-1}$ inverts the camera sensor intrinsics, re-projecting 2D pixels into 3D directional optical rays.
+- $M_T^{-1}$ reverses the bounding box crop offset by adding back $(x_s, y_s)$, realigning the localized patch with the global image origin.
+- $R_c$ is the local gaze rotation regressed by the neural network within the canonical crop.
+- $K_c$ applies the scaling and optical center of the virtual crop camera.
 
-#### 4. Learning Virtual Intrinsics $K_c$ via Lightweight MLP
-
-While $K_{\text{img}}$ is known from camera calibration, the crop intrinsics $[f_x, f_y, c_x, c_y]$ vary dynamically with subject distance and bounding box coordinates $b = [x_s, y_s, w, h]$.
-
-Rather than computing $K_c$ with fragile 3D landmark solvers, the framework employs a lightweight MLP $\Phi^M$ that directly regresses the virtual parameters from the 2D bounding box $b$:
+While camera intrinsic matrix $K_{\text{img}}$ is known from hardware calibration, the virtual crop intrinsics $[f_x, f_y, c_x, c_y]$ vary continuously as the driver moves and alters the bounding box $b = [x_s, y_s, w, h]$. Rather than computing $K_c$ through sensitive 3D geometric optimization, the authors employ a lightweight multi-layer perceptron $\Phi^M$ that infers the virtual parameters directly from the 2D bounding box $b$:
 
 $$[f_x, f_y, c_x, c_y]^T = \Phi^M(b), \quad K_c = g_2(\Phi^M(b))$$
 
-The overall transformation function $h(\cdot)$ is thus given by:
+The unified coordinate mapping function $h(\cdot)$ is expressed as:
 
-$$R_{\text{img}} = g_2(\Phi^M(b)) \cdot R_c \cdot g_1(x_s, y_s)^{-1} \cdot K_{\text{img}}^{-1} = h(\Phi^M(b), b, K_{\text{img}}, R_c)$$
+$$R_{\text{img}} = g_2(\Phi^M(b)) R_c g_1(x_s, y_s)^{-1} K_{\text{img}}^{-1} = h(\Phi^M(b), b, K_{\text{img}}, R_c)$$
 
-By learning $K_c$ directly from 2D bounding box parameters, the model eliminates dependence on noisy 3D head pose estimation, remaining remarkably resilient against head movements.
+By learning the projective parameters directly from 2D bounding box boundaries, the system eliminates reliance on error-prone 3D head pose estimators, remaining impervious to head translation noise.
 
 ### 3.2 Eye Branch Architecture $\Phi_{\text{eye}}$
 
-The eye branch extracts fine-grained ocular features from the left and right eye crops $I_c^L, I_c^R$:
+The eye branch extracts fine-grained ocular rotation cues from left and right eye crops $I_c^L, I_c^R$.
 
-1. Feature Extraction: A weight-shared 4-stack Hourglass CNN $\Phi_e$ extracts localized feature representations:
-   $$F^L = \Phi_e(I_c^L), \quad F^R = \Phi_e(I_c^R)$$
+A weight-shared 4-stack Hourglass encoder $\Phi_e$ extracts localized ocular feature maps:
 
-2. Spatial Positioning Context (Fourier HP Embedding): To restore 3D spatial awareness stripped away by cropping, an external CNN $\Phi_{\text{HP}}$ extracts the 3D head position $\text{HP} = \Phi_{\text{HP}}(I) \in \mathbb{R}^3$. This vector is mapped to a high-dimensional continuous representation using Fourier embedding $\Psi^{\text{HP}}$ and an MLP $\Phi_e^{\text{HP}}$.
+$$F^L = \Phi_e(I_c^L), \quad F^R = \Phi_e(I_c^R)$$
 
-3. Crop-Space Gaze Regression: Feature maps and HP embeddings are concatenated and passed through regressor $R^e$ to yield crop-space gaze predictions:
-   $$\tilde{R}_c^L = R^e(\Phi_e^{\text{HP}}(\Psi^{\text{HP}}(\text{HP})) \oplus F^L), \quad \tilde{R}_c^R = R^e(\Phi_e^{\text{HP}}(\Psi^{\text{HP}}(\text{HP})) \oplus F^R)$$
+To restore 3D spatial awareness lost during tight cropping, a pre-trained head pose estimator $\Phi_{\text{HP}}$ extracts the 3D head position vector $\text{HP} = \Phi_{\text{HP}}(I) \in \mathbb{R}^3$. This vector is mapped to a high-frequency continuous representation via Fourier embedding $\Psi^{\text{HP}}$ and a dedicated MLP $\Phi_e^{\text{HP}}$, then concatenated with ocular features:
 
-4. Image-Space Mapping and Averaging: Predictions are projected to image space via $h(\cdot)$ using dedicated MLP $\Phi_c^M$, followed by a weighted aggregation $w(\cdot)$:
-   $$\tilde{R}_{\text{img}}^L = h(\Phi_c^M(b_c^L), b_c^L, K_{\text{img}}, \tilde{R}_c^L), \quad \tilde{R}_{\text{img}}^R = h(\Phi_c^M(b_c^R), b_c^R, K_{\text{img}}, \tilde{R}_c^R)$$
-   $$\tilde{R}_{\text{img}}^e = w(\tilde{R}_{\text{img}}^L, \tilde{R}_{\text{img}}^R)$$
+$$\tilde{R}_c^L = R^e(\Phi_e^{\text{HP}}(\Psi^{\text{HP}}(\text{HP})) \oplus F^L)$$
 
-The eye branch is optimized with cosine angular loss:
+$$\tilde{R}_c^R = R^e(\Phi_e^{\text{HP}}(\Psi^{\text{HP}}(\text{HP})) \oplus F^R)$$
+
+The crop-space predictions are transformed into global image space using $h(\cdot)$ with eye-specific MLP $\Phi_c^M$ and aggregated via weighted averaging:
+
+$$\tilde{R}_{\text{img}}^L = h(\Phi_c^M(b_c^L), b_c^L, K_{\text{img}}, \tilde{R}_c^L)$$
+
+$$\tilde{R}_{\text{img}}^R = h(\Phi_c^M(b_c^R), b_c^R, K_{\text{img}}, \tilde{R}_c^R)$$
+
+$$\tilde{R}_{\text{img}}^e = w(\tilde{R}_{\text{img}}^L, \tilde{R}_{\text{img}}^R)$$
+
+The eye branch is trained with cosine angular loss against ground truth vector $R_{\text{img}}^{\text{GT}}$:
 
 $$\mathcal{L}_{\text{eye}} = \cos^{-1}((\tilde{R}_{\text{img}}^e)^T R_{\text{img}}^{\text{GT}})$$
 
 ### 3.3 Face Branch Architecture $\Phi_{\text{face}}$
 
-The face branch captures macroscopic head pose and facial geometry:
+The face branch captures macroscopic head pose and global facial context.
 
-1. Feature Extraction: The full-face crop $I_f$ ($96 \times 224$) is processed by a 6-stack Hourglass CNN $\Phi_f$:
-   $$F^f = \Phi_f(I_f)$$
+The standardized face crop $I_f$ ($96 \times 224$) is processed by a 6-stack Hourglass encoder $\Phi_f$ to extract facial feature map $F^f = \Phi_f(I_f)$.
 
-2. HP Embedding and Regression: Combined with face-specific Fourier HP embeddings via MLP $\Phi_f^{\text{HP}}$, face regressor $R^f$ outputs crop-space gaze $\tilde{R}_c^f$:
-   $$\tilde{R}_c^f = R^f(\Phi_f^{\text{HP}}(\Psi^{\text{HP}}(\text{HP})) \oplus F^f)$$
+Concatenating $F^f$ with face-specific Fourier head position embeddings via MLP $\Phi_f^{\text{HP}}$, the face regressor $R^f$ outputs crop-space gaze $\tilde{R}_c^f$:
 
-3. Image-Space Projection: Mapped to image space using face bounding box $b_f$ and MLP $\Phi_f^M$:
-   $$\tilde{R}_{\text{img}}^f = h(\Phi_f^M(b_f), b_f, K_{\text{img}}, \tilde{R}_c^f)$$
+$$\tilde{R}_c^f = R^f(\Phi_f^{\text{HP}}(\Psi^{\text{HP}}(\text{HP})) \oplus F^f)$$
 
-The face branch is supervised with angular loss:
+The prediction is mapped to image space using face bounding box $b_f$ and MLP $\Phi_f^M$:
+
+$$\tilde{R}_{\text{img}}^f = h(\Phi_f^M(b_f), b_f, K_{\text{img}}, \tilde{R}_c^f)$$
+
+The face branch is supervised via independent angular loss:
 
 $$\mathcal{L}_{\text{face}} = \cos^{-1}((\tilde{R}_{\text{img}}^f)^T R_{\text{img}}^{\text{GT}})$$
 
 ### 3.4 CLIP-Guided Fusion Module $\Phi_{\text{fuse}}$
 
-Under mask occlusion, lower facial cues degrade while eye crops remain informative. Conversely, under glasses glare or deep shadows, the eye branch struggles while the face branch provides dependable head pose guidance.
+Under face mask usage, lower facial features are degraded while eye crops remain sharp. Conversely, when sunglasses or optical glare obstruct the eyes, the eye branch deteriorates while the face branch provides dependable head orientation cues.
 
-The framework employs pre-trained CLIP ($\Phi_{\text{CLIP}}$) to dynamically evaluate visual reliability:
+Rather than maintaining fixed fusion weights, the framework utilizes pre-trained CLIP ($\Phi_{\text{CLIP}}$) to assess the semantic visibility of the face.
 
-1. Multimodal Semantic Feature Extraction: The full image $I$ and a fixed semantic prompt context vector $c$ (describing visual eye clarity) are passed through CLIP:
-   $$F_{\text{CLIP}} = \Phi_{\text{CLIP}}(I, c)$$
+Full image $I$ and a fixed semantic prompt context vector $c$ describing ocular clarity are fed into CLIP to generate multimodal representation $F_{\text{CLIP}}$:
 
-2. Dynamic Gating: $F_{\text{CLIP}}$ is processed by MLP $\Phi_{\text{fuse}}$ to produce softmax-normalized importance weights:
-   $$\tilde{R}_{\text{img}}^{\text{fused}} = \sigma(\Phi_{\text{fuse}}(F_{\text{CLIP}})^T) [\tilde{R}_{\text{img}}^e, \tilde{R}_{\text{img}}^f]^T$$
+$$F_{\text{CLIP}} = \Phi_{\text{CLIP}}(I, c)$$
 
-The fusion loss is:
+Feature $F_{\text{CLIP}}$ is passed through fusion MLP $\Phi_{\text{fuse}}$ to compute softmax-normalized reliability weights, combining both predictions into final gaze vector $\tilde{R}_{\text{img}}^{\text{fused}}$:
+
+$$\tilde{R}_{\text{img}}^{\text{fused}} = \sigma(\Phi_{\text{fuse}}(F_{\text{CLIP}})^T) [\tilde{R}_{\text{img}}^e, \tilde{R}_{\text{img}}^f]^T$$
+
+The fusion loss is defined as:
 
 $$\mathcal{L}_{\text{fuse}} = \cos^{-1}((\tilde{R}_{\text{img}}^{\text{fused}})^T R_{\text{img}}^{\text{GT}})$$
 
-The total loss is optimized end-to-end:
-
-$$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{eye}} + \mathcal{L}_{\text{face}} + \mathcal{L}_{\text{fuse}}$$
+The framework is trained end-to-end using the joint loss $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{eye}} + \mathcal{L}_{\text{face}} + \mathcal{L}_{\text{fuse}}$.
 
 ---
 
 ## 4. Experimental Results
 
-### 4.1 Datasets and Evaluation Setup
+### 4.1 Datasets and Evaluation Protocol
 
-The method was evaluated across three distinct benchmarks:
+Evaluation was conducted across three rigorous benchmarks encompassing real in-cabin infrared data, synthetic multi-view data, and webcam images:
 
-| Dataset | Modality / Domain | Scale & Subjects | Protocol |
+| Dataset | Modality and Domain | Scale and Subjects | Evaluation Protocol |
 |---|---|---|---|
-| IVGaze | In-cabin Infrared (IR) | 44,705 images, 125 subjects | 3-fold cross-validation |
-| GazeGene | Multi-view Synthetic RGB | 9 camera views, 56 characters | Test on final 10 characters |
-| MPIIFaceGaze | In-the-wild Webcam RGB | 15 subjects | Leave-one-subject-out (LOSO) |
+| IVGaze | In-cabin infrared camera | 44,705 images across 125 subjects | 3-fold cross-validation |
+| GazeGene | Multi-view synthetic rendering | 9 camera views, 56 characters | Test on final 10 characters |
+| MPIIFaceGaze | In-the-wild webcam RGB | 15 subjects | Leave-one-subject-out |
 
-Metrics: Mean Angular Error (AE, in degrees $^\circ$) and Average Precision (AP, %) across thresholds ($<2^\circ, <4^\circ, <6^\circ, <8^\circ$).
+Primary evaluation metrics include Mean Angular Error in degrees and Average Precision (%) within error thresholds of 2°, 4°, 6°, and 8° on IVGaze.
 
-Implementation Details: Optimized with AdamW ($\Phi_{\text{face}}, \Phi_{\text{eye}}$) and Adam ($\Phi_{\text{fuse}}$) at learning rate 0.001 with StepLR schedule for 100 epochs. Inference latency averages 42 ms on an NVIDIA A100 GPU.
+Optimization utilized AdamW for feature extractors and Adam for the fusion module at an initial learning rate of 0.001 with StepLR schedule over 100 epochs. Average inference latency is 42 ms on a single NVIDIA A100 GPU, ensuring real-time feasibility.
 
 ### 4.2 Benchmark Comparisons
 
-| Method | IVGaze (IR) | GazeGene (Synth RGB) | MPIIFaceGaze (Wild RGB) |
+| Method | IVGaze Infrared | GazeGene Synthetic RGB | MPIIFaceGaze Webcam RGB |
 |---|---|---|---|
 | FullFace | 13.67° | 3.54° | 4.93° |
 | DWG | 8.82° | - | - |
 | Gaze360 | 8.15° | - | - |
-| $\text{FullFace}^+$ | 7.48° | - | - |
+| FullFace+ | 7.48° | - | - |
 | GazeTR | 7.33° | 3.37° | 4.00° |
 | XGaze | 7.06° | - | - |
 | GazePTR | 7.04° | - | - |
@@ -260,28 +232,28 @@ Implementation Details: Optimized with AdamW ($\Phi_{\text{face}}, \Phi_{\text{e
 | RT-Gene | - | - | 4.30° |
 | CA-Net | - | - | 4.10° |
 | L2CS | - | - | 3.92° |
-| Ours | **6.29°** | **1.87°** | **3.66°** |
+| Proposed Method | 6.29° | 1.87° | 3.66° |
 
-The proposed framework consistently outperforms all prior baselines across all three benchmarks.
+The proposed framework consistently outperforms prior baselines across all three benchmarks.
 
-Notably, on GazeGene—which features 9 diverse camera perspectives and wide head position variations—the method achieves a remarkable 39.3% error reduction ($3.08^\circ \to 1.87^\circ$), validating the head position invariance conferred by $h(\cdot)$ and Fourier HP embeddings. On real-world in-cabin IR data (IVGaze), it achieves a 6.3% error reduction over the previous SOTA GazeDPTR.
+The most dramatic gain appears on GazeGene, where wide 3D head movements and 9 camera perspectives challenge conventional models. The proposed method reduces angular error from 3.08° to 1.87°, achieving a 39.3% error reduction and validating the head position invariance of $h(\cdot)$ and Fourier HP embeddings. On real in-cabin IR data (IVGaze), it reduces angular error by 6.3% over the prior state-of-the-art transformer GazeDPTR, reaching 6.29°.
 
-### 4.3 IVGaze Threshold AP Evaluation
+### 4.3 Threshold Average Precision Analysis on IVGaze
 
-| Method | AP ($< 2^\circ$) | AP ($< 4^\circ$) | AP ($< 6^\circ$) | AP ($< 8^\circ$) |
+| Method | Precision (< 2°) | Precision (< 4°) | Precision (< 6°) | Precision (< 8°) |
 |---|---|---|---|---|
 | FullFace | 2.3% | 8.8% | 17.8% | 28.0% |
 | DWG | 6.6% | 21.7% | 33.8% | 53.2% |
 | Gaze360 | 9.2% | 27.3% | 44.6% | 58.9% |
-| $\text{FullFace}^+$ | 14.2% | 31.1% | 46.7% | 61.3% |
+| FullFace+ | 14.2% | 31.1% | 46.7% | 61.3% |
 | GazeTR | 17.0% | 32.8% | 45.7% | 64.7% |
 | XGaze | 11.7% | 32.7% | 51.6% | 65.2% |
 | GazePTR | 17.6% | 34.6% | 49.3% | 66.7% |
-| GazeDPTR | **22.1%** | 36.0% | 50.3% | 68.4% |
-| Ours | 16.0% | **38.5%** | **58.7%** | **73.5%** |
-| Ours (w/o Sunglasses) | 16.2% | 39.1% | 59.6% | 74.6% |
+| GazeDPTR | 22.1% | 36.0% | 50.3% | 68.4% |
+| Proposed Method | 16.0% | 38.5% | 58.7% | 73.5% |
+| Proposed Method - Excl. Sunglasses | 16.2% | 39.1% | 59.6% | 74.6% |
 
-The proposed model dominates across all practical operational bounds ($<4^\circ, <6^\circ, <8^\circ$). In particular, under the $<6^\circ$ threshold, it attains 58.7% AP, surpassing GazeDPTR by 16.69% relative improvement.
+Under practical operational thresholds, the proposed method achieves superior accuracy across the 4°, 6°, and 8° bounds. In particular, within the standard 6° safety tolerance, it achieves 58.7% precision, representing an 8.4 percentage point gain over the previous best baseline.
 
 ### 4.4 Robustness to Accessories and Occlusions
 
@@ -290,61 +262,59 @@ The proposed model dominates across all practical operational bounds ($<4^\circ,
 | FullFace | 14.43° | 12.40° | 15.20° | 13.35° | 21.39° |
 | DWG | 9.20° | 8.19° | 9.43° | 8.69° | 17.43° |
 | Gaze360 | 8.30° | 7.91° | 8.95° | 7.99° | 17.99° |
-| $\text{FullFace}^+$ | 7.59° | 7.30° | 8.37° | 7.30° | 16.50° |
+| FullFace+ | 7.59° | 7.30° | 8.37° | 7.30° | 16.50° |
 | XGaze | 7.07° | 7.03° | 7.80° | 6.90° | 15.15° |
 | GazeTR | 7.40° | 7.22° | 8.12° | 7.17° | 17.49° |
 | GazePTR | 7.13° | 6.90° | 7.78° | 6.89° | 16.54° |
-| GazeDPTR | 6.77° | 6.63° | 7.44° | 6.57° | **16.41°** |
-| Ours | **6.21°** | **5.71°** | **6.72°** | **5.39°** | 18.70° |
+| GazeDPTR | 6.77° | 6.63° | 7.44° | 6.57° | 16.41° |
+| Proposed Method | 6.21° | 5.71° | 6.72° | 5.39° | 18.70° |
 
-Under glasses ($6.21^\circ$) and mask occlusions ($6.72^\circ$), the proposed method achieves superior robustness.
+Under glasses reflections (6.21°) and face masks (6.72°), the proposed method maintains substantial leads over competing models. While opaque sunglasses physically blind ocular cues, elevating error to 18.70°, the architecture demonstrates unmatched resilience across all other real-world occlusion modes.
 
-### 4.5 Branch and Fusion Ablation Study
+### 4.5 Branch and Fusion Ablation Analysis
 
-| Condition | $\Phi_{\text{face}}$ (Alone) | $\Phi_{\text{eye}}$ (Alone) | $\Phi_{\text{fuse}}$ (Proposed Fusion) |
+| Condition | Face Branch Alone | Eye Branch Alone | Proposed Dynamic Fusion |
 |---|---|---|---|
-| Glasses | 6.65° | 6.98° | **6.21°** |
-| No Glasses | 6.06° | 6.38° | **5.71°** |
-| Mask | 7.22° | 6.79° | **6.72°** |
-| No Mask | 5.71° | 6.31° | **5.39°** |
-| Overall Mean | 6.69° | 6.77° | **6.29°** |
+| Glasses | 6.65° | 6.98° | 6.21° |
+| No Glasses | 6.06° | 6.38° | 5.71° |
+| Mask | 7.22° | 6.79° | 6.72° |
+| No Mask | 5.71° | 6.31° | 5.39° |
+| Overall Mean | 6.69° | 6.77° | 6.29° |
 
-Under mask occlusions, lower face degradation causes $\Phi_{\text{face}}$ to drop ($7.22^\circ$), while $\Phi_{\text{eye}}$ maintains performance ($6.79^\circ$). Under glasses reflection, ocular degradation hampers $\Phi_{\text{eye}}$ ($6.98^\circ$), while $\Phi_{\text{face}}$ provides stable guidance ($6.65^\circ$). Dynamic CLIP fusion $\Phi_{\text{fuse}}$ adaptively balances these signals, reaching $6.29^\circ$ overall.
+Single-branch ablations confirm the vital role of adaptive arbitration. Face masks degrade the face branch to 7.22° while the eye branch sustains 6.79°. Conversely, glasses reflections degrade the eye branch to 6.98° while the face branch anchors estimation at 6.65°. The CLIP-guided fusion module dynamically balances these complementary cues, achieving an overall mean error of 6.29°.
 
-### 4.6 Qualitative Visualizations
+Comparing against standard ResNet-50 fusion (6.41°), CLIP multimodal semantics reduce overall error to 6.29°, delivering a 10.16% relative error reduction under unobstructed conditions.
 
-![Figure 5](/images/clip-dual-crop-gaze/fig5_qualitative_ablation.jpeg)
+### 4.6 Qualitative Visualizations and Head Position Sensitivity
 
-*Figure 5: Qualitative comparisons and ablations on IVGaze (IR) and GazeGene (RGB). The proposed method maintains tight alignment between predicted gaze vectors (blue) and ground truth (green) across severe glasses reflections, mask occlusions, and extreme head poses.*
+![Figure 5: Qualitative Predictions under Extreme Conditions](/images/clip-dual-crop-gaze/fig5_qualitative_ablation.jpeg)
+*Figure 5: Qualitative results across IVGaze and GazeGene. Predicted gaze vectors from the proposed method (blue arrows) closely align with ground truth vectors (green arrows) despite glasses reflections, mask occlusions, and sharp head rotations.*
 
-### 4.7 Sensitivity to Head Position (HP) Perturbation
+Qualitative visualizations illustrate that predicted gaze vectors track ground truth vectors faithfully across severe glasses glare, mask occlusion, and extreme head turning angles.
 
-| Condition | Zhang's Normalization | Ours (Learnable $h(\cdot)$) |
+| Experimental Condition | Zhang's Normalization | Proposed Learnable Transformation |
 |---|---|---|
-| Glasses | 7.10° | **6.65°** |
-| No Glasses | 6.32° | **6.06°** |
-| Mask | 7.39° | **7.22°** |
-| No Mask | 6.72° | **5.71°** |
-| Overall Mean | 7.02° | **6.69°** |
+| Glasses | 7.10° | 6.65° |
+| No Glasses | 6.32° | 6.06° |
+| Mask | 7.39° | 7.22° |
+| No Mask | 6.72° | 5.71° |
+| Overall Mean | 7.02° | 6.69° |
 
-Replacing standard Zhang normalization with learnable transformation $h(\cdot)$ reduces mean error from $7.02^\circ$ to $6.69^\circ$.
+Replacing standard Zhang normalization with the proposed learnable transformation reduces overall angular error from 7.02° to 6.69° on identical network backbones.
 
-![Figure 6](/images/clip-dual-crop-gaze/fig6_sensitivity_plot.jpeg)
+![Figure 6: Error Sensitivity under Head Position Perturbations](/images/clip-dual-crop-gaze/fig6_sensitivity_plot.jpeg)
+*Figure 6: Angular error sensitivity under increasing 3D head position perturbation. Traditional axis normalization degrades rapidly past 7° under displacement, whereas the proposed method retains errors under 2°, confirming robust position invariance.*
 
-*Figure 6: Angular error sensitivity under increasing 3D Head Position (HP) perturbation. Traditional IVGaze normalization degrades rapidly past $7^\circ$ under head displacement, while the proposed method retains errors under $2^\circ$, confirming robust position invariance.*
-
-As shown in Figure 6, synthetic HP perturbations cause traditional normalization error to explode past $7^\circ$, whereas the proposed approach remains exceptionally stable below $2^\circ$.
+In sensitivity experiments with synthetic head position perturbation, traditional axis normalization errors explode past 7° at 10 cm displacement, whereas the proposed framework remains below 2°, verifying exceptional invariance to subject translation.
 
 ---
 
 ## 5. Conclusion and Key Takeaways
 
-This paper addresses the long-standing challenge of head position sensitivity and multi-mapping ambiguity in appearance-based gaze estimation through a geometrically grounded deep learning framework.
+This research provides a fundamental re-examination of head position sensitivity and multi-mapping ambiguity in real-world gaze estimation.
 
-The primary insights are summarized as follows:
+Rather than relying on vulnerable three-dimensional sensor readings to perspective-warp images, the proposed framework establishes a closed-form coordinate transformation parameterized directly by two-dimensional bounding box coordinates. This formulation decouples localized ocular feature regression from global geometric projection, achieving robust line-of-sight recovery without image warping artifacts even amidst drastic driver motion.
 
-1. **Decoupled Formulation via Learnable Pinhole Mapping**: By regressing gaze in a canonical crop space and mapping back via a learned pinhole transformation $h(\cdot)$, the framework eliminates multi-mapping while circumventing the fragility of explicit 3D camera normalization.
-2. **Multimodal Vision-Language Gating**: Integrating pre-trained CLIP representations enables context-aware dynamic arbitration between ocular and facial branches under diverse occlusions.
-3. **Cross-Domain Generalization**: Robust gains across real in-cabin IR (IVGaze), multi-view synthetic RGB (GazeGene), and in-the-wild webcam (MPIIFaceGaze) validate the broad applicability of the architecture.
+Furthermore, integrating pre-trained CLIP vision-language semantic regularization into the dual-stream pipeline demonstrates a powerful paradigm for handling real-world occlusions. By arbitrating dynamically between ocular details and macroscopic facial geometry based on scene context, the model achieves consistent state-of-the-art accuracy across infrared, synthetic, and webcam modalities.
 
-Future investigations will focus on enhancing context reasoning under total ocular occlusion (such as opaque sunglasses at $18.70^\circ$) and streamlining model latency (currently 42 ms on A100) for real-time edge deployment in vehicle ECUs.
+Future work will explore enhanced contextual reasoning under complete ocular blockage such as opaque sunglasses and lightweight structural pruning to facilitate millisecond-level deployment on resource-constrained automotive edge processors.

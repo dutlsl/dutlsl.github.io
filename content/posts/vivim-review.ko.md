@@ -1,5 +1,5 @@
 ---
-title: "[TCSVT 2025] Vivim: 초음파 영상 분할을 위한 Video Vision Mamba"
+title: "[TCSVT 2025] Vivim: A Video Vision Mamba for Ultrasound Video Segmentation"
 date: 2026-08-07T20:02:00+09:00
 draft: false
 math: true

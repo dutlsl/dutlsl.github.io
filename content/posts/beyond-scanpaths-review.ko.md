@@ -1,10 +1,10 @@
 ---
-title: "[CVPR 2026] Beyond Scanpaths: 동적 장면에서의 그래프 기반 시선 시뮬레이션"
+title: "[CVPR 2026] Beyond Scanpaths: Graph-Based Gaze Simulation in Dynamic Scenes"
 date: 2026-09-18T18:36:00+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Gaze Prediction", "Graph Neural Network", "Heterogeneous Graph Transformer", "Driver Attention", "Dynamical Systems", "CVPR 2026"]
-categories: ["Paper Review"]
+tags: ["Paper Review", "GAZE 2026", "Gaze Prediction", "Graph Neural Network", "Heterogeneous Graph Transformer", "Driver Attention", "Dynamical Systems", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
 summary: "운전 장면에서 사람의 시선을 그래프 기반 동역학 시뮬레이션으로 모델링하여, 하나의 모델로 원시 시선 시퀀스와 scanpath, saliency map을 모두 생성하는 통합 프레임워크를 소개합니다."
 cover:
   image: "/images/beyond-scanpaths/_page_0_Picture_11.jpeg"

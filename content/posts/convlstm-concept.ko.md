@@ -1,5 +1,5 @@
 ---
-title: "Vanilla RNN부터 ConvLSTM까지: 시계열 및 시공간 데이터 처리를 위한 딥러닝 아키텍처"
+title: "From Vanilla RNN to ConvLSTM: Deep Learning Architectures for Time-Series and Spatiotemporal Data"
 date: 2026-07-21T18:36:41+09:00
 draft: false
 math: true

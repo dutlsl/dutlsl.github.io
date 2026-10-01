@@ -4,7 +4,21 @@
 {{- $badgeClass := "badge-default" -}}
 {{- $rawVenue := "Tech Overview" -}}
 
-{{- if in (upper $title) "CVPRW" -}}
+{{- if in .Params.categories "GAZE 2026" -}}
+  {{- $category = "GAZE 2026" -}}
+  {{- $badgeClass = "badge-cvprw" -}}
+  {{- if in (upper $title) "BEST PAPER" -}}
+    {{- $rawVenue = "GAZE 2026 Best Paper" -}}
+  {{- else if in (upper $title) "BEST POSTER" -}}
+    {{- $rawVenue = "GAZE 2026 Best Poster" -}}
+  {{- else if in (upper $title) "CVPR 2026" -}}
+    {{- $rawVenue = "CVPR 2026" -}}
+  {{- else if in (upper $title) "CVPRW 2026" -}}
+    {{- $rawVenue = "CVPRW 2026" -}}
+  {{- else -}}
+    {{- $rawVenue = "GAZE 2026" -}}
+  {{- end -}}
+{{- else if in (upper $title) "CVPRW" -}}
   {{- $category = "CVPRW 2026" -}}
   {{- $badgeClass = "badge-cvprw" -}}
   {{- if in (upper $title) "BEST PAPER" -}}
@@ -12,10 +26,6 @@
   {{- else -}}
     {{- $rawVenue = "CVPRW 2026" -}}
   {{- end -}}
-{{- else if in (upper $title) "GAZE 2026" -}}
-  {{- $category = "CVPRW 2026" -}}
-  {{- $badgeClass = "badge-cvprw" -}}
-  {{- $rawVenue = "GAZE 2026" -}}
 {{- else if in (upper $title) "CVPR 2026" -}}
   {{- $category = "CVPR 2026" -}}
   {{- $badgeClass = "badge-cvpr" -}}

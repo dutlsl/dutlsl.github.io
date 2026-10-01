@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] StreamingRVOS: 의미 기억의 재활용과 적응적 깨우기로 실시간 스트리밍 비디오 분할을 실현하다"
+title: "[CVPR 2026] StreamingRVOS: Towards Streaming Referring Video Segmentation via Large Language Model"
 date: 2026-09-23T19:58:18+09:00
 draft: false
 math: true

@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] SHAPE: Structure-aware Hierarchical UDA with Plausibility Evaluation for Medical Image Segmentation — Paper Review"
+title: "[CVPR 2026] SHAPE: Structure-aware Hierarchical Unsupervised Domain Adaptation with Plausibility Evaluation for Medical Image Segmentation"
 date: 2026-06-30T17:50:00+09:00
 draft: false
 math: true

@@ -3,8 +3,8 @@ title: "[CVPR 2026] AutoGaze: Efficient and Scalable Video Understanding via Aut
 date: 2026-09-17T18:18:30+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Video Understanding", "Efficient Inference", "Token Reduction", "MLLM", "ViT", "Reinforcement Learning", "CVPR 2026"]
-categories: ["Paper Review"]
+tags: ["Paper Review", "GAZE 2026", "Video Understanding", "Efficient Inference", "Token Reduction", "MLLM", "ViT", "Reinforcement Learning", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
 summary: "Introducing AutoGaze, a lightweight 3M-parameter autoregressive gazing module placed before the ViT backbone that reduces visual tokens by up to 100x and enables MLLMs to process 1024-frame 4K videos without out-of-memory errors."
 cover:
   image: "/images/autogaze/_page_0_Figure_5.jpeg"

@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] Causal-OT: Uncertainty-aware UDA for Videos and Time-Series Paper Review"
+title: "[CVPR 2026] Causal-OT: Towards Uncertainty-aware Unsupervised Domain Adaptation for Videos and Time-Series with Causal Optimal Transport"
 date: 2026-06-30T17:30:00+09:00
 draft: false
 math: true

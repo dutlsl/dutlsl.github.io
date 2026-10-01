@@ -1,5 +1,5 @@
 ---
-title: "[ICLR 2026 Oral] Mamba-3: 상태 공간 원리를 활용한 개선된 시퀀스 모델링"
+title: "[ICLR 2026 Oral] Mamba-3: Improved Sequence Modeling using State Space Principles"
 date: 2026-08-26T17:37:42+09:00
 draft: false
 math: true

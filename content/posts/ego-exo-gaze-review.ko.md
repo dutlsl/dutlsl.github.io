@@ -1,204 +1,201 @@
 ---
-title: "[CVPR 2026 Workshop Best Poster] Ego-Exo Gaze: 대화 장면 시선 추정을 위한 Ego-Exo 시각 표현 학습 / Learning Ego-Exo Visual Representations for Conversational Gaze Estimation"
+title: "[CVPR 2026 Workshop Best Poster] Ego-Exo Gaze: Learning Ego-Exo Visual Representations for Conversational Gaze Estimation"
 date: 2026-08-11T19:12:00+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Gaze Estimation", "Egocentric Vision", "Self-Supervised Learning", "CVPR 2026"]
-categories: ["Paper Review"]
-summary: "Meta Reality Labs와 Idiap Research Institute가 CVPR 2026 GAZE Workshop에서 발표하고 Best Poster Award를 수상한 논문을 리뷰합니다. 대화 상황에서 타인의 exocentric gaze 정보를 self-supervised learning으로 함께 학습하여, 단일 프레임만으로 egocentric gaze estimation 성능을 향상시키는 방법을 제안합니다."
+tags: ["Paper Review", "GAZE 2026", "Gaze Estimation", "Egocentric Vision", "Self-Supervised Learning", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
+summary: "Meta Reality Labs와 Idiap Research Institute가 CVPR 2026 GAZE 워크숍에서 발표하고 Best Poster Award를 수상한 연구를 소개합니다. 대화 상대방의 3인칭 시선 단서를 자기지도 정렬로 함께 학습시켜, 추론 시에는 단일 프레임과 단일 브랜치만으로 1인칭 시선 추정의 모호성을 극복합니다."
 cover:
   image: "/images/ego-exo-gaze/_page_0_Picture_10.jpeg"
   alt: "Ego-Exo Gaze Alignment Overview"
 ---
 
-> 논문 정보
-> - 제목: Learning Ego-Exo Visual Representations for Conversational Gaze Estimation
-> - 저자: Anshul Gupta, Yijun Qian, Ruohan Gao, Ishwarya Ananthabhotla, Jean-Marc Odobez, Vamsi Krishna Ithapu, Calvin Murdock
-> - 소속: Meta Reality Labs Research, Idiap Research Institute, EPFL, University of Maryland
-> - 학회: CVPR 2026 GAZE Workshop. 본 논문은 GAZE 2026에서 Best Poster Award를 수상했습니다.
+> 참조 논문
+> - Gupta, A., Qian, Y., Gao, R., Ananthabhotla, I., Odobez, J. M., Ithapu, V. K., Murdock, C. "Learning Ego-Exo Visual Representations for Conversational Gaze Estimation." CVPR 2026 GAZE Workshop.
+> - 수상 내역: The 7th International Workshop on Eye and Gaze in Computer Vision (GAZE 2026) Best Poster Award
+
+![Figure 1: 1인칭 시선 추정의 모호성과 Ego-Exo 정렬 프레임워크 개요](/images/ego-exo-gaze/_page_0_Picture_10.jpeg)
+*Figure 1: 1인칭 시점 단일 프레임만으로는 시야 내에 여러 인물이 존재할 때 착용자가 누구를 바라보는지 판별하기 어렵습니다. 제안된 프레임워크는 훈련 단계에서 두 착용자의 동시 관찰 영상을 Siamese 구조로 정렬하여 타인의 3인칭 시선 단서를 학습하고, 실제 추론 시에는 추가적인 연산이나 상대방의 영상 없이 단일 프레임만으로 정확한 시선을 추정합니다.*
 
 ---
 
 ## 1. 한 줄 요약
 
-대화 장면에서 한 쌍의 착용자가 동시에 촬영한 egocentric video를 활용하여 ego 및 exo gaze representation을 self-supervised alignment로 함께 학습하고, 추론 시에는 단일 프레임 및 단일 브랜치만으로 향상된 egocentric gaze estimation 성능을 달성한 논문입니다.
+대화 상황에서 마주 앉은 한 쌍의 착용자가 동시에 촬영한 1인칭 비디오를 활용하여 자신의 1인칭 시선과 상대방 시점에서 관찰된 3인칭 시선 표현을 자기지도 학습으로 정렬하고, 실제 추론 단계에서는 단일 프레임과 단일 브랜치만으로 고성능 시선 추정을 달성한 논문입니다.
 
 ---
 
 ## 2. 연구 배경 및 동기
 
-### 2.1 Problem Definition
+### 2.1 문제 정의
 
-egocentric gaze estimation은 1인칭 카메라 착용자가 장면 내 어디를 바라보고 있는지를 예측하는 과제입니다. AR/VR 웨어러블 기기에서 직관적인 상호작용, 소음 환경에서의 화자 추적, 대화 맥락 이해 등 다양한 응용에 핵심적인 역할을 합니다.
+카페 테이블에 마주 앉아 커피를 마시며 대화를 나누는 두 사람을 떠올려 봅니다. 상대방이 "저기 정말 멋지다"라고 말하며 고개를 살짝 돌리는 순간, 우리는 상대방의 눈동자가 머무는 방향과 얼굴의 미세한 각도를 관찰하는 것만으로 그 시선이 내 어깨 너머 창밖 풍경을 향하는지, 아니면 카운터 옆의 그림을 향하는지 찰나에 파악합니다. 인간의 사회적 대화는 내가 바라보는 1인칭 세상의 풍경과, 상대방의 표정과 시선이라는 3인칭 시각 단서가 정밀한 톱니바퀴처럼 맞물리며 서로의 주의 집중 지점을 공유하는 상호작용의 연속이기 때문입니다.
 
-경량 웨어러블 플랫폼에서는 정밀한 eye-tracker 추가가 하드웨어 비용과 전력 소모를 늘려 부담이 됩니다. 이 때문에 RGB 이미지 프레임만으로 시선을 추정하는 접근법이 주로 연구되고 있습니다.
+Egocentric Gaze Estimation은 카메라 착용자가 1인칭 시야 내에서 정확히 어느 지점을 바라보고 있는지를 추정하는 과제입니다. 증강현실 스마트 글래스가 사용자의 주의를 방해하지 않으면서 적응형 인터페이스를 제공하고, 시끄러운 환경에서 대화 상대방의 음성에 선택적으로 초점을 맞추거나, 사회적 대화 맥락을 이해하는 에이전트를 구축하기 위한 핵심 기반 기술입니다.
 
-### 2.2 Limitations of Existing Methods
+하지만 스마트 안경과 같은 초경량 웨어러블 기기에 고가의 정밀 안구 추적 하드웨어를 직접 탑재하는 것은 기기의 무게와 배터리 소모, 하드웨어 단가 면에서 커다란 부담이 됩니다. 따라서 바깥을 향하는 전방 RGB 카메라 영상만을 분석하여 착용자의 시선 좌표를 소프트웨어적으로 복원하는 기술이 필수적으로 요구됩니다.
 
-기존 방법은 주로 비디오 시퀀스의 temporal cues에 의존합니다. 하지만 temporal model은 static single-frame model에 비해 연산량과 메모리 소모가 최대 10배 이상 큽니다.
+### 2.2 기존 방법의 한계
 
-반면 single-frame inference를 수행하는 모델은 시야 내에 여러 인물이 존재할 때 target ambiguity가 심해지는 한계가 있습니다. 이때 다른 인물의 시점에서 관찰되는 exocentric gaze cues를 통합하면 타깃의 모호성을 유의미하게 해소할 수 있습니다.
+기존의 1인칭 시선 추정 연구들은 주로 비디오의 시간적 움직임 궤적을 추적하는 Temporal 모델에 의존해 왔습니다. 그러나 과거 여러 프레임을 연속적으로 메모리에 적재하고 연산하는 시간 축 모델은 정적인 단일 프레임 모델에 비해 연산 복잡도와 메모리 점유율이 10배 이상 높아, 배터리와 발열 제약이 극심한 안경 폼팩터에서 실시간으로 구동하기 어려웠습니다.
 
-![Figure 1. egocentric gaze target 추정의 모호성과 exocentric gaze cues를 활용한 개선. 훈련 시에는 두 사람의 동시 시점을 Siamese 구조로 정렬하고, 추론 시에는 단일 브랜치만으로 향상된 성능을 달성합니다.](/images/ego-exo-gaze/_page_0_Picture_10.jpeg)
+반면 연산량을 줄이기 위해 단일 프레임 정지 영상만으로 시선을 추정하려는 모델들은 심각한 대상 모호성에 직면합니다. 특히 여러 사람이 함께 식사하거나 대화하는 다자간 모임 장면에서는, 1인칭 카메라 화면에 여러 사람의 얼굴과 다양한 물체가 동시에 잡히기 때문에 착용자가 지금 정확히 누구와 눈을 맞추고 있는지 단 한 장의 사진만으로 가려내기가 불가능에 가깝습니다.
 
-*Figure 1: egocentric gaze target 추정의 모호성과 Ego-Exo Alignment를 통한 개선*
+이때 마주 앉은 상대방의 시야에서 촬영된 외부 3인칭 시점, 즉 Exocentric Gaze 단서를 활용할 수 있다면 내가 상대방의 얼굴을 똑바로 응시하고 있는지에 대한 강력한 교차 검증 신호를 얻을 수 있습니다. 하지만 실제 제품 배포 단계에서 항상 두 사람의 영상을 동시에 동기화하여 처리하도록 요구하는 것은 통신 대역폭과 프라이버시 관점에서 비현실적입니다.
 
-### 2.3 Main Contributions
+### 2.3 주요 기여
 
-본 연구의 주된 기여는 다음과 같습니다:
+본 연구는 이러한 딜레마를 해결하기 위해 훈련과 추론의 비대칭을 활용한 Ego-Exo 표현 학습 프레임워크를 제안하며 세 가지 핵심 기여를 달성했습니다.
 
-- single-frame egocentric gaze estimation 탐색: 최신 ViT 아키텍처를 기반으로 단일 프레임만으로도 우수한 시선 추정 성능을 달성할 수 있음을 입증합니다.
-- ego-exo gaze representation 학습: Time Synchronization, Implicit Matching, Explicit Matching 등 세 가지 self-supervised alignment 기법을 제안합니다.
-- exocentric gaze probing 검증: 학습된 Encoder가 실제로 의미 있는 exocentric gaze 정보를 잘 포착하고 있음을 probing 실험으로 증명합니다.
-- 새로운 평가 메트릭 도입: gaze following 연구 분야의 평가 방식을 준용하여 Distance 및 Looking at Heads를 뜻하는 LAH 메트릭을 새롭게 도입합니다.
+1. 비전 트랜스포머 백본을 기반으로 경량 단일 프레임만으로도 복잡한 대화 장면 속 시선을 복원할 수 있는 인과적 1인칭 시선 추정 베이스라인을 확립했습니다.
+2. 마주 앉은 두 사람의 1인칭 시야를 정렬하는 Time Synchronization, Implicit Matching, Explicit Matching이라는 세 가지 혁신적인 자기지도 학습 기법을 고안하여 레이블 없는 상호 학습 체계를 구축했습니다.
+3. 프로빙 실험을 통해 인코더가 타인의 3인칭 시선 표현까지 의미론적으로 완벽히 내재화했음을 증명하고, 시선 추정 분야에 시선 거리와 타인 얼굴 응시 여부를 측정하는 Looking at Heads 메트릭을 정착시켰습니다.
 
 ---
 
-## 3. 제안 방법 (Proposed Framework)
+## 3. 제안 프레임워크
 
-본 논문의 아키텍처는 두 사람 A와 B의 egocentric image frame인 $I^A$와 $I^B$를 동시에 입력받는 Siamese 구조를 따릅니다.
+### 3.1 전체 구조와 거울 마주보기 비유
 
-![Figure 3. 제안된 Ego-Exo 시선 표현 학습 아키텍처. Encoder가 각 사람의 시점에서 특징을 추출하고, Ego-Exo Alignment 과정에서 Time Synchronization 또는 Head Matching 방식을 적용한 후, Ego Decoder가 시선 히트맵을 예측합니다.](/images/ego-exo-gaze/_page_3_Figure_0.jpeg)
+제안된 Ego-Exo Gaze 학습 프레임워크의 동작 원리는 무도회장에서 서로 마주 보고 호흡을 맞추는 두 명의 댄서에 비유할 수 있습니다. 댄서 A가 자신의 눈으로 파트너 B를 바라볼 때(1인칭 시선), 파트너 B의 시야 속에는 자신을 똑바로 쳐다보고 있는 댄서 A의 얼굴과 머리 방향(3인칭 시선)이 정확히 들어옵니다.
 
-*Figure 3: Ego-Exo 시선 표현 학습 아키텍처 개요*
+두 사람이 완벽히 동기화된 파트너십을 이루고 있다면, 댄서 A의 시선 의도와 댄서 B의 망막에 맺힌 댄서 A의 모습은 상호 보완적인 정보를 공유합니다. 훈련 단계에서 두 댄서의 시야를 서로 맞대어 조율해 두면, 훗날 댄서 A가 혼자 무대에 올라 솔로 춤을 추더라도 상대방이 나를 어떻게 바라보았는지에 대한 공간적 감각을 내면화하여 정확한 시선을 유지할 수 있습니다.
 
-### 3.1 Feature Extraction
+![Figure 2: Ego-Exo 시선 표현 학습 파이프라인](/images/ego-exo-gaze/_page_3_Figure_0.jpeg)
+*Figure 2: 제안된 Ego-Exo 학습 아키텍처. 두 참가자 A와 B의 시야에서 추출된 비전 트랜스포머 특징을 바탕으로, 시간 동기화 또는 머리 영역 매칭을 통해 1인칭과 3인칭 시선 표현을 정렬합니다. 훈련이 끝나면 한쪽 브랜치만 단독으로 실행하여 단일 프레임 추론을 완수합니다.*
 
-ViT 기반 Encoder $V$를 이용하여 각 입력 프레임으로부터 특징 $F$를 추출합니다.
+이 원리에 따라 프레임워크는 두 사람 A와 B의 시점에서 동시에 촬영된 프레임 $I^A$와 $I^B$를 입력받는 샴 네트워크 구조를 취합니다.
 
-$$F^A = V(I^A)$$
-$$F^B = V(I^B)$$
+### 3.2 비전 트랜스포머 기반 특징 추출
 
-이 과정은 두 사람의 시점에 독립적으로 적용됩니다.
+입력 영상으로부터 공간적 의미를 추출하기 위해 동일한 가중치를 공유하는 비전 트랜스포머 인코더 $V$를 활용합니다.
 
-### 3.2 Ego-Exo Alignment
+$$F^A = V(I^A), \quad F^B = V(I^B)$$
 
-Ego-Exo Alignment 모듈은 ego representation과 exo representation을 정렬하여 self-supervised learning을 가능하게 합니다. 한 착용자의 ego gaze feature는 자신이 응시하는 위치 정보를 이미 포함하므로, 다른 사람 시점에서 촬영된 본인의 exo representation을 학습시키는 지도 신호가 됩니다.
+여기서 $I^A$와 $I^B$는 동일한 대화 세션에서 동일한 타임스탬프에 수집된 두 피험자의 1인칭 RGB 프레임입니다.
 
-#### 3.2.1 Time Synchronization
+$V$는 패치 단위로 분할된 이미지를 시각 토큰으로 변환하고 전역 셀프 어텐션을 수행하는 트랜스포머 인코더입니다. $F^A$와 $F^B$는 각각 $N$개의 시각 패치 토큰과 하나의 클래스 토큰으로 구성된 고차원 특징 맵입니다.
 
-동일 세션 내에서 같은 타임스탬프에 촬영된 피험자 A와 B의 egocentric feature인 CLS 토큰은 같은 대화 상황을 공유하므로 positive pair로 설정하여 가깝게 정렬합니다. 반대로 타임스탬프가 다르거나 다른 세션에서 가져온 feature는 negative pair로 설정하여 멀어지게 유도합니다.
+### 3.3 Ego-Exo 자기지도 정렬 기법
 
-$$G_{ego}^A = \text{CLS}(F^A)$$
+본 연구의 핵심은 한 착용자의 1인칭 시선 특징과 상대방의 시야에서 관찰된 자신의 3인칭 머리 특징을 수학적으로 결속하는 정렬 모듈입니다.
 
-이때 A의 exocentric feature $G_{exo}^A$는 B의 egocentric feature $G_{ego}^B$와 직접 매칭됩니다. 유사도 $S$는 $L_2$ distance로 계산됩니다.
+#### 기법 1: 시간 동기화 정렬 (Time Synchronization)
+
+가장 직관적인 방법은 동일한 대화 세션에서 같은 시점에 기록된 두 사람의 클래스 토큰 특징을 서로 끌어당기는 삼중항 손실 기법입니다.
+
+$$G_{ego}^A = \text{CLS}(F^A), \quad G_{exo}^A = \text{CLS}(F^B)$$
+
+A가 바라보는 세상의 요약 벡터 $G_{ego}^A$와, 그 순간 B가 바라보는 세상의 요약 벡터 $G_{exo}^A$는 동일한 물리적 대화 환경과 감정 교류를 공유하므로 긍정적 쌍으로 간주됩니다. 반면 타임스탬프가 다르거나 다른 세션에서 가져온 부정적 쌍과의 거리는 벌어지도록 학습시킵니다.
 
 $$S = \|G_{ego}^A - G_{exo}^A\|_2$$
 
-Triplet loss 기반의 Time Synchronization Loss를 적용하여 동일 시간대의 ego-exo feature 거리를 최소화하고, 다른 시간대나 다른 세션의 negative sample과의 거리는 극대화합니다.
+두 벡터 사이의 유클리드 거리를 기반으로 삼중항 마진 손실을 최소화함으로써, 별도의 바운딩 박스 검출기 없이도 두 시점 사이의 전역적 시공간 맥락이 정렬됩니다.
 
-#### 3.2.2 Head Matching
+#### 기법 2: 머리 영역 매칭 (Head Matching)
 
-참가자 B의 FoV 내에 보이는 타인의 head bounding box $B^B$ 영역에서 ROI-Align을 통해 exocentric feature를 추출합니다.
-
-ROI-Align은 전체 이미지 feature map에서 특정 관심 영역의 특징을 잘라내어 일정 크기의 feature 벡터로 변환하는 딥러닝 기법입니다. B의 1인칭 카메라 이미지에서 관찰되는 A의 머리는 외부 3인칭 시점인 exocentric 객체이므로, B의 feature map 중 A의 head box 위치를 ROI-Align으로 추출하면 B의 관점에서 관찰된 A의 머리 방향 및 외형 정보를 담은 A의 exocentric feature가 됩니다.
+더 정밀하게 상대방의 시선 단서를 짚어내기 위해 타인의 머리 영역을 국소적으로 도려내는 Head Matching 기법을 적용합니다. B의 1인칭 카메라 시야 내에 존재하는 타인의 머리 바운딩 박스 $B^B$ 영역에 ROI-Align을 적용하여 3인칭 특징을 추출합니다.
 
 $$G_{exo}^B = \text{ROI-Align}(F^B, B^B)$$
+
 $$G_{ego}^A = \text{CLS}(F^A)$$
 
-두 feature 간의 유사도 $S^A$는 내적(dot product)으로 구합니다.
+이 연산의 물리적 의미는 명확합니다. B의 1인칭 시야에 찍힌 A의 머리는, A의 입장에서는 자신이 외부에서 어떻게 관찰되는지를 보여주는 완벽한 3인칭 관측 데이터입니다. 이 3인칭 머리 특징 $G_{exo}^B$와 A 본인의 1인칭 클래스 토큰 $G_{ego}^A$ 사이의 내적을 통해 유사도 $S^A$를 계산합니다.
 
 $$S^A = G_{exo}^B \cdot G_{ego}^A$$
 
-Head Matching 방식은 레이블 제공 여부에 따라 두 가지 정렬 손실 함수로 구별됩니다:
+머리 영역 매칭은 정답 신원 정보의 유무에 따라 두 가지 손실 함수로 분기됩니다.
 
-- Explicit Matching: GT head box identity 정보가 존재하는 경우 사용합니다. 이는 누가 피험자 A인가에 대한 ground truth 레이블에 해당하며, B 시야 내 여러 head box 영역 중 실제 A의 head box에 해당하는 유사도가 가장 높아지도록 Cross-Entropy Loss를 적용합니다.
-- Implicit Matching: GT identity 레이블이 제공되지 않는 자율 정렬 상황에서 사용합니다. 유사도 분포 $S$의 불확실성을 줄이고 한 개의 특정 head box에 시선이 쏠리도록 자율적으로 유도하기 위해 Entropy Loss를 적용합니다.
+첫째는 명시적 매칭인 Explicit Matching입니다. B의 시야에 잡힌 여러 사람의 머리 중 실제 누구의 머리가 A인지를 알려주는 정답 신원 레이블이 주어질 때 교차 엔트로피 손실을 사용하여 실제 A의 머리와의 유사도를 최대화합니다.
 
-### 3.3 Prediction & Loss
+둘째는 암묵적 매칭인 Implicit Matching입니다. 외부 신원 레이블이 전혀 없는 비지도 환경에서, 모델 스스로 유사도 분포의 엔트로피를 최소화하도록 유도하여 가장 연관성이 높은 특정 한 사람의 머리에 시선 정렬 신호가 스스로 수렴하도록 만듭니다.
 
-Prediction 모듈은 Feature Extraction 모듈에서 얻은 visual feature를 전달받아, 각 참가자의 최종 시선 예측 지도를 복원하는 역할을 담당합니다.
+### 3.4 Ego Decoder와 복합 최적화 손실
 
-이 모듈은 4개의 Transformer layer와 하나의 linear projection layer로 구성된 Ego Decoder $D_{ego}$를 탑재하고 있습니다. Ego Decoder는 추출된 token representation을 처리하여 입력 이미지와 매핑되는 2차원 해상도의 최종 egocentric gaze heatmap $H^A$와 $H^B$를 산출합니다.
+특징 정렬이 완료되면 추출된 시각 토큰들은 4개의 트랜스포머 계층과 선형 투영 계층으로 구성된 경량 Ego Decoder $D_{ego}$로 입력됩니다.
 
-$$H^A = D_{ego}(F^A)$$
-$$H^B = D_{ego}(F^B)$$
+$$H^A = D_{ego}(F^A), \quad H^B = D_{ego}(F^B)$$
 
-전체 네트워크의 종단간 최적화를 위한 손실 함수 $L$은 각 착용자의 시선 추정 정확도를 직접 지도하는 gaze prediction loss와, 두 착용자 사이의 시각 표현 일관성을 강제하는 alignment loss의 합으로 설계되었습니다.
+$H^A$와 $H^B$는 각각의 입력 이미지 공간에 일대일로 대응하는 2차원 시선 확률 히트맵입니다. 최종 학습 손실 함수는 시선 위치를 직접 맞추는 예측 손실과 시점 간 일관성을 부여하는 정렬 손실의 결합으로 정의됩니다.
 
-$$L = L_{gaze}^A + L_{gaze}^B + L_{ego-exo}$$
+$$\mathcal{L} = \mathcal{L}_{gaze}^A + \mathcal{L}_{gaze}^B + \lambda \mathcal{L}_{ego-exo}$$
 
-각 손실항의 상세 역할은 다음과 같습니다:
-
-- $L_{gaze}$: 예측된 히트맵과 ground truth 시선 히트맵 사이의 차이를 픽셀 수준에서 계산하는 픽셀 단위 교차 엔트로피 손실입니다. 모델이 시선이 머무는 정확한 2차원 좌표 근방을 잘 짚어내도록 강제합니다.
-- $L_{ego-exo}$: 두 시점 간의 시선 표현 일관성을 보장하기 위한 정렬 손실입니다. 훈련 단계에 적용하는 정렬 기법의 설계에 따라 Triplet loss 기반의 Time Synchronization Loss, Cross-Entropy loss 기반의 Explicit Matching Loss, 또는 Entropy loss 기반의 Implicit Matching Loss가 손실항으로 유동적으로 적용됩니다.
+$\mathcal{L}_{gaze}$는 예측된 히트맵과 실제 시선 정답 히트맵 사이의 픽셀 단위 교차 엔트로피 손실로, 시선이 머무는 중심 좌표를 정확히 복원하도록 강제합니다. $\mathcal{L}_{ego-exo}$는 선택된 정렬 방식에 따라 삼중항 손실, 교차 엔트로피 손실, 또는 엔트로피 손실이 유동적으로 배치되어 인코더가 타인의 시선 단서를 자연스럽게 흡수하도록 이끕니다.
 
 ---
 
-## 4. 실험 결과 (Experimental Results)
+## 4. 실험 결과
 
-### 4.1 Datasets & Evaluation Metrics
+### 4.1 벤치마크 데이터셋 및 평가 척도
 
-실험은 Aria 안경으로 수집된 대규모 멀티모달 대화 데이터셋인 RLR-CHAT 및 Ego4D 데이터셋에서 진행되었습니다.
+평가는 Meta의 Project Aria 스마트 안경으로 대화 장면을 정밀하게 기록한 대규모 데이터셋 RLR-CHAT 및 일상 1인칭 데이터셋 Ego4D에서 수행되었습니다.
 
-![Figure 2. RLR-CHAT 세션 분포](/images/ego-exo-gaze/_page_2_Figure_0.jpeg)
+![Figure 3: RLR-CHAT 데이터셋 세션 분포](/images/ego-exo-gaze/_page_2_Figure_0.jpeg)
+*Figure 3: Aria 안경으로 수집된 RLR-CHAT 데이터셋의 대화 세션 및 시선 분포 특성.*
 
-*Figure 2: RLR-CHAT 세션 분포*
+평가 지표로는 예측 시선 좌표와 실제 정답 좌표 사이의 오차 거리를 측정하는 Distance 평균 및 중앙값, 그리고 상대방의 머리 영역을 올바르게 응시했는지를 판별하는 Looking at Heads(LAH)의 정밀도, 재현율, F1 점수를 종합적으로 활용했습니다.
 
-평가 메트릭으로는 $L_2$ 거리를 측정하는 Distance의 평균 및 중앙값, 그리고 시선이 타인의 머리에 도달했는지를 측정하는 LAH의 Precision, Recall, F1 점수를 사용합니다.
+### 4.2 1인칭 단일 프레임 시선 추정 성능
 
-### 4.2 Egocentric Gaze Estimation Performance
+RLR-CHAT 골든 서브셋에서 기존 표준 베이스라인들과 비교한 정량적 성능 결과는 다음과 같습니다.
 
-RLR-CHAT golden subset에서의 베이스라인 성능 비교 결과는 다음과 같습니다.
-
-| Model | Distance (Mean) ↓ | Distance (Median) ↓ | LAH Prec ↑ | LAH Recall ↑ | LAH F1 ↑ |
-|-------|-------------------|---------------------|------------|--------------|----------|
-| Predict center | 0.107 | 0.093 | 0.633 | 0.146 | 0.237 |
-| Predict avg of train data | 0.105 | 0.092 | 0.638 | 0.130 | 0.216 |
-| Predict closest head to center | 0.131 | 0.073 | 0.396 | 0.863 | 0.543 |
+| 모델 | 평균 거리 오차 ↓ | 중앙값 거리 오차 ↓ | LAH 정밀도 ↑ | LAH 재현율 ↑ | LAH F1 점수 ↑ |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Center Prior | 0.107 | 0.093 | 0.633 | 0.146 | 0.237 |
+| Average Train Gaze | 0.105 | 0.092 | 0.638 | 0.130 | 0.216 |
+| Closest Head Prior | 0.131 | 0.073 | 0.396 | 0.863 | 0.543 |
 | U-Net | 0.105 | 0.072 | 0.520 | 0.610 | 0.561 |
 | MAV-Gaze | 0.098 | 0.065 | 0.617 | 0.724 | 0.667 |
-| EgoGazeViT (Standard Training) | 0.096 | 0.057 | 0.507 | 0.798 | 0.620 |
+| EgoGazeViT (표준 단일 학습) | 0.096 | 0.057 | 0.507 | 0.798 | 0.620 |
 
-*Table 2: RLR-CHAT golden subset에서의 베이스라인 비교*
+단일 프레임 비전 트랜스포머 구조인 EgoGazeViT는 중앙값 오차 0.057을 기록하며 기존의 U-Net이나 시간 축 모델인 MAV-Gaze의 중앙값 오차를 가볍게 경신했습니다.
 
-Standard Training으로 훈련된 EgoGazeViT는 단일 프레임 이미지 입력만으로 가장 우수한 Distance 점수를 기록했습니다.
+여기에 본 논문이 제안한 다양한 Ego-Exo 정렬 초기화 기법을 적용했을 때의 시선 정밀도 향상은 다음과 같습니다.
 
-| Initialization | Distance (Mean) ↓ | Distance (Median) ↓ | LAH Prec ↑ | LAH Recall ↑ | LAH F1 ↑ |
-|----------------|-------------------|---------------------|------------|--------------|----------|
-| Standard Training | 0.102 | 0.057 | 0.538 | 0.819 | 0.650 |
-| Synchronization | 0.100 | 0.055 | 0.536 | 0.843 | 0.656 |
-| Implicit Matching | 0.101 | 0.056 | 0.533 | 0.833 | 0.650 |
-| Explicit Matching | 0.101 | 0.055 | 0.545 | 0.836 | 0.660 |
+| 초기화 및 정렬 기법 | 평균 거리 오차 ↓ | 중앙값 거리 오차 ↓ | LAH 정밀도 ↑ | LAH 재현율 ↑ | LAH F1 점수 ↑ |
+|---|:---:|:---:|:---:|:---:|:---:|
+| 표준 단일 학습 | 0.102 | 0.057 | 0.538 | 0.819 | 0.650 |
+| 시간 동기화 (Time Synchronization) | 0.100 | 0.055 | 0.536 | 0.843 | 0.656 |
+| 암묵적 매칭 (Implicit Matching) | 0.101 | 0.056 | 0.533 | 0.833 | 0.650 |
+| 명시적 매칭 (Explicit Matching) | 0.101 | 0.055 | 0.545 | 0.836 | 0.660 |
 
-*Table 3: EgoGazeViT의 초기화 방법에 따른 시선 추정 성능 비교*
+Explicit Matching을 통해 상대방 시야 속 자신의 머리 표현을 명시적으로 정렬했을 때 LAH F1 점수가 0.650에서 0.660으로 최고치를 달성했습니다. 이는 훈련 중 체화된 타인의 3인칭 시선 지식이 단일 프레임의 대화 상대방 판별 능력을 직접적으로 끌어올렸음을 입증합니다.
 
-Explicit Matching 초기화를 적용했을 때 가장 높은 LAH F1 점수(0.660)를 얻었습니다.
+### 4.3 3인칭 시선 표현 프로빙 검증
 
-### 4.3 Probing for Exocentric Gaze
+연구진은 인코더가 실제로 타인의 3인칭 시선 정보를 내재화했는지 확인하기 위해, 인코더 가중치를 완전히 동결한 채 2계층 다층 퍼셉트론 디코더만을 덧붙여 타인의 시선 방향을 추정하는 프로빙 실험을 진행했습니다.
 
-Encoder가 exocentric gaze representation을 실제로 포착하는지 확인하기 위해 frozen Encoder 뒤에 2-layer MLP 구조의 Exo Decoder $D_{exo}$를 붙여 LAH를 예측하는 probing 실험을 수행했습니다.
+![Figure 4: 3인칭 시선 표현 프로빙 아키텍처](/images/ego-exo-gaze/_page_7_Figure_0.jpeg)
+*Figure 4: 동결된 인코더로부터 3인칭 시선 단서를 추출하는 프로빙 평가 구조.*
 
-![Figure 4. 외부 시선 표현 프로빙 아키텍처](/images/ego-exo-gaze/_page_7_Figure_0.jpeg)
+| 초기화 기법 | 3인칭 시선 추적 Average Precision (AP) ↑ |
+|---|:---:|
+| 무작위 초기화 | 0.178 |
+| 표준 단일 학습 | 0.262 |
+| 암묵적 매칭 (Implicit Matching) | 0.371 |
+| 명시적 매칭 (Explicit Matching) | 0.304 |
+| 시간 동기화 (Time Synchronization) | 0.498 |
 
-*Figure 4: 외부 시선 표현 프로빙 아키텍처*
+동일 시점의 시야를 정렬한 Time Synchronization 기법은 프로빙 AP를 0.262에서 0.498로 두 배 가까이 폭증시켰습니다. 이는 인코더가 단순히 1인칭 영상의 화소값만을 암기하는 수준을 넘어, 장면 전체에서 타인이 어디를 응시하고 있는지에 대한 전역적 사회적 상호작용 맥락을 깊이 학습했음을 명백히 증명합니다.
 
-| Initialization | LAH AP ↑ |
-|----------------|----------|
-| Random init | 0.178 |
-| Standard Training | 0.262 |
-| Synchronization | 0.498 |
-| Implicit Matching | 0.371 |
-| Explicit Matching | 0.304 |
+### 4.4 정성적 평가 분석
 
-*Table 5: RLR-CHAT에서의 exocentric gaze probing 결과*
+![Figure 5: 대화 장면에서의 시선 추정 정성 결과](/images/ego-exo-gaze/_page_7_Figure_4.jpeg)
+*Figure 5: RLR-CHAT에서의 정성적 평가 결과. 상단은 착용자의 1인칭 시선 추정 히트맵이며 초록색 점은 실제 시선 정답 위치입니다. 하단은 3인칭 관점에서의 머리 응시 여부를 예측한 결과입니다. 모델은 대화 상대방의 미세한 고개 각도와 위치를 감지하여 다자간 대화 속에서도 시선의 대상을 정확하게 짚어냅니다.*
 
-Synchronization 기법이 0.498의 LAH AP를 기록하며 가장 우수한 exocentric representation 포착 능력을 보였습니다.
-
-### 4.4 Qualitative Results
-
-![Figure 5. RLR-CHAT에서의 정성적 결과. 상단은 egocentric gaze를 보여주며 초록색 점은 ground truth 시선 위치입니다. 하단은 exocentric gaze 예측 대상인 LAH 결과를 나타냅니다. 모델은 대부분의 경우 시선 대상을 정확히 식별하며, 외부 시선 단서를 활용하여 모호성을 해소합니다.](/images/ego-exo-gaze/_page_7_Figure_4.jpeg)
-
-*Figure 5: RLR-CHAT에서의 정성적 결과*
+정성적 시각화 결과에서도 모델의 강건함이 드러납니다. 시야 내에 다수의 인물이 앉아 있어 기존 모델들이 시선 타깃을 결정하지 못하고 방황하는 까다로운 대화 장면에서도, 제안된 모델은 상대방의 시선 교차 흐름을 정확히 짚어내며 실제 응시 대상 인물의 얼굴에 예리한 시선 정점을 형성했습니다.
 
 ---
 
-## 5. 결론 및 시사점 (Conclusion and Key Takeaways)
+## 5. 결론 및 핵심 시사점
 
-본 논문은 대화 장면에서 착용자 간 동시 관찰 영상을 활용해 ego 및 exo gaze representation을 결합하여 학습하는 self-supervised alignment 아키텍처를 제안했습니다.
+Ego-Exo Gaze는 착용형 증강현실 기기의 고질적인 난제였던 다자간 대화 장면에서의 시선 모호성을 1인칭과 3인칭 시각의 상호작용 정렬이라는 독창적인 접근법으로 돌파한 연구입니다. 훈련 시에는 두 사람의 시야를 엮어 고차원의 상호작용 단서를 가르치고, 배포 시에는 단 한 사람의 단일 프레임만으로 가볍게 추론을 완수하는 구조적 비대칭을 성공적으로 완성했습니다.
 
-추론 단계에서는 한쪽 브랜치(EgoGazeViT)만을 활용함으로써 추가적인 연산이나 동시 영상 입력 없이도 단일 프레임 egocentric gaze estimation 성능을 향상시켰습니다.
+이 연구가 컴퓨터 비전과 공간 음향 및 사회적 인공지능 연구에 전달하는 메타 인사이트는 세 가지입니다.
 
-실험 결과, Explicit Matching은 egocentric 시선 추정에서 우수한 성능을 나타냈고, Synchronization은 exocentric representation 포착 및 교차 데이터셋 일반화에서 뛰어난 강점을 보였습니다.
+첫째, 시선의 본질적인 상호작용성을 표현 학습으로 구현했습니다. 시선은 고립된 개인의 단독 행동이 아니라 대화 파트너와의 상호 피드백을 통해 형성되는 사회적 신호입니다. 1인칭과 3인칭 시점을 수학적으로 결속하는 자기지도 정렬 기법은 개별 관찰자가 독립적으로 학습할 때 결코 얻을 수 없는 풍부한 사회적 주의 맥락을 인코더에 각인시켰습니다.
 
-이러한 우수한 우수성을 인정받아 CVPR 2026의 GAZE 2026 워크숍에서 Best Poster Award를 수상했습니다. 경량 웨어러블 기기에서 타인의 gaze cues를 활용한 고성능 시선 추정의 실용적 가능성을 제시하며, 향후 spatial audio 통합 및 temporal 확장 연구의 중요한 기초를 마련했습니다.
+둘째, 엣지 인터랙션을 위한 연산 효율과 지능의 완벽한 분업입니다. 10배 무거운 시간 축 비디오 모델을 모바일 안경에 억지로 구겨 넣는 대신, 단일 프레임 정지 영상 인코더에 3인칭 정렬 지식을 압축하여 이식했습니다. 이는 제한된 배터리와 연산량을 가진 차세대 웨어러블 디바이스가 복잡한 인지 능력을 확보하기 위해 나아가야 할 최적의 설계 경로를 보여줍니다.
+
+셋째, 향후 멀티모달 상호작용 지능으로의 확장성입니다. 시선 추정에서 확보된 Ego-Exo 시각 정렬 체계는 공간 오디오 및 화자 음성 분리 기술과 결합될 때 엄청난 시너지를 낼 수 있습니다. 대화 상대방의 시선 방향과 음성 도달 각도를 동시 정렬하는 차세대 공간 컴퓨팅 에이전트 개발의 핵심 초석을 놓았다는 점에서 본 연구의 학술적 가치는 매우 높습니다.

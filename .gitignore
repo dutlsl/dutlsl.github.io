@@ -1,0 +1,24 @@
+# Hugo build outputs
+/public/
+/resources/_gen/
+.hugo_build.lock
+
+# Converted markdown and original PDFs
+/converted_mds/
+/original_pdfs/
+
+# Python virtual environment
+.venv/
+__pycache__/
+
+# IDE & OS files
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.bak
+
+# Binaries and archives
+/hugo
+/*.tar.gz
+/ui_mockup/

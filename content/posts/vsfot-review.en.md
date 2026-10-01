@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] VSFOT: Vision-Language Model Guided Source-Free Domain Adaptation via Optimal Transport Paper Review"
+title: "[CVPR 2026] VSFOT: Vision-Language Model Guided Source-Free Domain Adaptation via Optimal Transport"
 date: 2026-07-03T18:52:00+09:00
 draft: false
 math: true

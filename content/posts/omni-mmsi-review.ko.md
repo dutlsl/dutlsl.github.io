@@ -1,10 +1,10 @@
 ---
-title: "[CVPR 2026] Omni-MMSI: 다자간 사회적 대화에서 '누가 누구에게 말하는지'를 원시 영상만으로 추론하는 Reference-guided 파이프라인"
+title: "[CVPR 2026] Omni-MMSI: Toward Identity-attributed Social Interaction Understanding"
 date: 2026-09-22T11:53:32+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Social Interaction", "Multi-modal LLM", "Identity Attribution", "Chain-of-Thought", "CVPR 2026"]
-categories: ["Paper Review"]
+tags: ["Paper Review", "GAZE 2026", "Social Interaction", "Multi-modal LLM", "Identity Attribution", "Chain-of-Thought", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
 summary: "기존 연구들이 사전에 완벽히 정리된 사회적 단서를 전제했던 것과 달리, Omni-MMSI는 원시 오디오-비디오 입력만으로 다자간 대화에서 화자 식별과 발화 대상 추론을 수행하는 새로운 과제를 정의하고, reference-guided 파이프라인 Omni-MMSI-R을 통해 SOTA를 달성합니다."
 cover:
   image: "/images/omni-mmsi/_page_0_Figure_10.jpeg"

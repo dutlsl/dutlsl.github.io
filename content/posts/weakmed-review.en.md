@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] WeakMed: Rethinking Box Supervision — Bias-Free Weakly Supervised Medical Segmentation Paper Review"
+title: "[CVPR 2026] WeakMed: Rethinking Box Supervision — Bias-Free Weakly Supervised Medical Segmentation"
 date: 2026-07-29T19:27:00+09:00
 draft: false
 math: true

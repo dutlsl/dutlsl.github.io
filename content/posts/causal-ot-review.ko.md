@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026] Causal-OT: 비디오 및 시계열 데이터를 위한 불확실성 인식 비지도 도메인 적응 논문 리뷰"
+title: "[CVPR 2026] Causal-OT: Towards Uncertainty-aware Unsupervised Domain Adaptation for Videos and Time-Series with Causal Optimal Transport"
 date: 2026-06-30T17:30:00+09:00
 draft: false
 math: true

@@ -1,5 +1,5 @@
 ---
-title: "[WACV 2025] EW-ViT: 주파수 도메인 기반 Vision Transformer 개선을 통한 강건한 의료 영상 분할"
+title: "[WACV 2025] EW-ViT: Frequency-Domain Refinement of Vision Transformers for Robust Medical Image Segmentation"
 date: 2026-07-16T20:41:00+09:00
 draft: false
 math: true

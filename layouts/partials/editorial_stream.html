@@ -25,7 +25,21 @@
         {{- $badgeClass := "badge-default" -}}
         {{- $rawVenue := "Tech Overview" -}}
 
-        {{- if in (upper $title) "CVPRW" -}}
+        {{- if in .Params.categories "GAZE 2026" -}}
+          {{- $category = "GAZE 2026" -}}
+          {{- $badgeClass = "badge-cvprw" -}}
+          {{- if in (upper $title) "BEST PAPER" -}}
+            {{- $rawVenue = "GAZE 2026 Best Paper" -}}
+          {{- else if in (upper $title) "BEST POSTER" -}}
+            {{- $rawVenue = "GAZE 2026 Best Poster" -}}
+          {{- else if in (upper $title) "CVPR 2026" -}}
+            {{- $rawVenue = "CVPR 2026" -}}
+          {{- else if in (upper $title) "CVPRW 2026" -}}
+            {{- $rawVenue = "CVPRW 2026" -}}
+          {{- else -}}
+            {{- $rawVenue = "GAZE 2026" -}}
+          {{- end -}}
+        {{- else if in (upper $title) "CVPRW" -}}
           {{- $category = "CVPRW 2026" -}}
           {{- $badgeClass = "badge-cvprw" -}}
           {{- if in (upper $title) "BEST PAPER" -}}
@@ -33,10 +47,6 @@
           {{- else -}}
             {{- $rawVenue = "CVPRW 2026" -}}
           {{- end -}}
-        {{- else if in (upper $title) "GAZE 2026" -}}
-          {{- $category = "CVPRW 2026" -}}
-          {{- $badgeClass = "badge-cvprw" -}}
-          {{- $rawVenue = "GAZE 2026" -}}
         {{- else if in (upper $title) "CVPR 2026" -}}
           {{- $category = "CVPR 2026" -}}
           {{- $badgeClass = "badge-cvpr" -}}
@@ -66,9 +76,17 @@
         {{- end -}}
 
         {{- $filteredTags := slice -}}
+        {{- if in .Params.tags "GAZE 2026" -}}
+          {{- $filteredTags = $filteredTags | append "GAZE 2026" -}}
+        {{- end -}}
+        {{- if in .Params.tags "CVPRW 2026" -}}
+          {{- $filteredTags = $filteredTags | append "CVPRW 2026" -}}
+        {{- end -}}
         {{- range .Params.tags -}}
-          {{- if and (ne . "Paper Review") (not (in . "2025")) (not (in . "2026")) -}}
-            {{- $filteredTags = $filteredTags | append . -}}
+          {{- if and (ne . "Paper Review") (ne . "GAZE 2026") (ne . "CVPRW 2026") -}}
+            {{- if and (not (in . "2025")) (not (in . "2026")) -}}
+              {{- $filteredTags = $filteredTags | append . -}}
+            {{- end -}}
           {{- end -}}
         {{- end -}}
 
@@ -76,6 +94,7 @@
 
         <article class="research-card"
                  data-category="{{ $category }}"
+                 data-categories="{{ delimit .Params.categories "," }}{{ if in .Params.tags "GAZE 2026" }},GAZE 2026{{ end }}{{ if in .Params.tags "CVPRW 2026" }},CVPRW 2026{{ end }}{{ if in .Params.tags "CVPR 2026" }},CVPR 2026{{ end }}"
                  data-topics="{{ delimit $filteredTags "," }}"
                  data-title="{{ .Title }}"
                  data-summary="{{ .Summary }}"
@@ -96,8 +115,8 @@
             </div>
             <div class="card-footer">
               <div class="card-tags">
-                {{ range first 3 $filteredTags }}
-                <span class="tag-chip">#{{ . }}</span>
+                {{ range first 4 $filteredTags }}
+                <span class="tag-chip{{ if eq . "GAZE 2026" }} tag-chip-gaze{{ end }}">#{{ . }}</span>
                 {{ end }}
               </div>
               <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -312,6 +331,7 @@
 
     cards.forEach(card => {
       const cardCat = card.getAttribute("data-category") || "";
+      const cardCats = (card.getAttribute("data-categories") || cardCat).split(",").map(c => c.trim());
       const cardTopicsRaw = card.getAttribute("data-topics") || "";
       const cardTopics = cardTopicsRaw.split(",").map(t => t.trim().toLowerCase());
       const cardTitle = (card.getAttribute("data-title") || "").toLowerCase();
@@ -320,7 +340,9 @@
       // Category match: matches if no category selected OR cardCat in selectedCategories
       let catMatch = true;
       if (selectedCategories.size > 0) {
-        catMatch = selectedCategories.has(cardCat);
+        catMatch = Array.from(selectedCategories).some(selCat => {
+          return cardCats.includes(selCat) || cardCat === selCat;
+        });
       }
 
       // Topic match: matches if no topic selected OR card matches ANY selected topic
@@ -410,17 +432,19 @@
     const cards = document.querySelectorAll(".research-card");
     const catCounts = {};
     cards.forEach(card => {
-      const cat = card.getAttribute("data-category") || "";
-      if (cat) {
+      const cardCat = card.getAttribute("data-category") || "";
+      const cardCats = (card.getAttribute("data-categories") || cardCat).split(",").map(c => c.trim());
+      const uniqueCats = new Set(cardCats.filter(Boolean));
+      uniqueCats.forEach(cat => {
         catCounts[cat] = (catCounts[cat] || 0) + 1;
-      }
+      });
     });
 
     document.querySelectorAll(".venue-btn").forEach(btn => {
       const cat = btn.getAttribute("data-category");
       const countEl = btn.querySelector(".venue-count");
-      if (countEl && catCounts[cat]) {
-        countEl.textContent = catCounts[cat];
+      if (countEl) {
+        countEl.textContent = catCounts[cat] || 0;
       }
     });
 

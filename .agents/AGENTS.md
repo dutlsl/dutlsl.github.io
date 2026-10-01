@@ -61,7 +61,7 @@ Only after the user reviews the artifact and gives explicit final approval (e.g.
 
 ```yaml
 ---
-title: "[Venue Year] Abbreviation: Korean Title (ko) / English Title (en)"
+title: "[Venue Year] Original Paper Title"  # ★ Both ko and en MUST use the exact original English paper title. NEVER translate the title into Korean in .ko.md!
 date: YYYY-MM-DDTHH:MM:SS+09:00   # Must be the current date/time at the moment of creation
 draft: false
 math: true                         # Must be true if the post contains equations
@@ -74,11 +74,14 @@ cover:
 ---
 ```
 
-### Naming Conventions
+### Naming & Title Conventions
 
 - Korean: `<slug>-review.ko.md`
 - English: `<slug>-review.en.md`
 - Always create them as a ko/en pair.
+- **Exact Original Paper Title (★MANDATORY★)**: The `title` field in both Korean (`.ko.md`) and English (`.en.md`) MUST strictly match the exact original English paper title (prefixed with `[Venue Year]` or `[Venue Year] Abbreviation: ...` where standard).
+  - **No Korean Translation in Title**: Strictly do NOT translate paper titles into Korean in `.ko.md`. Always keep the original English title verbatim in both files.
+  - **No Extraneous Suffixes**: Do NOT append "Paper Review", "— Paper Review", or "논문 리뷰" to the frontmatter `title`.
 
 ### Body Structure
 
@@ -242,6 +245,7 @@ hugo
 - **Do not use cliché, robotic, or AI-generated tones and bulleted noun headers**: Avoid formulaic templates, robotic intro/connecting sentences (e.g., "This constraint poses two key questions..."), and AI-like nominalized headers (e.g., rhetorical question headers or dry noun phrases like "~의 효용성: ~하는가?" or "~의 비단조성"). Write in a natural, cohesive, and narrative style suitable for editorial/essay blog posts.
 - **Do not bypass or gloss over difficult math terms**: Never skip or brush over the explanation of complex terms, signs, or regularization factors in formulas; break them down completely with intuitive rationale.
 - **Avoid repeating the same analogy domain across posts**: Do not reuse analogy domains (e.g., cooking/kitchen) from previous posts; discover fresh everyday domains fitting each paper.
+- **Prohibit Korean Translation of Paper Titles in Frontmatter**: Translating paper titles into Korean in `.ko.md` frontmatter is strictly prohibited. The original English paper title must be preserved verbatim across both `.ko.md` and `.en.md`.
 
 ### Category B: Structure & Visualization Prohibitions
 

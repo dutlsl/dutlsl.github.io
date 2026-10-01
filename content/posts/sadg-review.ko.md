@@ -1,5 +1,5 @@
 ---
-title: "[CVPR 2026 Highlight] SADG: 구조 인식 도메인 일반화를 통한 다중 태스크 포인트 클라우드 이해"
+title: "[CVPR 2026 Highlight] SADG: Structure-Aware Domain Generalization for Multi-Task Point Cloud Understanding"
 date: 2026-08-03T11:53:00+09:00
 draft: false
 math: true

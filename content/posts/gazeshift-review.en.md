@@ -1,324 +1,216 @@
 ---
-title: "[CVPR 2026] GazeShift: Paper Review on Unsupervised Gaze Estimation Framework for VR"
+title: "[CVPR 2026] GazeShift: Unsupervised Gaze Estimation and Dataset for VR"
 date: 2026-06-25T21:00:00+09:00
 draft: false
 math: true
-tags: ["Paper Review", "Gaze Estimation", "VR", "Unsupervised Learning", "CVPR 2026"]
-categories: ["Paper Review"]
-summary: "We review the GazeShift paper presented by Samsung SIRC and Bar-Ilan University at CVPR 2026. The paper proposes an unsupervised gaze estimation framework for VR environments and a large-scale off-axis dataset called VRGaze."
+tags: ["Paper Review", "GAZE 2026", "Gaze Estimation", "VR", "Unsupervised Learning", "CVPR 2026"]
+categories: ["GAZE 2026", "Paper Review"]
+summary: "Samsung SIRC and Bar-Ilan University present GazeShift at CVPR 2026. Introducing VRGaze, the first large-scale off-axis near-eye dataset with 2.1M images, and an unsupervised attention-driven redirection framework with self-attention loss modulation that achieves 1.84 degree accuracy and 5 ms inference on mobile VR GPUs."
 cover:
   image: "/images/gazeshift/_page_1_Figure_0.jpeg"
-  alt: "GazeShift Architecture"
-  caption: "GazeShift Architecture Overview (Paper Figure 1)"
+  alt: "GazeShift Architecture Overview"
 ---
 
-> <b>Paper Information</b>
-> - <b>Title:</b> GazeShift: Unsupervised Gaze Estimation and Dataset for VR
-> - <b>Authors:</b> Gil Shapira, Ishay Goldin, Evgeny Artyomov, Donghoon Kim, Yosi Keller, Niv Zehngut
-> - <b>Affiliations:</b> Samsung Semiconductor Israel R&D Center (SIRC), Samsung Electronics, Bar-Ilan University
-> - <b>Conference:</b> CVPR 2026
-> - <b>Code & Dataset:</b> [github.com/gazeshift3/gazeshift](https://github.com/gazeshift3/gazeshift)
+> Paper Information
+> - Title: GazeShift: Unsupervised Gaze Estimation and Dataset for VR
+> - Authors: Gil Shapira, Ishay Goldin, Evgeny Artyomov, Donghoon Kim, Yosi Keller, Niv Zehngut
+> - Affiliations: Samsung Semiconductor Israel R&D Center, Samsung Electronics, Bar-Ilan University
+> - Venue: CVPR 2026
+> - Code & Dataset: https://github.com/gazeshift3/gazeshift
 
----
-
-## 1. One-line Summary
-
-The paper proposes a <b>large-scale gaze dataset (VRGaze, 2.1M images)</b> tailored to the off-axis near-eye camera environments of VR headsets, and an <b>attention-based framework (GazeShift)</b> that learns gaze representations without labels. Using only unsupervised learning, it achieves an <b>average error of 1.84°</b> and enables <b>5 ms inference</b> on a VR device GPU.
+![Figure 1: GazeShift Architecture Overview](/images/gazeshift/_page_1_Figure_0.jpeg)
+*Figure 1: Overview of the GazeShift framework. The Gaze Encoder extracts a gaze embedding from the target frame, while the Appearance Encoder preserves the 2D spatial layout of the source. A self-attention and cross-attention module injects the gaze conditioning into the appearance representation, enabling the Decoder to reconstruct the redirected eye image. The internal self-attention map is directly repurposed into the Gaze-Focused Reconstruction Loss without requiring external segmentation masks.*
 
 ---
 
-## 2. Background and Motivation
+## 1. One-Sentence Summary
 
-### 2.1 Why is Gaze Estimation Important?
-
-Gaze estimation plays a key role in various fields, including HCI, XR, and assistive technologies. In VR/AR specifically, it enables the following applications:
-- <b>Foveated Rendering</b>: Maximizes computational efficiency by rendering only the area where the gaze is directed in high resolution.
-- <b>Intuitive Input</b>: Gaze-based UI interaction.
-- <b>Adaptive Content</b>: Content adjustment based on user attention.
-
-### 2.2 Limitations of Existing Research
-
-| Problem | Description |
-|------|------|
-| <b>Data Scarcity</b> | Existing VR gaze datasets are mostly on-axis camera-based, failing to reflect the off-axis camera geometry of commercial VR headsets. |
-| <b>Labeling Cost</b> | Gaze labels are inaccurate and expensive because fixation on intended targets cannot be guaranteed. |
-| <b>Domain Gap</b> | Research based on remote RGB cameras differs significantly from near-eye infrared (IR) image environments. |
-| <b>Model Size</b> | Existing unsupervised methods require full-face images or use heavy models. |
+GazeShift introduces the first large-scale off-axis infrared eye dataset VRGaze tailored to commercial head-mounted displays, and proposes an unsupervised attention-based gaze redirection framework that repurposes internal self-attention maps into a spatial loss modulation, achieving 1.84 degrees mean angular error and 5 milliseconds real-time inference on an Exynos mobile GPU.
 
 ---
 
-## 3. Contribution 1: VRGaze Dataset
+## 2. Research Background and Motivation
 
-The first contribution of the paper is <b>VRGaze</b>, the first large-scale off-axis VR gaze estimation dataset.
+### 2.1 Problem Definition
 
-### Dataset Specifications
+Imagine walking into a pitch-black gallery with only a pocket flashlight to admire a massive mural. The narrow circular beam illuminates only a tiny fraction of the canvas at any given moment, leaving the rest immersed in shadow, yet the observer comfortably comprehends the entire artwork. The human visual system operates on the exact same physiological principle, resolving fine details only within the narrow foveal region spanning one to two degrees of the visual field, while perceiving the peripheral surroundings through coarse outlines and motion cues.
 
-| Item | Details |
-|------|------|
-| Number of Images | <b>2.1 Million</b> (synchronized left/right eye capture) |
-| Participants | <b>68</b> |
-| Camera | Off-axis near-eye infrared (IR) camera |
-| Resolution | 400 × 400 |
-| Frame Rate | 30 fps |
-| Labels | 2D Point of Regard (PoR) |
-| Split | Train 61 / Val 7 |
+Virtual and extended reality headsets exploit this biological property through foveated rendering to bypass the compute limitations of mobile graphics hardware. By directing peak rendering fidelity exclusively to the gaze focal point and rendering peripheral areas at lower resolutions, systems dramatically cut compute workloads while maintaining visual fidelity. Coupled with hands-free gaze interaction and user attention analytics, accurate low-latency gaze tracking has become a foundational pillar of modern immersive computing.
 
-### Comparison with Existing Datasets
+However, moving gaze estimation from controlled desktop setups into commercial wearable headsets encounters three formidable real-world barriers.
 
-- <b>OpenEDS2020</b>: 550K images, 80 participants, but <b>entirely on-axis</b> — disconnected from the off-axis geometry of commercial VR headsets.
-- <b>NVGaze</b>: 2.5M images, but off-axis data is limited to about 260K frames (14 subjects) and lacks gaze direction diversity.
-- <b>TEyeD</b>: Over 20M images, but not collected in a VR environment, and annotated using computational methods.
+The first is camera placement geometry. To keep the visual display completely unobstructed, gaze cameras must be mounted along the lower rim or bridge of the headset in an off-axis configuration, viewing the eye from an acute angle. This oblique perspective produces severe perspective warping and frequent eyelid occlusions compared to frontal on-axis setups.
 
-![VRGaze Dataset Samples and On-axis vs Off-axis Comparison](/images/gazeshift/_page_3_Figure_0.jpeg)
-*Figure 2: Off-axis VRGaze samples (left), on-axis OpenEDS2020 samples (center), VRGaze gaze angle distribution (right). Off-axis cameras are mounted at oblique angles to reduce visual obstruction, but this creates strong perspective distortions, forming a fundamentally different distribution from on-axis data.*
+The second is the prohibitive cost and noise of gaze annotation. Even when subjects are instructed to stare at designated display targets, involuntary saccades and continuous ocular micro-tremors prevent perfect fixation, making pixel-level ground truth annotation time-consuming, expensive, and noisy.
 
-### Data Collection Protocol
+The third is the severe compute ceiling of wearable headsets. Battery life and thermal envelopes mandate lightweight models capable of running at over sixty frames per second, whereas conventional redirection models relying on explicit 3D geometry or warping fields impose prohibitive latency.
 
-- Participants followed a <b>moving target</b> on a VR display (alternating pursuit and fixation).
-- Background brightness was varied to induce different degrees of <b>pupil dilation</b>.
-- An average of <b>7 sessions</b> recorded per participant, combining deterministic and randomized trajectories.
-- Ensured diversity in gender, ethnicity, and age (14 females / 54 males, 29 Asians / 39 Caucasians).
+### 2.2 Limitations of Existing Methods
 
----
+Prior gaze estimation methodologies failed to address these hardware and operational constraints.
 
-## 4. Contribution 2: GazeShift Framework
+First, benchmark datasets suffered from a severe geometric mismatch. Widely adopted benchmarks such as OpenEDS2020 provide over five hundred thousand frames, but rely entirely on centered on-axis cameras. While NVGaze contains an off-axis subset, it covers only fourteen subjects with limited angular diversity. When models trained on frontal on-axis imagery are evaluated under off-axis conditions, their angular error spikes past five degrees.
 
-### 4.1 Core Idea
+Second, an unbridgeable domain gap separated remote RGB gaze estimation from near-eye infrared modalities. Existing unsupervised methods designed for full-face RGB photographs rely on facial symmetry or head pose priors. In contrast, wearable headsets capture isolated, near-eye monochrome infrared images in a light-isolated chamber, invalidating whole-face geometric assumptions.
 
-The core insight of GazeShift is as follows:
+Third, prior redirection models suffered from feature leakage and runtime bloat. Methods such as Cross-Encoder employed a shared encoder to process both appearance and gaze simultaneously. This shared pathway allowed appearance cues from the target to leak into the gaze embedding, corrupting gaze specificity. Furthermore, requiring both the appearance encoder and decoder at test time imposed excessive latency on mobile hardware.
 
-> <b>In cameras mounted on VR headsets, most of the appearance variation between frames of the same eye from the same person is due to changes in gaze direction.</b>
+### 2.3 Main Contributions
 
-Under this assumption, a <b>generative pretext task</b> is set up to transform a source frame into a target frame. For the model to "redirect" the eye shape of the source image to the target's gaze direction, the gaze direction information must necessarily be encoded in the embedding extracted from the target. In other words, the structure naturally learns gaze representations without explicit labels.
+GazeShift overcomes these limitations through three core contributions.
 
-During training, frame pairs (source, target) taken at different times from the same eye of the same subject are used, ensuring that the differences between the source and target are primarily due to gaze changes.
-
-### 4.2 Overall Architecture Overview
-
-Figure 1 below shows the overall architecture of GazeShift. The training pipeline consists of <b>four main modules</b>: (1) Gaze Encoder, (2) Appearance Encoder, (3) Attention-based Fusion Module, and (4) Decoder. During inference, only the Gaze Encoder and a lightweight calibration module are used, so the heavy Appearance Encoder and Decoder used during training impose no runtime burden.
-
-![GazeShift Architecture](/images/gazeshift/_page_1_Figure_0.jpeg)
-*Figure 1: GazeShift overall architecture. The Gaze Encoder on the left extracts the gaze embedding from the target image, while the Appearance Encoder preserves the spatial appearance features of the source image. The central Self-Attention → Cross-Attention block conditions the appearance features with gaze information, and the Decoder finally reconstructs the gaze-redirected image. The Attention Map at the bottom is recycled as a weight for the Gaze-Focused Loss.*
+1. The authors construct and release VRGaze, the first large-scale off-axis near-eye gaze dataset comprising 2.1 million infrared frames across 68 diverse subjects.
+2. They develop GazeShift, an unsupervised redirection framework that pairs asymmetric encoders with single-query cross-attention to achieve clean gaze-appearance disentanglement without geometric priors.
+3. They introduce the Gaze-Focused Reconstruction Loss, which repurposes internal self-attention maps into spatial weighting masks, establishing a self-reinforcing feedback loop that focuses learning on the iris and pupil without external supervision.
 
 ---
 
-### 4.3 Module ①: Separate Gaze & Appearance Encoders
+## 3. Proposed Framework
 
-The first noticeable design decision in GazeShift is the <b>complete separation of encoders for gaze and appearance</b>. The previous SOTA, Cross-Encoder (Sun et al., ICCV 2021), processed both attributes simultaneously with a single shared encoder. This structure allowed the decoder to access the target's appearance information, leading to the leakage of appearance information into the gaze embedding.
+### 3.1 Overview and the Portrait Painter Analogy
 
-Given a source frame <b>x_s</b> and a target frame <b>x_t</b>, the roles of the two encoders are as follows:
+The foundational intuition of GazeShift mirrors that of a master portrait painter. When a painter renders an individual across multiple sittings, structural identity markers including eyelid shape, facial contour, skin texture, and iris pigmentation remain constant. If the subject shifts their gaze to a new vantage point, the artist does not repaint the entire face from scratch, but merely re-renders the pupil and iris at the new orientation.
 
-<b>Appearance Encoder</b> `f_app`:
-- Input: Source frame x_s
-- Output: Appearance feature map <b>A_s ∈ ℝ^(H × W × C_a)</b>
-- Characteristic: Designed with a <b>shallow structure</b> to preserve the 2D spatial structure of the input image as much as possible.
+A near-eye camera inside a VR headset follows this exact physical invariance. Because the camera is anchored to the user's face, almost all visual variance between different frames of the same eye stems entirely from ocular rotation.
 
-<b>Gaze Encoder</b> `f_gaze`:
-- Input: Target frame x_t
-- Output: Gaze embedding vector <b>g_t ∈ ℝ^(C_g)</b>
-- Characteristic: <b>Lightweight design</b> based on MobileNetV2's <b>Inverted Bottleneck Blocks</b> (342K parameters, 55 MFLOPs).
+![Figure 2: VRGaze Dataset Overview](/images/gazeshift/_page_3_Figure_0.jpeg)
+*Figure 2: Sample off-axis frame from VRGaze (left), frontal on-axis sample from OpenEDS2020 (center), and gaze angular distribution in VRGaze (right). Off-axis mounting prevents display interference but introduces perspective warping and occlusion, demonstrating the need for specialized benchmarks.*
 
-Expressed mathematically:
+Exploiting this physical consistency, GazeShift poses a generative pretext task: redirect the appearance of a source frame to match the gaze orientation of a target frame. To synthesize the target eye faithfully while retaining the source identity, the network must extract a pure gaze representation from the target. Gaze embeddings thus emerge naturally without manual labels.
 
-$$A_s = f_{\text{app}}(x_s), \quad g_t = f_{\text{gaze}}(x_t) \tag{1}$$
-<b>Why is this asymmetric design important?</b> The key is that <b>only the gaze encoder is used during inference</b>. The appearance encoder and decoder function merely as "scaffolding" during training to improve the quality of the gaze representation, leaving only the lightweight 342K parameter gaze encoder for deployment.
+### 3.2 Asymmetric Encoders for Structural Disentanglement
 
----
+The architecture begins by decoupling source frame $x_s$ and target frame $x_t$ through two specialized, asymmetric encoders.
 
-### 4.4 Module ②: Gaze-Conditioned Global Modulation
+$$A_s = f_{\text{app}}(x_s), \quad g_t = f_{\text{gaze}}(x_t)$$
 
-This module corresponds to the Self-Attention → Cross-Attention block in the center of Figure 1 and answers the core question: "How should the appearance of the source be transformed into the gaze direction of the target?" It consists of three main steps.
+In this formulation, $x_s$ and $x_t$ denote frames sampled from the same eye of an identical subject at distinct timestamps, where the dominant variance is gaze angle.
 
-#### Step 1: Refining Appearance Features via Self-Attention
+The appearance encoder $f_{\text{app}}$ maps source frame $x_s$ into a spatial feature map $A_s \in \mathbb{R}^{H \times W \times C_a}$. Because appearance represents high-resolution spatial attributes like skin texture and eyelid boundaries, $f_{\text{app}}$ uses a shallow convolutional layout to preserve 2D coordinate layouts without over-abstracting spatial details.
 
-First, <b>multi-head self-attention</b> is applied to the appearance feature map A_s output by the appearance encoder:
-$$A_s' = \text{SelfAttn}(A_s) \tag{2}$$
-Here, self-attention models spatial interactions within the appearance feature map. For example, the relative positional relationship between the iris area and the eyelid boundary, or the spatial correlation between the pupil reflection (glint) and the iris.
+Conversely, the gaze encoder $f_{\text{gaze}}$ processes target frame $x_t$ to produce a global gaze vector $g_t \in \mathbb{R}^{C_g}$. Because gaze orientation is a compact global attribute defined by yaw and pitch angles, $f_{\text{gaze}}$ utilizes an inverted bottleneck architecture based on MobileNetV2 with only 342K parameters and 55 MFLOPs. This deep compression extracts abstract directional signals while discarding identity cues.
 
-Importantly, the <b>attention weight map w ∈ ℝ^(H × W)</b> from this self-attention is not just used for feature refinement, but is recycled as a <b>soft mask</b> for gaze-relevant regions in the Gaze-Focused Loss described later.
+Critically, this asymmetry separates training from deployment. The appearance encoder and decoder serve solely as training scaffolds, while test-time inference on the headset executes only the 342K-parameter gaze encoder.
 
-#### Step 2: Injecting Gaze Information via Cross-Attention
+### 3.3 Gaze-Conditioned Global Modulation via Single-Query Cross-Attention
 
-Next, the target's gaze embedding g_t is injected into the appearance features. Key design decisions here:
+Once features are extracted, the modulation module steers source appearance toward the target gaze direction.
 
-1. The gaze embedding g_t ∈ ℝ^(C_g) is linearly projected and converted into a <b>single global query q_g ∈ ℝ^(C_a)</b>.
-2. Cross-attention is performed using this single query q_g as the Query, and the refined appearance features A_s' as the Key and Value:
-$$c = \text{CrossAttn}(q_g, A_s', A_s') \tag{3}$$
-The output <b>c ∈ ℝ^(C_a)</b> is a gaze-conditioned global context vector that encodes "how the source appearance features should be globally adjusted from the perspective of the target gaze direction."
+First, multi-head self-attention refines the source appearance representation.
 
-<b>Why a single query?</b> Since gaze is a global attribute defined as a single direction for the entire frame, a single global query is sufficient, rather than multiple spatial queries.
+$$A_s' = \text{SelfAttn}(A_s)$$
 
-#### Step 3: Feature Fusion via Residual Connection
+This operation captures spatial dependencies across the eye region, including relative distances between iris boundaries, pupil glints, and eyelid contours.
 
-The global context vector c is broadcast to the spatial dimensions H × W to create C ∈ ℝ^(H × W × C_a), which is then added as a residual to the original refined appearance features A_s':
-$$F = A_s' + C \tag{4}$$
-This residual addition acts as a <b>feature-wise global modulation</b>: the gaze direction information (C) is uniformly added across the entire space of the appearance features, "steering" the latent representation toward the target gaze direction. Thanks to the residual connection, the spatial structure of the source is preserved.
+Next, the target gaze embedding is injected via cross-attention.
 
-<b>Information Leakage Prevention Mechanism:</b> In this cross-attention structure, the output of the gaze encoder only participates as a query, and there is no direct path (e.g., skip connection) to the decoder. This architectural isolation acts as a buffer layer, fundamentally blocking the leakage of appearance information into the gaze embedding, which was a problem in Cross-Encoder.
+$$c = \text{CrossAttn}(q_g, A_s', A_s')$$
 
----
+Here, $q_g \in \mathbb{R}^{C_a}$ is a single global query obtained by linearly projecting $g_t$. Because gaze is uniform across the entire visual field, a single global query suffices. Interacting with the refined appearance map $A_s'$ as Key and Value, it outputs a global modulation context vector $c \in \mathbb{R}^{C_a}$.
 
-### 4.5 Module ③: Gaze-Focused Reconstruction Loss
+This context vector is broadcast spatially to $C \in \mathbb{R}^{H \times W \times C_a}$ and added back to $A_s'$ through a residual connection.
 
-This is the <b>most original contribution</b> of GazeShift and the core component that brought the largest performance improvement in the ablation study (2.07° → 1.84°).
+$$F = A_s' + C$$
 
-#### The Limit of Uniform Pixel Loss
+This addition steers the latent features toward the target gaze angle while preserving the spatial integrity of the source eye. Furthermore, because $g_t$ operates strictly as a query without direct skip connections to the decoder, appearance information cannot leak into the gaze embedding.
 
-A standard per-pixel MSE loss treats all pixels equally. However, the area where appearance actually changes with gaze is limited to the region around the iris and pupil, while the eyelid boundaries, skin, and background remain mostly the same. Uniform MSE loss wastes capacity reconstructing unnecessary background and degrades the gaze specificity of the gaze embedding.
+### 3.4 Gaze-Focused Reconstruction Loss
 
-Previous studies used external detectors for eye masks or hand-crafted geometric priors, but GazeShift proposes a much more elegant method utilizing the model's internal representations.
+Standard generative models train on uniform pixel-wise mean squared error. However, gaze shifts modify only a localized region around the iris and pupil; sclera, skin, and backgrounds remain largely stationary. Uniform losses force the model to waste capacity memorizing static skin textures.
 
-#### Solution: Recycling the Self-Attention Map
+GazeShift solves this by converting its internal self-attention map $w \in \mathbb{R}^{H \times W}$ into a spatial loss weighting mask.
 
-Core idea: The attention weight map generated in the self-attention step of Section 4.4 is recycled as the spatial weight of the loss function.
+![Figure 3: Attention Map Visualization](/images/gazeshift/_page_6_Picture_9.jpeg)
+*Figure 3: Source image (top) alongside the internal self-attention weight map (bottom). Without external labels, the network learns to concentrate attention on gaze-salient regions around the pupil and iris.*
 
-![Attention Map Visualization](/images/gazeshift/_page_6_Picture_9.jpeg)
-*Figure 4: Source appearance images (top) and corresponding self-attention maps (bottom). The model naturally assigns high attention weights to gaze-relevant regions around the iris and pupil without external supervision.*
+After upsampling $w$ to match the image resolution and applying sharpening parameter $\gamma$, the Gaze-Focused Reconstruction Loss is defined as follows:
 
-After upsampling the attention weight map w to the same resolution as the target image, the <b>Gaze-Focused Reconstruction Loss</b> is defined by applying a sharpening parameter γ:
-$$\mathcal{L}_{\text{focus}} = \frac{1}{\sum_{i} w_i^{\gamma}} \sum_{i} w_i^{\gamma} \cdot (x_{t,i} - \hat{x}_{t,i})^2 \tag{5}$$
+$$\mathcal{L}_{\text{focus}} = \frac{1}{\sum_{i} w_i^{\gamma}} \sum_{i} w_i^{\gamma} \cdot (x_{t,i} - \hat{x}_{t,i})^2$$
 
-Where:
-- <b>i</b>: Pixel position index
-- <b>w_i</b>: Upsampled attention weight (high around the iris, low in the background)
-- <b>γ</b>: Sharpening parameter that controls the attention focus
+Index $i$ denotes individual pixel coordinates. Weight $w_i$ reflects self-attention intensity, which peaks around the iris and approaches zero across peripheral skin. The normalization factor $\frac{1}{\sum_{i} w_i^{\gamma}}$ keeps total gradient magnitudes balanced.
 
-<b>Positive Feedback Loop:</b>
-1. Self-attention focuses on gaze-relevant regions → Reconstruction loss for that region is strengthened
-2. The strengthened loss improves the precision of the gaze encoder's gaze representation
-3. The more precise gaze representation further improves the localization of the attention's gaze region
-4. (Repeats from step 1)
+Examining the backpropagation gradient magnitude highlights the selective pressure of this formulation:
+
+$$\left\| \frac{\partial \mathcal{L}_{\text{focus}}}{\partial \hat{x}_i} \right\| \propto \frac{w_i^{\gamma}}{\sum_j w_j^{\gamma}}$$
+
+Pixels with high attention generate amplified gradients that demand faithful reconstruction, whereas background gradients are suppressed. This establishes a self-reinforcing feedback loop: sharper self-attention refines gaze reconstruction, which in turn guides the encoder to locate gaze cues with greater spatial precision.
+
+### 3.5 Lightweight Gaze Calibration
+
+Following unsupervised pre-training, the gaze encoder outputs embeddings that encode relative angular differences. To map these vectors to physical screen coordinates or degrees, a lightweight calibration step is performed. Using between 17 and 60 sparse fixation points per user, a Ridge regression head maps frozen gaze embeddings to angular predictions. Because encoder weights remain fixed, this procedure imposes virtually zero compute overhead.
 
 ---
 
-### 4.6 Gaze Calibration
+## 4. Experimental Results
 
-After unsupervised pretraining, calibration is performed using a small amount of labeled data:
+### 4.1 VR Benchmark Evaluations
 
-| Setting | Method | Details |
-|------|------|------|
-| <b>VR (Per-person)</b> | Ridge Regression | Learns a linear regressor with a small number of fixed gaze points (17~60). Per-person calibration is essential to correct for the <b>κ-angle</b> (difference between optical and visual axes). Also performed per-session to account for headset repositioning. |
-| <b>Remote Camera</b> | MLP Regressor | Learns a small MLP by pooling 100~200 labeled samples across all subjects. |
+Evaluations on the newly released VRGaze benchmark demonstrate the accuracy of GazeShift compared to supervised and unsupervised baselines.
 
----
+| Training Paradigm | Model | Calibration | Mean Angular Error |
+|---|---|---|:---:|
+| Supervised | Appearance-Based SOTA | Fully Supervised | 1.54° |
+| Supervised | Feature-Based Baseline | Fully Supervised | 3.20° |
+| Unsupervised | VAE | Per-person | 5.30° |
+| Unsupervised | Cross-Encoder | Per-person | 2.15° |
+| Unsupervised | GazeShift (Ours) | Per-person | 1.84° |
+| Unsupervised | Cross-Encoder | Person-agnostic K=200 | 2.26° |
+| Unsupervised | GazeShift (Ours) | Person-agnostic K=200 | 2.13° |
 
-## 5. Experimental Results
+Without labeled supervision during pre-training, GazeShift achieves a 1.84 degree mean error, coming within 0.3 degrees of the fully supervised baseline (1.54 degrees). It improves upon Cross-Encoder by 14%, passing the practical fidelity threshold required for seamless foveated rendering.
 
-### 5.1 Performance on VRGaze
+On the on-axis OpenEDS2020 benchmark, GazeShift achieves 3.43 degrees error, outperforming Cross-Encoder at 3.69 degrees.
 
-| Supervision | Method | Calibration | Avg. Error (°) |
-|-----------|------|-------------|--------------|
-| Supervised | Appearance Based | - | <b>1.54</b> |
-| Supervised | Feature Based | - | 3.20 |
-| Unsupervised | VAE | Per-person | 5.30 |
-| Unsupervised | Cross-Encoder | Per-person | 2.15 |
-| <b>Unsupervised</b> | <b>GazeShift</b> | <b>Per-person</b> | <b>1.84</b> |
-| Unsupervised | Cross-Encoder | Person-agnostic (K=200) | 2.26 |
-| <b>Unsupervised</b> | <b>GazeShift</b> | <b>Person-agnostic (K=200)</b> | <b>2.13</b> |
+### 4.2 Cross-Dataset Generalization
 
-<b>Key Result</b>: Despite being an unsupervised method, GazeShift achieved <b>1.84°</b>, which is close to the supervised appearance-based model (1.54°). This demonstrates that practical accuracy can be reached without gaze labels.
+Testing dataset transfer between on-axis and off-axis modalities highlights the importance of VRGaze. A model trained on OpenEDS2020 degrades to an error of 5.2 degrees when evaluated on VRGaze, compared to 1.84 degrees when trained directly on off-axis data.
 
-### 5.2 Performance on OpenEDS2020
+### 4.3 Generalization to Remote RGB Cameras: MPIIGaze
 
-| Method | Per-person Error (°) | Person-agnostic Error (°) |
-|------|---------------------|--------------------------|
-| Cross-Encoder | 3.69 | 5.20 |
-| <b>GazeShift</b> | <b>3.43</b> | <b>4.20</b> |
+On the remote webcam RGB benchmark MPIIGaze, GazeShift demonstrates consistent architectural efficiency.
 
-GazeShift consistently outperforms Cross-Encoder even in on-axis environments.
+| Model | Backbone | Parameters | FLOPs | Mean Angular Error |
+|---|---|:---:|:---:|:---:|
+| Cross-Encoder | ResNet-18 | 11.0M | 75M | 8.32° |
+| GazeShift | ResNet-18 | 11.0M | 75M | 7.56° |
+| GazeShift | MobileNetV2 | 1.0M | 2M | 8.00° |
 
-### 5.3 Cross-Dataset Generalization (On-axis → Off-axis)
+Using a MobileNetV2 backbone, GazeShift reduces model parameters by 10x and compute by 35x compared to Cross-Encoder, while achieving a lower error of 8.00 degrees.
 
-When trained on on-axis data (OpenEDS2020) and tested on off-axis data (VRGaze), the error significantly increases to <b>5.2°</b> (compared to 1.84° when trained directly on VRGaze). This clearly shows the <b>need for dedicated off-axis datasets</b>.
+### 4.4 Ablation Study and Hyperparameter Sensitivity
 
-### 5.4 Remote Camera Experiments (MPIIGaze)
+Ablation experiments isolate the contribution of each proposed component.
 
-| Supervision | Method | Avg. Error (°) | Parameters | FLOPs |
-|-----------|------|--------------|---------|-------|
-| Supervised | ResNet-18 | 8.35 | 11M | 75M |
-| Unsupervised | Cross-Encoder | 8.32 | 11M | 75M |
-| <b>Unsupervised</b> | <b>GazeShift (MobileNetV2)</b> | <b>8.00</b> | <b>1M</b> | <b>2M</b> |
-| Unsupervised | GazeShift (ResNet-18) | <b>7.56</b> | 11M | 75M |
+| Configuration | Separate Encoders | Attention Redirection | Gaze-Focused Loss | Mean Error |
+|:---:|:---:|:---:|:---:|:---:|
+| Baseline | No | No | No | 2.15° |
+| Decoupled Encoders | Yes | No | No | 2.10° |
+| Single-Query Attention | Yes | Yes | No | 2.07° |
+| Full GazeShift | Yes | Yes | Yes | 1.84° |
 
-<b>After Unsupervised Fine-tuning (Train + Eval on MPIIGaze)</b>:
+Introducing the Gaze-Focused Reconstruction Loss delivers the single largest gain, reducing error from 2.07 to 1.84 degrees.
 
-| Method | Avg. Error (°) | Parameters |
-|------|--------------|---------|
-| Cross-Encoder | 7.20 | 11M |
-| <b>GazeShift (MobileNetV2)</b> | <b>7.15</b> | <b>1M</b> |
+Varying the sharpening parameter $\gamma$ confirms that $\gamma = 1.0$ provides the optimal balance. Values below 1.0 dilute attention across static backgrounds, while values above 2.0 overly constrict attention to pupil centers, discarding corneal reflections and eyelid cues.
 
-GazeShift outperforms Cross-Encoder with <b>10x fewer parameters and 35x fewer FLOPs</b>.
+### 4.5 Disentanglement Verification and On-Device Latency
 
-### 5.5 Ablation Study
+Controlled invariance experiments confirm clean latent separation. Under 100 synthetic illumination and contrast shifts with constant gaze, gaze embeddings remained stable with a cosine distance of 0.08. Conversely, across 80 diverse gaze angles with fixed appearance, the gaze embedding fluctuated significantly (0.17) while appearance embeddings varied by only 0.04.
 
-| # | Separate Encoders | Attention-Based Redirection | Gaze-Focused Loss | Avg. Error (°) |
-|---|-----------|-------------------|-------------|--------------|
-| 1 | ✗ | ✗ | ✗ | 2.15 |
-| 2 | ✓ | ✗ | ✗ | 2.10 |
-| 3 | ✓ | ✓ | ✗ | 2.07 |
-| 4 | ✓ | ✓ | ✓ | <b>1.84</b> |
+![Figure 4: Latent Space Interpolation](/images/gazeshift/_page_7_Figure_11.jpeg)
+*Figure 4: Latent space interpolation between two target gaze vectors. Gaze shifts smoothly while subject identity and skin textures remain stationary.*
 
-<b>Gaze-Focused Loss</b> brought the largest performance improvement (2.07° → 1.84°), highlighting the paper's most original contribution.
-
-### 5.6 γ Sensitivity Analysis
-
-| γ | 0.5 | 1.0 | 2.0 | 4.0 |
-|---|-----|-----|-----|-----|
-| Avg. Error (°) | 2.03 | <b>1.84</b> | 2.19 | 2.41 |
-
-- <b>γ = 1 is optimal</b>: The most balanced result is achieved when the raw attention is used as is.
-
-### 5.7 Model Efficiency and On-device Performance
-
-| Metric | Value |
-|------|------|
-| Gaze Encoder Parameters | <b>342K</b> |
-| FLOPs | <b>55 MFLOPs</b> |
-| VR Headset Inference Time (Both Eyes) | <b>5 ms</b> |
-| Chipset | Exynos 2200 (Xclipse 920 GPU) |
-
-### 5.8 Disentanglement Verification
-
-![Disentanglement Analysis](/images/gazeshift/_page_5_Figure_10.jpeg)
-*Figure 3: Gaze embedding stability under appearance variation (left), appearance embedding stability under gaze variation (right)*
-
-→ Quantitatively confirmed that GazeShift <b>effectively disentangles gaze and appearance</b>.
-
-### 5.9 Latent Space Interpolation
-
-![Latent Space Interpolation](/images/gazeshift/_page_7_Figure_11.jpeg)
-*Figure 5: Interpolating between two target gaze embeddings generates smooth eye movement while preserving the source's unique appearance characteristics.*
+Benchmarked on an Exynos 2200 chipset with an Xclipse 920 GPU processing binocular streams, end-to-end inference executes in 5 milliseconds, readily supporting refresh rates exceeding 120 Hz.
 
 ---
 
-## 6. Limitations
+## 5. Conclusion and Key Takeaways
 
-Limitations mentioned by the authors:
-- <b>Constraint of the Assumption</b>: The assumption that most inter-frame appearance variation is due to gaze changes holds well in VR, but requires further verification in <b>AR/MR environments</b> where external lighting and reflections change significantly.
-- <b>Non-gaze Appearance Variations</b>: Blinks, eyelid movements, and pupil dilation are low-frequency in VR, but their impact in other environments is unknown.
+GazeShift demonstrates that label-free gaze estimation can achieve commercial-grade precision on resource-constrained wearable hardware. By releasing VRGaze, the authors bridge an important empirical gap for off-axis infrared camera systems.
 
----
+The meta-insights offered by this work span three dimensions:
 
-## 7. Overall Review and Personal Opinion
+First, asymmetric design enables zero-penalty unsupervised learning. By relegating heavy generative decoders and cross-attention blocks strictly to training-time scaffolds, GazeShift leaves behind an ultra-compact 342K encoder that runs in 5 ms on edge GPUs, charting a blueprint for on-device representation learning.
 
-### Strengths
+Second, internal attention maps can serve as autonomous supervision signals. Repurposing existing self-attention maps into spatial loss modulators demonstrates that neural networks can bootstrap their own training without brittle heuristics or external segmentation networks.
 
-1. <b>Value of Dataset Contribution</b>: VRGaze is the first large-scale off-axis VR gaze dataset, a crucial resource filling a benchmark void in the field. 
-2. <b>Simple Yet Effective Architecture</b>: Achieving gaze redirection using only standard attention modules without complex geometric priors or warping fields is impressive.
-3. <b>Originality of Gaze-Focused Loss</b>: The self-guided mechanism of recycling the model's own attention map as a loss function weight reinforces learning on gaze regions without extra modules.
-4. <b>Practicality</b>: The lightweight gaze encoder with 342K parameters and 5ms inference is highly suitable for actual VR device deployment.
-
-### Areas for Improvement / Future Work
-
-1. <b>Dataset Diversity</b>: The demographic composition of the 68 participants is still somewhat limited.
-2. <b>Limited Comparative Baselines</b>: The comparison targets in off-axis VR are limited to Cross-Encoder and VAE, although there are practical reasons for this due to a lack of reproducible baselines.
-3. <b>AR/MR Expansion</b>: The issue of non-gaze appearance variation in AR/MR environments seems to be the most important future research direction.
-4. <b>Binocular Utilization</b>: While the supervised baseline uses a binocular Siamese network, GazeShift is monocular-based. Utilizing binocular information could yield further performance gains.
-
-### Conclusion
-
-GazeShift is an impressive study that simultaneously achieves the three practical elements of <b>"unsupervised + lightweight + real-time"</b> while showing accuracy close to supervised learning. In particular, the design philosophy of achieving gaze-appearance disentanglement with only standard attention mechanisms, and the idea of recycling self-attention maps as loss function weights, presents a general framework applicable to other representation learning problems beyond gaze estimation.
-
----
-
-> <b>References</b> can be found in the References section of the original paper.
+Third, domain-specific hardware alignment is essential for real-world impact. Confronting the perspective distortions of commercial headsets with a tailored dataset unlocks practical deployment where conventional frontal models fail, illustrating the power of co-designing datasets, loss formulations, and inference architectures.

@@ -1,5 +1,5 @@
 ---
-title: "Transformer vs Mamba: Self-Attention과 상태 공간 모델, 두 패러다임의 구조적 대조"
+title: "Transformer vs Mamba: Structural Contrast Between Self-Attention and State Space Models"
 date: 2026-09-07T20:44:13+09:00
 draft: false
 math: true
